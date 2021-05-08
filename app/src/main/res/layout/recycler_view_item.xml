@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:card_view="http://schemas.android.com/apk/res-auto"
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:tools="http://schemas.android.com/tools"
+
+	android:id="@+id/card_view"
+	android:layout_width="match_parent"
+	android:layout_height="wrap_content"
+	android:foreground="?android:attr/selectableItemBackground"
+	android:clickable="true"
+	android:focusable="true"
+
+	card_view:cardBackgroundColor="?attr/colorSurface"
+	card_view:cardCornerRadius="@dimen/cardCornerRadius"
+	card_view:cardElevation="@dimen/cardElevation"
+	card_view:cardMaxElevation="@dimen/cardMaxElevation"
+	card_view:cardPreventCornerOverlap="true"
+	card_view:cardUseCompatPadding="true" >
+
+	<LinearLayout
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:orientation="horizontal">
+
+		<LinearLayout
+			android:layout_width="wrap_content"
+			android:layout_height="match_parent"
+			android:orientation="vertical"
+			android:layout_margin="@dimen/marginSizeDefault">
+
+			<TextView
+				style="@style/TextStyle"
+
+				android:id="@+id/time_text"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:layout_gravity="center"
+				android:gravity="center"
+				tools:text="ti:me am" />
+
+
+			<ImageView
+				android:id="@+id/folder_icon"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:src="@drawable/folder_icon_opened"
+				android:contentDescription="@string/main_folder_icon_descrip"
+				android:minWidth="@dimen/minImageSize"
+				android:visibility="gone"/>
+
+			<Switch
+				android:id="@+id/on_switch"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:layout_gravity="center"
+				android:layout_marginTop="@dimen/marginSizeDefault"
+				android:showText="false" />
+
+		</LinearLayout>
+
+		<LinearLayout
+			android:layout_width="match_parent"
+			android:layout_height="match_parent"
+			android:orientation="vertical"
+			android:layout_margin="@dimen/marginSizeDefault">
+
+			<TextView
+				style="@style/TextStyle"
+
+				android:id="@+id/title_text"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:layout_gravity="start"
+				tools:text="title text" />
+
+			<TextView
+				style="@style/TextStyle"
+
+				android:id="@+id/repeat_text"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:layout_gravity="start"
+				android:layout_marginTop="@dimen/marginSizeDefault"
+				android:gravity="start"
+				tools:text="repeat text" />
+		</LinearLayout>
+	</LinearLayout>
+</androidx.cardview.widget.CardView>

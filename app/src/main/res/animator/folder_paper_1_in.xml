@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<set xmlns:android="http://schemas.android.com/apk/res/android"
+	android:ordering="sequentially">
+	<objectAnimator
+		android:duration="@integer/folderAnimationLenShort"
+		android:propertyName="rotation"
+		android:valueFrom="@dimen/endRotation1"
+		android:valueTo="@dimen/maxRotation1"/>
+	<objectAnimator
+		android:duration="@integer/folderAnimationLenLong"
+		android:propertyName="rotation"
+		android:valueFrom="@dimen/maxRotation1"
+		android:valueTo="@dimen/startRotation"/>
+</set>

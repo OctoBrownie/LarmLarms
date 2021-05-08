@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- NOTE: designtime only x/y positions: layout_editor_absoluteX or layout_editor_absoluteY -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:app="http://schemas.android.com/apk/res-auto"
+	xmlns:tools="http://schemas.android.com/tools"
+
+	style="@style/Theme.AppTheme"
+
+	android:layout_width="match_parent"
+	android:layout_height="match_parent"
+	android:orientation="vertical" >
+
+	<!-- Essentially a menu at the top of the screen -->
+	<LinearLayout
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:orientation="horizontal">
+		<android.widget.Button
+			style="@style/ButtonStyle.Borderless"
+
+			android:id="@+id/backButton"
+			android:layout_width="88dp"
+			android:layout_height="48dp"
+			android:layout_margin="16dp"
+			android:layout_weight="1"
+			android:onClick="backButtonClicked"
+			android:text="@string/editor_back_button" />
+
+		<android.widget.Button
+			style="@style/ButtonStyle"
+
+			android:id="@+id/saveButton"
+			android:layout_width="88dp"
+			android:layout_height="48dp"
+			android:layout_margin="16dp"
+			android:layout_weight="1"
+			android:onClick="saveAlarm"
+			android:text="@string/editor_save_button" />
+	</LinearLayout>
+
+	<!--
+	Naming conventions for input/text fields (here only):
+	Id names correspond to the field it fills in its AlarmGroup object (the alarmName field is filled
+	by the alarmNameInput EditText)
+	Ids for fields are always appended with "Input," and their corresponding labels with "Text"
+	-->
+
+	<ScrollView
+		android:layout_width="match_parent"
+		android:layout_height="match_parent">
+		<LinearLayout
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:orientation="horizontal">
+
+			<TextView
+				style="@style/EditorLabelStyle"
+
+				android:id="@+id/nameText"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:labelFor="@+id/folderNameInput"
+				android:text="@string/editor_name_text" />
+			<EditText
+				style="@style/EditorInputStyle"
+
+				android:id="@+id/nameInput"
+				android:inputType="textAutoComplete"
+				android:imeOptions="actionDone"
+				android:hint="@string/folder_editor_name_hint" />
+		</LinearLayout>
+	</ScrollView>
+</LinearLayout>

@@ -1,0 +1,435 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- NOTE: designtime only x/y positions: layout_editor_absoluteX or layout_editor_absoluteY -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:app="http://schemas.android.com/apk/res-auto"
+	xmlns:tools="http://schemas.android.com/tools"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent"
+	android:orientation="vertical"
+	style="@style/Theme.AppTheme">
+
+	<!-- Essentially a menu at the top of the screen -->
+	<LinearLayout
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:orientation="horizontal">
+
+		<android.widget.Button
+			style="@style/ButtonStyle.Borderless"
+
+			android:id="@+id/backButton"
+			android:layout_width="0px"
+			android:layout_height="wrap_content"
+			android:layout_weight="1"
+			android:onClick="backButtonClicked"
+			android:text="@string/editor_back_button" />
+
+		<android.widget.Button
+			style="@style/ButtonStyle"
+
+			android:id="@+id/saveButton"
+			android:layout_width="0px"
+			android:layout_height="wrap_content"
+			android:layout_weight="1"
+			android:onClick="saveAlarm"
+			android:text="@string/editor_save_button" />
+	</LinearLayout>
+
+	<!--
+	Naming conventions for input/text field ids (here only):
+	All alarm-specific ids are prefixed with "alarm"
+	Id names correspond to the field it fills in its Alarm object (the name field is filled
+	by EditText with id alarmNameInput)
+	Ids for fields are always appended with "Input" and their corresponding labels with "Text"
+	-->
+	<ScrollView
+		android:layout_width="match_parent"
+		android:layout_height="match_parent">
+
+		<LinearLayout
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:orientation="vertical">
+
+			<!-- repeat type layout -->
+			<LinearLayout
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:orientation="horizontal"
+				android:baselineAligned="true">
+
+				<TextView
+					style="@style/EditorLabelStyle"
+
+					android:id="@+id/alarmRepeatTypeText"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:labelFor="@+id/alarmRepeatTypeInput"
+					android:text="@string/alarm_editor_repeat_type_text"/>
+				<Spinner
+					style="@style/SpinnerStyle"
+
+					android:id="@+id/alarmRepeatTypeInput"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"/>
+			</LinearLayout>
+
+			<!-- - - - - - - - - - - - - - - -  Repeat Type Inputs  - - - - - - - - - - - - - - -->
+
+			<!-- TODO: could make time/date pickers dialogs instead? -->
+			<TimePicker
+				style="@style/TimePickerStyle"
+
+				android:id="@+id/alarmTimeInput"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:layout_marginTop="@dimen/marginSizeDefault" />
+
+			<!-- TODO: selecting year doesn't work very well (can't scroll, calendar mode only) -->
+			<DatePicker
+				style="@style/DatePickerStyle"
+
+				android:id="@+id/alarmDateInput"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:gravity="center_horizontal" />
+
+			<!-- date of month layout -->
+			<LinearLayout
+				android:id="@+id/alarmDateOfMonth"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:orientation="horizontal"
+				android:gravity="center">
+				<TextView
+					style="@style/EditorLabelStyle"
+
+					android:id="@+id/alarmDateOfMonthText1"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:text="@string/alarm_editor_date_monthly_text_1"/>
+				<NumberPicker
+					android:id="@+id/alarmDateOfMonthInput"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content" />
+				<TextView
+					style="@style/EditorLabelStyle"
+
+					android:id="@+id/alarmDateOfMonthText2"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:text="@string/alarm_editor_date_monthly_text_2"/>
+			</LinearLayout>
+
+			<!-- TODO: provide alt resources for smaller screens? If not, text could be cut off
+				 TODO: could make these into buttons (perhaps easier to click?) -->
+			<!-- days of week layout -->
+			<LinearLayout
+				android:id="@+id/alarmDaysInput"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:orientation="horizontal"
+				android:gravity="center_horizontal">
+				<TextView
+					style="@style/EditorDaysStyle"
+
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:text="@string/alarm_editor_days_1_short"
+					android:tag="0"
+					android:onClick="dayOfWeekClicked" />
+				<TextView
+					style="@style/EditorDaysStyle"
+
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:text="@string/alarm_editor_days_2_short"
+					android:tag="1"
+					android:onClick="dayOfWeekClicked" />
+				<TextView
+					style="@style/EditorDaysStyle"
+
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:text="@string/alarm_editor_days_3_short"
+					android:tag="2"
+					android:onClick="dayOfWeekClicked" />
+				<TextView
+					style="@style/EditorDaysStyle"
+
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:text="@string/alarm_editor_days_4_short"
+					android:tag="3"
+					android:onClick="dayOfWeekClicked" />
+				<TextView
+					style="@style/EditorDaysStyle"
+
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:text="@string/alarm_editor_days_5_short"
+					android:tag="4"
+					android:onClick="dayOfWeekClicked" />
+				<TextView
+					style="@style/EditorDaysStyle"
+
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:text="@string/alarm_editor_days_6_short"
+					android:tag="5"
+					android:onClick="dayOfWeekClicked" />
+				<TextView
+					style="@style/EditorDaysStyle"
+
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:text="@string/alarm_editor_days_7_short"
+					android:tag="6"
+					android:onClick="dayOfWeekClicked" />
+			</LinearLayout>
+
+			<!-- DAY_MONTHLY layout -->
+			<LinearLayout
+				android:id="@+id/alarmDayMonthly"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:orientation="horizontal">
+
+				<TextView
+					style="@style/EditorLabelStyle"
+
+					android:id="@+id/alarmWeekOfMonthText"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:labelFor="@+id/alarmWeekOfMonthInput"
+					android:text="@string/alarm_editor_day_monthly_text_1"/>
+				<Spinner
+					style="@style/SpinnerStyle"
+
+					android:id="@+id/alarmWeekOfMonthInput"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"/>
+				<Spinner
+					style="@style/SpinnerStyle"
+
+					android:id="@+id/alarmDayOfWeekInput"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"/>
+			</LinearLayout>
+
+			<!-- TODO: provide alt resources for smaller/larger screens? If not, text could be cut
+			off or unnecessarily broken up -->
+			<!-- months of year layout -->
+			<LinearLayout
+				android:id="@+id/alarmMonthsInput"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:orientation="vertical">
+				<LinearLayout
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content"
+					android:orientation="horizontal"
+					android:gravity="center_horizontal">
+					<TextView
+						style="@style/EditorDaysStyle"
+
+						android:layout_width="wrap_content"
+						android:layout_height="wrap_content"
+						android:text="@string/alarm_editor_months_1"
+						android:tag="0"
+						android:onClick="monthClicked" />
+					<TextView
+						style="@style/EditorDaysStyle"
+
+						android:layout_width="wrap_content"
+						android:layout_height="wrap_content"
+						android:text="@string/alarm_editor_months_2"
+						android:tag="1"
+						android:onClick="monthClicked" />
+					<TextView
+						style="@style/EditorDaysStyle"
+
+						android:layout_width="wrap_content"
+						android:layout_height="wrap_content"
+						android:text="@string/alarm_editor_months_3"
+						android:tag="2"
+						android:onClick="monthClicked" />
+					<TextView
+						style="@style/EditorDaysStyle"
+
+						android:layout_width="wrap_content"
+						android:layout_height="wrap_content"
+						android:text="@string/alarm_editor_months_4"
+						android:tag="3"
+						android:onClick="monthClicked" />
+					<TextView
+						style="@style/EditorDaysStyle"
+
+						android:layout_width="wrap_content"
+						android:layout_height="wrap_content"
+						android:text="@string/alarm_editor_months_5"
+						android:tag="4"
+						android:onClick="monthClicked" />
+					<TextView
+						style="@style/EditorDaysStyle"
+
+						android:layout_width="wrap_content"
+						android:layout_height="wrap_content"
+						android:text="@string/alarm_editor_months_6"
+						android:tag="5"
+						android:onClick="monthClicked" />
+				</LinearLayout>
+
+				<LinearLayout
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content"
+					android:orientation="horizontal"
+					android:gravity="center_horizontal">
+					<TextView
+						style="@style/EditorDaysStyle"
+
+						android:layout_width="wrap_content"
+						android:layout_height="wrap_content"
+						android:text="@string/alarm_editor_months_7"
+						android:tag="6"
+						android:onClick="monthClicked" />
+					<TextView
+						style="@style/EditorDaysStyle"
+
+						android:layout_width="wrap_content"
+						android:layout_height="wrap_content"
+						android:text="@string/alarm_editor_months_8"
+						android:tag="7"
+						android:onClick="monthClicked" />
+					<TextView
+						style="@style/EditorDaysStyle"
+
+						android:layout_width="wrap_content"
+						android:layout_height="wrap_content"
+						android:text="@string/alarm_editor_months_9"
+						android:tag="8"
+						android:onClick="monthClicked" />
+					<TextView
+						style="@style/EditorDaysStyle"
+
+						android:layout_width="wrap_content"
+						android:layout_height="wrap_content"
+						android:text="@string/alarm_editor_months_10"
+						android:tag="9"
+						android:onClick="monthClicked" />
+					<TextView
+						style="@style/EditorDaysStyle"
+
+						android:layout_width="wrap_content"
+						android:layout_height="wrap_content"
+						android:text="@string/alarm_editor_months_11"
+						android:tag="10"
+						android:onClick="monthClicked" />
+					<TextView
+						style="@style/EditorDaysStyle"
+
+						android:layout_width="wrap_content"
+						android:layout_height="wrap_content"
+						android:text="@string/alarm_editor_months_12"
+						android:tag="11"
+						android:onClick="monthClicked" />
+				</LinearLayout>
+			</LinearLayout>
+
+			<!-- offset days layout -->
+			<LinearLayout
+				android:id="@+id/alarmOffsetDays"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:orientation="horizontal">
+
+				<TextView
+					style="@style/EditorLabelStyle"
+
+					android:id="@+id/alarmOffsetDaysText"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:labelFor="@+id/alarmOffsetDaysInput"
+					android:text="@string/alarm_editor_offset_days_text" />
+				<EditText
+					style="@style/EditorOffsetInputStyle"
+
+					android:id="@+id/alarmOffsetDaysInput"
+					android:inputType="number"
+					android:imeOptions="actionNext" />
+			</LinearLayout>
+
+			<!-- offset hours layout -->
+			<LinearLayout
+				android:id="@+id/alarmOffsetHours"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:orientation="horizontal">
+
+				<TextView
+					style="@style/EditorLabelStyle"
+
+					android:id="@+id/alarmOffsetHoursText"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:labelFor="@+id/alarmOffsetHoursInput"
+					android:text="@string/alarm_editor_offset_hours_text" />
+				<EditText
+					style="@style/EditorOffsetInputStyle"
+
+					android:id="@+id/alarmOffsetHoursInput"
+					android:inputType="number"
+					android:imeOptions="actionNext" />
+			</LinearLayout>
+
+			<!-- offset mins layout -->
+			<LinearLayout
+				android:id="@+id/alarmOffsetMins"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:orientation="horizontal">
+
+				<TextView
+					style="@style/EditorLabelStyle"
+
+					android:id="@+id/alarmOffsetMinsText"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:labelFor="@+id/alarmOffsetMinsInput"
+					android:text="@string/alarm_editor_offset_mins_text" />
+				<EditText
+					style="@style/EditorOffsetInputStyle"
+
+					android:id="@+id/alarmOffsetMinsInput"
+					android:inputType="number"
+					android:imeOptions="actionDone" />
+			</LinearLayout>
+
+			<!-- - - - - - - - - - - - - - - -  Other Input Fields  - - - - - - - - - - - - - - -->
+
+			<!-- name layout -->
+			<LinearLayout
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:orientation="horizontal">
+
+				<TextView
+					style="@style/EditorLabelStyle"
+
+					android:id="@+id/nameText"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:labelFor="@+id/alarmNameInput"
+					android:text="@string/editor_name_text" />
+
+				<EditText
+					style="@style/EditorInputStyle"
+
+					android:id="@+id/nameInput"
+					android:inputType="textAutoComplete"
+					android:imeOptions="actionDone"
+					android:hint="@string/alarm_editor_name_hint" />
+			</LinearLayout>
+		</LinearLayout>
+	</ScrollView>
+</LinearLayout>

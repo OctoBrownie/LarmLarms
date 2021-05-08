@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:app="http://schemas.android.com/apk/res-auto"
+	xmlns:tools="http://schemas.android.com/tools"
+
+	android:layout_width="match_parent"
+	android:layout_height="wrap_content"
+	android:layout_gravity="center_vertical|center_horizontal"
+	android:orientation="vertical"
+	android:theme="@style/Theme.AppTheme"
+
+
+	tools:context="com.apps.LarmLarms.AlarmRingingActivity">
+
+	<TextView
+		style="@style/TextStyle"
+
+		android:id="@+id/alarmName"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_gravity="center_horizontal"
+
+		tools:text="Alarm Name"/>
+	<android.widget.Button
+		style="@style/ButtonStyle.Borderless"
+
+		android:id="@+id/saveButton"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:onClick="exitActivity"
+		android:text="@string/editor_back_button" />
+</LinearLayout>

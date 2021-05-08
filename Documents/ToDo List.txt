@@ -1,0 +1,28 @@
+ToDo list for more general things that need to be implemented
+
+make the UI look prettier
+	some repeat strings don't really look nice (ex: offset strings are always plural + sound funky, exception months are shorthand and don't have an "and" between the last two exception months)
+add more fields to the AlarmCreator activity
+add a settings activity (?)
+style all components
+	also ensure all components of a single type all have the same style (or children of it)
+schedule alarms with AlarmManager
+some documentation for each method and field? Also make documentation less... conversational?
+create an activity to show the alarm when ringing 
+when errors are encountered, close the app or do something ELSE besides logging the error 
+save Alarms and AlarmGroups to file (and read the files later)
+make snake_case and camelCase variables and stuff all consistent?
+make CardViews draggable (to reorder within folders??)
+	helpful Android documentation: https://developer.android.com/guide/topics/ui/drag-drop
+perhaps make setter functions return a ref to the object (makes it easier to set stuff on either a named or anonymous object)
+remove superfluous methods (looking at you, getters and setters) and unnecessary fields 
+	same with styles or strings or colors or attr or dimens or...
+perhaps make a data structure to return when traversing the listables tree (for fewer traversals?)
+silent exiting (+ logging) when encountering issues or raising exceptions?
+delete testing areas 
+could remove the isActive field in edit strings (not REALLY necessary... I think)
+could probably remove a lot of ids (i.e. for the text labels)
+add functionality to the sliders on the main screen 
+could possibly give user choice for some color presets (like the "sandy blue" theme that it almost feels like we're going for right now)
+could possibly animate the folder opening/closing effect?
+	and have to make the folder open/close in the first place...

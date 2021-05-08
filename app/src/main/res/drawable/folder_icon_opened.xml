@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+	android:width="50dp" android:height="40dp"
+	android:viewportWidth="25" android:viewportHeight="24">
+	<!-- uncompressed path data, for a (250, 240) icon:
+	folder path data:
+	M20 60 q-20 0 -20 20 v140 q0 20 20 20 h210 q20 0 20 -20 v-140 q0 -20 -20 -20 h-100 l-20 -30 h-60 l-20 30
+
+	groups rotate about (20, 60)
+	path data for paper 1: M20 60 v60 h200 v-60
+	path data for paper 2: M20 60 v60 h150 v-60
+	-->
+	<group android:name="paper 1"
+		android:rotation="-10"
+		android:pivotX="2"
+		android:pivotY="6">
+		<path
+			android:fillColor="?attr/colorSecondary"
+			android:pathData="M2 6 v6 h20 v-6"
+			android:strokeWidth="0"/>
+	</group>
+	<group android:name="paper 2"
+		android:rotation="-20"
+		android:pivotX="2"
+		android:pivotY="6">
+		<path
+			android:fillColor="?attr/colorSecondary"
+			android:pathData="M2 6 v6 h15 v-6"
+			android:fillAlpha="0.75"
+			android:strokeWidth="0"/>
+	</group>
+	<path android:name="folder"
+		android:fillColor="?attr/colorPrimary"
+		android:pathData="M2 6 q-2 0 -2 2 v14 q0 2 2 2 h21 q2 0 2 -2 v-14 q0 -2 -2 -2 h-10 l-2 -3 h-6 l-2 3"
+		android:strokeWidth="0"/>
+</vector>
