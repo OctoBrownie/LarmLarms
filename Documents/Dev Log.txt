@@ -383,7 +383,7 @@ Key
 	renamed folder_icon_paper_1 and folder_icon_paper_2 to folder_paper_1_out and folder_paper_2_out
 	renamed folder_icon_rotation to folder_open_animation
 	added onClick listeners to Holder:switch_view and Holder:image_view 
-	changed Holder:onClick() to accomodate new onClick listeners 
+	changed Holder:onClick() to accommodate new onClick listeners
 	created AlarmGroup:refreshLookup() and Adapter:refreshLookup()
 	copied folder animators and drawable to create closing effect
 	added some functionality to Holder:onClick()
@@ -445,4 +445,4 @@ Key
 	uncommented the keyguard dismissal block in AlarmRingingActivity
 	renamed AlarmRingingService to NotificationService 
 	installed Git
-		after Git is integrated into my workflow, I will no longer be use this txt file for logging purposes
+		after Git is integrated into my workflow, I will no longer use this txt file for logging purposes
