@@ -48,36 +48,6 @@ public class MainActivity extends AppCompatActivity {
 
 		if (savedInstanceState == null) {
 			// TODO: if nothing is going in here, can delete the if statement
-
-			/*
-			// TODO: Delete this testing section (file read/write test)
-			// TEST: makes a new file, stores some text in it, then reads it immediately after into a TextView
-			String test_text = "Bioxide";
-			String test_file_name = "test.txt";
-
-				try {
-				File thing = new File(getApplicationContext().getFilesDir(), test_file_name);
-				thing.createNewFile();
-				if (thing.exists()) {
-					FileOutputStream os = openFileOutput(test_file_name, Context.MODE_PRIVATE);
-					os.write(test_text.getBytes());
-					os.close();
-
-					FileInputStream is = openFileInput(test_file_name);
-					InputStreamReader isr = new InputStreamReader(is, StandardCharsets.UTF_8);
-					BufferedReader bReader = new BufferedReader(isr);
-					String theOneLine = bReader.readLine();
-					is.close();
-
-					TextView output_view = findViewById(R.id.testing_text);
-					output_view.setText(theOneLine);
-					thing.delete();
-				}
-			}
-			catch (IOException e) {
-				Log.e(TAG, e.getMessage());
-			}
-			*/
 		}
 
 		Log.i(TAG, "Activity created successfully.");

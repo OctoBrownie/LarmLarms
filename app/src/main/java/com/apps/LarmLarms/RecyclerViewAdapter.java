@@ -196,20 +196,6 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 
 		// TODO: if this layout passing ends up being a bottleneck, can cache the current indent of
 		// a ViewHolder to reduce the # of layout passes necessary (if same indent)
-
-		/*
-		// TODO: Delete this testing section (changing view size in RecyclerView)
-		// TEST: set views with the title "different height" to half the height and half width
-		if (view.getTitleText().getText().equals("different size")) {
-			ViewGroup.LayoutParams params = view.getView().getLayoutParams();
-			// both width and widthPixels are in pixels, and we want half the entire screen
-			params.width = context.getResources().getDisplayMetrics().widthPixels / 2;
-
-			// 100 dp hopefully (half normal)
-			params.height = (int) (context.getResources().getDisplayMetrics().density * 100);
-			view.getView().setLayoutParams(params);
-		}
-		*/
 	}
 
 	@Override

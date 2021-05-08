@@ -19,12 +19,6 @@ public class NotificationService extends Service {
 
 	@Override
 	public int onStartCommand(Intent inIntent, int flags, int startId) {
-		/* TODO: Delete this testing section (make a Toast when alarm is called)
-		Toast toast = Toast.makeText(this, "YOUR ALARM IS WRINGING", Toast.LENGTH_SHORT);
-		toast.show();
-		Log.i(TAG, "Should have delivered the toast already.");
-		*/
-
 		Alarm currAlarm = Alarm.fromEditString(this, inIntent.getStringExtra(MainActivity.EXTRA_LISTABLE));
 		if (currAlarm == null) {
 			Log.e(TAG, "Alarm was invalid.");
