@@ -1,5 +1,6 @@
 package com.apps.LarmLarms;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -7,6 +8,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
 import androidx.fragment.app.Fragment;
@@ -19,6 +27,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 public class RecyclerViewFrag extends Fragment {
 	private static final String TAG = "RecyclerViewFragment";
+	private static final String ALARM_STORE_FILE_NAME = "alarms.txt";
 	
 	private RecyclerViewAdapter myAdapter;
 
@@ -52,6 +61,12 @@ public class RecyclerViewFrag extends Fragment {
 		return rootView;
 	}
 
+	@Override
+	public void onStop() {
+		super.onStop();
+		writeAlarmsToFile();
+	}
+
 	/* *****************************  Getter and Setter Methods  ****************************** */
 
 	public RecyclerViewAdapter getAdapter() { return myAdapter; }
@@ -59,9 +74,54 @@ public class RecyclerViewFrag extends Fragment {
 	/* ************************************  Other Methods  ********************************** */
 	public boolean isDataEmpty() { return myAdapter.getItemCount() == 0; }
 
+	/**
+	 * Initializes alarm data from file.
+	 * @return A populated ArrayList of Listables or an empty one in the case of an error
+	 */
 	private ArrayList<Listable> initData() {
 		// TODO: initialize real data
 		ArrayList<Listable> data = new ArrayList<>();
+
+		try {
+			FileInputStream is = getContext().openFileInput(ALARM_STORE_FILE_NAME);
+			InputStreamReader isr = new InputStreamReader(is, StandardCharsets.UTF_8);
+			BufferedReader bReader = new BufferedReader(isr);
+
+			String currLine = bReader.readLine();
+			StringBuilder currFolder = null;
+			Listable currListable;
+
+			while (currLine != null) {
+				if (!currLine.startsWith("\t") && currFolder != null) {
+					// removing the last '\n'
+					if (currFolder.length() != 0) currFolder.deleteCharAt(currFolder.length() - 1);
+					currListable = AlarmGroup.fromStoreString(getContext(), currFolder.toString());
+					if (currListable != null) { data.add(currListable); }
+				}
+
+				if (currLine.startsWith("a")) {
+					currListable = Alarm.fromStoreString(getContext(), currLine);
+					if (currListable != null) { data.add(currListable); }
+				}
+				else if (currLine.startsWith("f")) {
+					currFolder = new StringBuilder(currLine);
+				}
+				else if (currLine.startsWith("\t") && currFolder != null) {
+					currFolder.append(currLine);
+				}
+				else {
+					Log.e(TAG, "Invalid line in alarms.txt");
+					return new ArrayList<>();
+				}
+				currLine = bReader.readLine();
+			}
+			is.close();
+		}
+		catch (IOException e) {
+			Log.e(TAG, e.getMessage());
+			return new ArrayList<>();
+		}
+
 
 		/*
 		AlarmGroup folder, insideFolder;
@@ -106,6 +166,32 @@ public class RecyclerViewFrag extends Fragment {
 	}
 
 	/**
+	 * Writes all alarms in myAdapter to app-specific file storage, with file name ALARM_STORE_FILE_NAME
+	 */
+	private void writeAlarmsToFile() {
+		try {
+			File alarmFile = new File(getContext().getFilesDir(), ALARM_STORE_FILE_NAME);
+			//noinspection ResultOfMethodCallIgnored
+			alarmFile.createNewFile();
+
+			FileOutputStream os = getContext().openFileOutput(ALARM_STORE_FILE_NAME, Context.MODE_PRIVATE);
+
+			StringBuilder builder = new StringBuilder();
+			for (Listable l : myAdapter.getListables()) {
+				builder.append(l.toStoreString()).append('\n');
+			}
+			// delete the last '\n'
+			if (builder.length() != 0) builder.deleteCharAt(builder.length() - 1);
+
+			os.write(builder.toString().getBytes());
+			os.close();
+		}
+		catch (IOException e) {
+			Log.e(TAG, e.getMessage());
+		}
+	}
+
+	/**
 	 * Refreshes alarms to coordinate with updated settings (mostly for time formatting). The data
 	 * doesn't change at all, we just need to rebind the ViewHolders to get the correct date string.
 	 */
@@ -147,7 +233,8 @@ public class RecyclerViewFrag extends Fragment {
 	}
 
 	/**
-	 * Should be called when ListableEditor returns with a Listable.
+	 * Should be called when ListableEditor returns with a Listable. Deals with the listables based
+	 * on request code.
 	 * @param requestCode the code that we requested with
 	 * @param data the intent containing the returned Listable
 	 */

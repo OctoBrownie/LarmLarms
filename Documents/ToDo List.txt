@@ -24,5 +24,3 @@ could remove the isActive field in edit strings (not REALLY necessary... I think
 could probably remove a lot of ids (i.e. for the text labels)
 add functionality to the sliders on the main screen 
 could possibly give user choice for some color presets (like the "sandy blue" theme that it almost feels like we're going for right now)
-could possibly animate the folder opening/closing effect?
-	and have to make the folder open/close in the first place...

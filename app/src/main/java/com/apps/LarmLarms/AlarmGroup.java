@@ -105,6 +105,10 @@ public final class AlarmGroup implements Listable, Cloneable {
 		return that;
 	}
 
+	/**
+	 * Creates an edit string for the current folder. Only stores the folder itself and doesn't have a
+	 * type identifier
+	 */
 	@Override
 	public String toEditString() {
 		// TODO: implement toString for AlarmGroup
@@ -114,6 +118,10 @@ public final class AlarmGroup implements Listable, Cloneable {
 		return res;
 	}
 
+	/**
+	 * Creates a string for storing the current folder. Stores folder with type identifier and
+	 * recursively stores all its children as well
+	 */
 	@Override
 	public String toStoreString() {
 		StringBuilder res = new StringBuilder("f\t" + toEditString());
@@ -239,6 +247,11 @@ public final class AlarmGroup implements Listable, Cloneable {
 
 	/* ************************************  Static Methods  ********************************** */
 
+	/**
+	 * Takes edit strings to rebuild into a new AlarmGroup
+	 * @param currContext the current context
+	 * @param src the edit string to create from
+	 */
 	public static AlarmGroup fromEditString(Context currContext, String src) {
 		if (src == null) {
 			Log.e(TAG, "Edit string is null.");
@@ -260,6 +273,11 @@ public final class AlarmGroup implements Listable, Cloneable {
 		return dest;
 	}
 
+	/**
+	 * Takes store strings to rebuild into a new AlarmGroup
+	 * @param currContext the current context
+	 * @param src the store string to create from
+	 */
 	public static AlarmGroup fromStoreString(Context currContext, String src) {
 		if (src == null) {
 			Log.e(TAG, "Store string is null.");
@@ -284,10 +302,11 @@ public final class AlarmGroup implements Listable, Cloneable {
 		}
 
 		for (int i = 1; i < lines.length; i++) {
+			// not a child of the current AlarmGroup
 			if (!lines[i].startsWith("\t")) {
 				Log.e(TAG, "Store string is formatted incorrectly (children aren't indented).");
 				return null;
-			}	// not a child of the current AlarmGroup
+			}
 			else { lines[i] = lines[i].substring(1); }			// removing the first indent
 
 		}
