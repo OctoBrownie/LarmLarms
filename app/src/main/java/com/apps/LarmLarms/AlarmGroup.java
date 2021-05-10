@@ -390,6 +390,10 @@ public final class AlarmGroup implements Listable, Cloneable {
 		// iterates over all Listables except the last one (we don't care how many it has)
 		for (int i = 0; i < data.size() - 1; i++) {
 			l = data.get(i);
+			if (l == null) {
+				Log.e(TAG, "Listable within given data was null.");
+				return new ArrayList<>();
+			}
 			if (!l.isAlarm()) { ((AlarmGroup) l).refreshLookup(); }
 
 			currIndex += l.getNumItems();

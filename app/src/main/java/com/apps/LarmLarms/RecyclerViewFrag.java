@@ -45,6 +45,12 @@ public class RecyclerViewFrag extends Fragment {
 	}
 
 	@Override
+	public void onResume() {
+		super.onResume();
+		myAdapter.setListables(getAlarmsFromDisk(getContext()));
+	}
+
+	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		// rootView is the LinearLayout in recycler_view_frag.xml
 		View rootView = inflater.inflate(R.layout.recycler_view_frag, container, false);
@@ -62,7 +68,7 @@ public class RecyclerViewFrag extends Fragment {
 	@Override
 	public void onStop() {
 		super.onStop();
-		writeAlarmsToFile(getContext(), myAdapter);
+		writeAlarmsToDisk(getContext(), myAdapter);
 	}
 
 	/* *****************************  Getter and Setter Methods  ****************************** */
@@ -126,7 +132,7 @@ public class RecyclerViewFrag extends Fragment {
 	/**
 	 * Writes all alarms in myAdapter to app-specific file storage, with file name ALARM_STORE_FILE_NAME
 	 */
-	public static void writeAlarmsToFile(Context context, RecyclerViewAdapter adapter) {
+	public static void writeAlarmsToDisk(Context context, RecyclerViewAdapter adapter) {
 		try {
 			File alarmFile = new File(context.getFilesDir(), ALARM_STORE_FILE_NAME);
 			//noinspection ResultOfMethodCallIgnored
@@ -250,6 +256,7 @@ public class RecyclerViewFrag extends Fragment {
 				break;
 		}
 
+		writeAlarmsToDisk(getContext(), myAdapter);
 		myAdapter.setNextAlarmToRing();
 	}
 }

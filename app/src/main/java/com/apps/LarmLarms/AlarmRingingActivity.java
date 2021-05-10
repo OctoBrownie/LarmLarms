@@ -1,7 +1,5 @@
 package com.apps.LarmLarms;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.app.KeyguardManager;
 import android.content.Context;
 import android.os.Build;
@@ -10,6 +8,8 @@ import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.TextView;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 public class AlarmRingingActivity extends AppCompatActivity {
 	private static final String TAG = "AlarmRingingActivity";
@@ -76,6 +76,13 @@ public class AlarmRingingActivity extends AppCompatActivity {
 				Log.wtf(TAG, "The repeat type of the alarm was invalid.");
 				break;
 		}
+		RecyclerViewAdapter adapter = new RecyclerViewAdapter(this, RecyclerViewFrag.getAlarmsFromDisk(this));
+		adapter.setListableAbs(getIntent().getIntExtra(MainActivity.EXTRA_LISTABLE_INDEX, -1), currAlarm);
+		Log.i(TAG, "abs index to set: " + getIntent().getIntExtra(MainActivity.EXTRA_LISTABLE_INDEX, -1));
+
+		adapter.setNextAlarmToRing();
+		RecyclerViewFrag.writeAlarmsToDisk(this, adapter);
+
 		finish();
 	}
 }

@@ -7,7 +7,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.IBinder;
 import android.util.Log;
-import android.widget.Toast;
 
 import androidx.core.app.NotificationCompat;
 
@@ -29,6 +28,8 @@ public class NotificationService extends Service {
 		Intent outIntent = new Intent(this, AlarmRingingActivity.class);
 		outIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
 		outIntent.putExtra(MainActivity.EXTRA_LISTABLE, currAlarm.toEditString());
+		outIntent.putExtra(MainActivity.EXTRA_LISTABLE_INDEX,
+				inIntent.getIntExtra(MainActivity.EXTRA_LISTABLE_INDEX, -1));
 		PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, outIntent,
 				PendingIntent.FLAG_UPDATE_CURRENT);
 

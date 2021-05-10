@@ -227,6 +227,16 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 		return AlarmGroup.getListableAtAbsIndex(dataset, datasetLookup, abs_index);
 	}
 
+	public void setListables(ArrayList<Listable> new_list) {
+		if (new_list == null) {
+			Log.e(TAG, "New list of alarms was null.");
+			return;
+		}
+
+		dataset = new_list;
+		refreshLookup();
+	}
+
 	public ArrayList<Integer> getLookup() { return datasetLookup; }
 	public void refreshLookup() {
 		datasetLookup = AlarmGroup.generateLookup(dataset);
@@ -244,6 +254,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 			datasetLookup.add(totalNumItems);
 		dataset.add(item);
 		totalNumItems += item.getNumItems();
+		notifyItemRangeInserted(datasetLookup.get(datasetLookup.size() - 2), item.getNumItems());
 	}
 
 	/**
@@ -282,7 +293,6 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 
 	public void setNextAlarmToRing() {
 		ListableInfo next = getNextRingingAlarm(dataset);
-		Log.i(TAG, "The index of the next ringing listable is: " + next.index);
 		if (next.listable == null) {
 			Log.i(TAG, "No next listable to register to ring.");
 			return;
@@ -290,6 +300,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 
 		Intent intent = new Intent(context, NotificationService.class);
 		intent.putExtra(MainActivity.EXTRA_LISTABLE, next.listable.toEditString());
+		intent.putExtra(MainActivity.EXTRA_LISTABLE_INDEX, next.index);
 
 		AlarmManager manager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
 		PendingIntent pendingIntent = PendingIntent.getService(context, 0, intent,
@@ -311,43 +322,49 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 	private static ListableInfo getNextRingingAlarm(ArrayList<Listable> data) {
 		ListableInfo nextAlarm = new ListableInfo();
 		Listable l;
-		int listablesInNextAlarmFolder = 0;
+		int currIndex = 0, listablesInNextAlarmFolder = 0;
 
 		for (int i = 0; i < data.size(); i++) {
 			l = data.get(i);
+
+			if (!l.isActive()) {
+				currIndex += l.getNumItems();
+				continue;
+			}
+
 			if (l.isAlarm()) {
 				((Alarm) l).updateRingTime();
 
 				// check whether it could be the next listable
-				if (nextAlarm.listable == null && l.isActive()) { nextAlarm.listable = l; }
-				else if (l.isActive() &&
-						((Alarm) l).getAlarmTimeMillis() < ((Alarm) nextAlarm.listable).getAlarmTimeMillis()) {
+				if (nextAlarm.listable == null) { nextAlarm.listable = l; }
+				else if (((Alarm) l).getAlarmTimeMillis() < ((Alarm) nextAlarm.listable).getAlarmTimeMillis()) {
 					nextAlarm.listable = l;
-					nextAlarm.index += 1 + listablesInNextAlarmFolder;
+					nextAlarm.index = currIndex;
+					currIndex += 1 + listablesInNextAlarmFolder;
 					listablesInNextAlarmFolder = 0;
 				}
 				else { nextAlarm.index++; }
 			}
-			else if (l.isActive()) {
+			else {
 				ListableInfo possible = getNextRingingAlarm(((AlarmGroup) l).getListablesInside());
 				if (possible.listable == null) {
-					nextAlarm.index += l.getNumItems();
+					currIndex += l.getNumItems();
 					continue;
 				}
 				if (nextAlarm.listable == null) {
 					nextAlarm.listable = possible.listable;
 					listablesInNextAlarmFolder = l.getNumItems();
-					nextAlarm.index += possible.index;
+					nextAlarm.index = currIndex;
+					currIndex += possible.index;
 				}
 				else if (((Alarm) possible.listable).getAlarmTimeMillis() <
 						((Alarm) nextAlarm.listable).getAlarmTimeMillis()) {
 					nextAlarm.listable = possible.listable;
-					nextAlarm.index += 1 + listablesInNextAlarmFolder + possible.index;
+					currIndex += 1 + listablesInNextAlarmFolder + possible.index;
 					listablesInNextAlarmFolder = l.getNumItems();
 				}
-				else { nextAlarm.index += l.getNumItems(); }
+				else { currIndex += l.getNumItems(); }
 			}
-			else { nextAlarm.index += l.getNumItems(); }
 		}
 		return nextAlarm;
 	}
