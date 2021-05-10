@@ -155,7 +155,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 		datasetLookup = AlarmGroup.generateLookup(dataset);
 		totalNumItems = AlarmGroup.getSizeOfList(dataset);
 
-		createNotifChannel();
+		createNotificationChannel();
 		setNextAlarmToRing();
 	}
 
@@ -281,49 +281,78 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 	/* **********************************  Other Methods  ********************************* */
 
 	public void setNextAlarmToRing() {
-		Alarm next = getNextRingingAlarm(dataset);
-		if (next == null) {
-			Log.i(TAG, "No next alarm to register to ring.");
+		ListableInfo next = getNextRingingAlarm(dataset);
+		Log.i(TAG, "The index of the next ringing listable is: " + next.index);
+		if (next.listable == null) {
+			Log.i(TAG, "No next listable to register to ring.");
 			return;
 		}
 
 		Intent intent = new Intent(context, NotificationService.class);
-		intent.putExtra(MainActivity.EXTRA_LISTABLE, next.toEditString());
+		intent.putExtra(MainActivity.EXTRA_LISTABLE, next.listable.toEditString());
 
 		AlarmManager manager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
 		PendingIntent pendingIntent = PendingIntent.getService(context, 0, intent,
 				PendingIntent.FLAG_UPDATE_CURRENT);
 
 		if (manager != null && pendingIntent != null) {
-			next.updateRingTime();
-			manager.setExact(AlarmManager.RTC_WAKEUP, next.getAlarmTimeMillis(), pendingIntent);
+			((Alarm) next.listable).updateRingTime();
+			manager.setExact(AlarmManager.RTC_WAKEUP, ((Alarm) next.listable).getAlarmTimeMillis(), pendingIntent);
 			Log.i(TAG, "Sent an intent to AlarmManager.");
 		}
 	}
 
-	private static Alarm getNextRingingAlarm(ArrayList<Listable> data) {
-		Alarm nextAlarm = null;
+	/**
+	 * Searches for the next Alarm that will ring. Returns the listable and absolute index of the
+	 * listable within a ListableInfo struct.
+	 * @param data the dataset to look through
+	 * @return a ListableInfo with alarm and index filled correctly
+	 */
+	private static ListableInfo getNextRingingAlarm(ArrayList<Listable> data) {
+		ListableInfo nextAlarm = new ListableInfo();
+		Listable l;
+		int listablesInNextAlarmFolder = 0;
 
-		for (Listable l : data) {
+		for (int i = 0; i < data.size(); i++) {
+			l = data.get(i);
 			if (l.isAlarm()) {
 				((Alarm) l).updateRingTime();
 
-				// check whether it could be the next alarm
-				if (nextAlarm == null || l.isActive() || ((Alarm) l).getAlarmTimeMillis() < nextAlarm.getAlarmTimeMillis()) {
-					nextAlarm = (Alarm) l;
+				// check whether it could be the next listable
+				if (nextAlarm.listable == null && l.isActive()) { nextAlarm.listable = l; }
+				else if (l.isActive() &&
+						((Alarm) l).getAlarmTimeMillis() < ((Alarm) nextAlarm.listable).getAlarmTimeMillis()) {
+					nextAlarm.listable = l;
+					nextAlarm.index += 1 + listablesInNextAlarmFolder;
+					listablesInNextAlarmFolder = 0;
 				}
+				else { nextAlarm.index++; }
 			}
 			else if (l.isActive()) {
-				Alarm possible = getNextRingingAlarm(((AlarmGroup) l).getListablesInside());
-				if (nextAlarm == null || possible.getAlarmTimeMillis() < nextAlarm.getAlarmTimeMillis()) {
-					nextAlarm = possible;
+				ListableInfo possible = getNextRingingAlarm(((AlarmGroup) l).getListablesInside());
+				if (possible.listable == null) {
+					nextAlarm.index += l.getNumItems();
+					continue;
 				}
+				if (nextAlarm.listable == null) {
+					nextAlarm.listable = possible.listable;
+					listablesInNextAlarmFolder = l.getNumItems();
+					nextAlarm.index += possible.index;
+				}
+				else if (((Alarm) possible.listable).getAlarmTimeMillis() <
+						((Alarm) nextAlarm.listable).getAlarmTimeMillis()) {
+					nextAlarm.listable = possible.listable;
+					nextAlarm.index += 1 + listablesInNextAlarmFolder + possible.index;
+					listablesInNextAlarmFolder = l.getNumItems();
+				}
+				else { nextAlarm.index += l.getNumItems(); }
 			}
+			else { nextAlarm.index += l.getNumItems(); }
 		}
 		return nextAlarm;
 	}
 
-	private void createNotifChannel() {
+	private void createNotificationChannel() {
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 			CharSequence name = context.getString(R.string.notif_channel_name);
 			int importance = NotificationManager.IMPORTANCE_HIGH;
