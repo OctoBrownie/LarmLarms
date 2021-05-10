@@ -16,6 +16,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.Switch;
 import android.widget.TextView;
+
 import java.util.ArrayList;
 
 import androidx.recyclerview.widget.RecyclerView;
@@ -179,7 +180,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 		Listable l = AlarmGroup.getListableAtAbsIndex(dataset, datasetLookup, position);
 		if (l == null) {
 			Log.e(TAG, "Listable at absolute index " + position + " does not exist!");
-			// TODO: just let it crash, I guess?
+			return;
 		}
 
 		view.changeListable(l);
@@ -294,9 +295,9 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 				PendingIntent.FLAG_UPDATE_CURRENT);
 
 		if (manager != null && pendingIntent != null) {
-			Log.i(TAG, "Sent an intent to AlarmManager.");
 			next.updateRingTime();
 			manager.setExact(AlarmManager.RTC_WAKEUP, next.getAlarmTimeMillis(), pendingIntent);
+			Log.i(TAG, "Sent an intent to AlarmManager.");
 		}
 	}
 
@@ -330,6 +331,10 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 
 			// Register the channel with the system; can't change the importance or behaviors after this
 			NotificationManager notificationManager = context.getSystemService(NotificationManager.class);
+			if (notificationManager == null) {
+				Log.e(TAG, "System returned null for the notification manager.");
+				return;
+			}
 			notificationManager.createNotificationChannel(channel);
 		}
 

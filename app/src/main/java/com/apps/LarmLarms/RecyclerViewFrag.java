@@ -36,12 +36,10 @@ public class RecyclerViewFrag extends Fragment {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
+		// initialize adapter b/c we need to ensure data is available after initialization (didn't
+		// necessarily call onCreateView yet)
 		if (savedInstanceState == null) {
-			ArrayList<Listable> list = initData();
-
-			// initialize adapter b/c we need to ensure data is available after initialization (didn't
-			// necessarily call onCreateView yet)
-			myAdapter = new RecyclerViewAdapter(getContext(), list);
+			myAdapter = new RecyclerViewAdapter(getContext(), getAlarmsFromDisk(getContext()));
 			Log.i(TAG, "Fragment initialized successfully.");
 		}
 	}
@@ -64,7 +62,7 @@ public class RecyclerViewFrag extends Fragment {
 	@Override
 	public void onStop() {
 		super.onStop();
-		writeAlarmsToFile();
+		writeAlarmsToFile(getContext(), myAdapter);
 	}
 
 	/* *****************************  Getter and Setter Methods  ****************************** */
@@ -78,12 +76,11 @@ public class RecyclerViewFrag extends Fragment {
 	 * Initializes alarm data from file.
 	 * @return A populated ArrayList of Listables or an empty one in the case of an error
 	 */
-	private ArrayList<Listable> initData() {
-		// TODO: initialize real data
+	public static ArrayList<Listable> getAlarmsFromDisk(Context context) {
 		ArrayList<Listable> data = new ArrayList<>();
 
 		try {
-			FileInputStream is = getContext().openFileInput(ALARM_STORE_FILE_NAME);
+			FileInputStream is = context.openFileInput(ALARM_STORE_FILE_NAME);
 			InputStreamReader isr = new InputStreamReader(is, StandardCharsets.UTF_8);
 			BufferedReader bReader = new BufferedReader(isr);
 
@@ -95,12 +92,12 @@ public class RecyclerViewFrag extends Fragment {
 				if (!currLine.startsWith("\t") && currFolder != null) {
 					// removing the last '\n'
 					if (currFolder.length() != 0) currFolder.deleteCharAt(currFolder.length() - 1);
-					currListable = AlarmGroup.fromStoreString(getContext(), currFolder.toString());
+					currListable = AlarmGroup.fromStoreString(context, currFolder.toString());
 					if (currListable != null) { data.add(currListable); }
 				}
 
 				if (currLine.startsWith("a")) {
-					currListable = Alarm.fromStoreString(getContext(), currLine);
+					currListable = Alarm.fromStoreString(context, currLine);
 					if (currListable != null) { data.add(currListable); }
 				}
 				else if (currLine.startsWith("f")) {
@@ -122,45 +119,6 @@ public class RecyclerViewFrag extends Fragment {
 			return new ArrayList<>();
 		}
 
-
-		/*
-		AlarmGroup folder, insideFolder;
-		Alarm currAlarm;
-
-		currAlarm = new Alarm(getActivity(), "good morning");
-		currAlarm.setRepeatType(Alarm.REPEAT_ONCE_ABS);
-		data.add(currAlarm);
-
-		currAlarm = new Alarm(getActivity(), "eh?");
-		currAlarm.setRepeatType(Alarm.REPEAT_ONCE_REL);
-		data.add(currAlarm);
-
-		folder = new AlarmGroup(getActivity(), "あ");
-		insideFolder = new AlarmGroup(getActivity(), "学校");
-
-		currAlarm = new Alarm(getActivity(), "blah");
-		currAlarm.setRepeatType(Alarm.REPEAT_DAY_WEEKLY);
-		folder.addListable(currAlarm);
-
-		currAlarm = new Alarm(getActivity(), "hah?");
-		currAlarm.setRepeatType(Alarm.REPEAT_DATE_MONTHLY);
-		folder.addListable(currAlarm);
-		data.add(folder);
-
-		currAlarm = new Alarm(getActivity(), "wut");
-		currAlarm.setRepeatType(Alarm.REPEAT_DAY_MONTHLY);
-		insideFolder.addListable(currAlarm);
-		folder.addListable(insideFolder);
-
-		currAlarm = new Alarm(getActivity(), "?");
-		currAlarm.setRepeatType(Alarm.REPEAT_DATE_YEARLY);
-		data.add(currAlarm);
-
-		currAlarm = new Alarm(getActivity(), "??");
-		currAlarm.setRepeatType(Alarm.REPEAT_OFFSET);
-		data.add(currAlarm);
-		*/
-
 		Log.i(TAG, "Alarm list retrieved successfully.");
 		return data;
 	}
@@ -168,16 +126,16 @@ public class RecyclerViewFrag extends Fragment {
 	/**
 	 * Writes all alarms in myAdapter to app-specific file storage, with file name ALARM_STORE_FILE_NAME
 	 */
-	private void writeAlarmsToFile() {
+	public static void writeAlarmsToFile(Context context, RecyclerViewAdapter adapter) {
 		try {
-			File alarmFile = new File(getContext().getFilesDir(), ALARM_STORE_FILE_NAME);
+			File alarmFile = new File(context.getFilesDir(), ALARM_STORE_FILE_NAME);
 			//noinspection ResultOfMethodCallIgnored
 			alarmFile.createNewFile();
 
-			FileOutputStream os = getContext().openFileOutput(ALARM_STORE_FILE_NAME, Context.MODE_PRIVATE);
+			FileOutputStream os = context.openFileOutput(ALARM_STORE_FILE_NAME, Context.MODE_PRIVATE);
 
 			StringBuilder builder = new StringBuilder();
-			for (Listable l : myAdapter.getListables()) {
+			for (Listable l : adapter.getListables()) {
 				builder.append(l.toStoreString()).append('\n');
 			}
 			// delete the last '\n'
