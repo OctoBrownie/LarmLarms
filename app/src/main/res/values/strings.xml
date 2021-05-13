@@ -13,15 +13,18 @@
 
 	<!-- MainActivity repeat type display strings -->
 	<string name="main_generic_repeat_string">"Every "</string>
-	<string name="main_no_repeats_string">"none"</string>
+	<string name="main_no_repeats_string">none</string>
 
 	<string name="main_once_abs_rel_prefix">"Once on "</string>
-	<string name="main_day_weekly_prefix">"Weekly on: "</string>
+	<string name="main_weekly_prefix">"Weekly on "</string>
+	<string name="main_weekly_everyday">Every day</string>
+	<string name="main_weekly_weekdays">Weekdays</string>
+	<string name="main_weekly_weekends">Weekends</string>
 	<string name="main_monthly_suffix">" of the month"</string>
 	<string name="main_monthly_exception_text">", except for "</string>
 	<string name="main_date_yearly_prefix">"Every year on "</string>
-	<string name="main_offset_text_2">" days, "</string>
-	<string name="main_offset_text_3">" hours, "</string>
+	<string name="main_offset_text_2">" days"</string>
+	<string name="main_offset_text_3">" hours"</string>
 	<string name="main_offset_text_4">" minutes"</string>
 	<string name="main_offset_text_5">"\nNext ring date: "</string>
 
