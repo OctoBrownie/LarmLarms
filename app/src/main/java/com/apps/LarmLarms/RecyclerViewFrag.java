@@ -118,6 +118,12 @@ public class RecyclerViewFrag extends Fragment {
 				}
 				currLine = bReader.readLine();
 			}
+			if (currFolder != null) {
+				if (currFolder.length() != 0) currFolder.deleteCharAt(currFolder.length() - 1);
+				currListable = AlarmGroup.fromStoreString(context, currFolder.toString());
+				if (currListable != null) { data.add(currListable); }
+			}
+
 			is.close();
 		}
 		catch (IOException e) {

@@ -420,9 +420,6 @@ public final class AlarmGroup implements Listable, Cloneable {
 		int abs_index = src_index;
 		AlarmGroup curr_folder;
 
-		Log.i(TAG, "src_index is: " + src_index + ", and index is " + index);
-		Log.i(TAG, "data is: " + data + ", and lookup is: " + lookup);
-
 		while (index != -1) {
 			// must be the element itself in the current folder
 			if (lookup.get(index) == abs_index) { return data.get(index); }
