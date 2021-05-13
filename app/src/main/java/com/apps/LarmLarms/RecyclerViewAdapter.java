@@ -256,7 +256,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 			datasetLookup.add(totalNumItems);
 		dataset.add(item);
 		totalNumItems += item.getNumItems();
-		notifyItemRangeInserted(datasetLookup.get(datasetLookup.size() - 2), item.getNumItems());
+		notifyItemRangeInserted(datasetLookup.get(Math.max(datasetLookup.size() - 2, 0)), item.getNumItems());
 	}
 
 	/**
