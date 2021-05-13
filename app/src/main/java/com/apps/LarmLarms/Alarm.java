@@ -542,8 +542,9 @@ public final class Alarm implements Listable, Cloneable {
 	}
 
 	/**
-	 * Updates the ring time, setting it to the next time it should ring. If the alarm should only
-	 * ring once (ONCE_ABS or ONCE_REL), this method will not do anything. Tries not to rely on the
+	 * Updates the ring time, setting it to the next time it should ring. Will not update if the alarm
+	 * is not active. If the alarm is ONCE_ABS, the method will not do anything. If the alarm is ONCE_REL,
+	 * and ringTime has passed, will reset to offset after current time. Tries not to rely on the
 	 * previous value of ringTime, but will take values of guaranteed stored constants (except OFFSET,
 	 * which will use the entirety of the previous ring time).
 	 *
@@ -553,6 +554,8 @@ public final class Alarm implements Listable, Cloneable {
 	 * TODO: could perhaps do something if there are no repeat results found (when everything is unchecked?)
 	 */
 	public void updateRingTime() {
+		if (!alarmIsActive) { return; }
+
 		GregorianCalendar sysClock = new GregorianCalendar(), workingClock = new GregorianCalendar();
 		int thisMonth = sysClock.get(Calendar.MONTH), currMonth = thisMonth;
 
@@ -563,8 +566,14 @@ public final class Alarm implements Listable, Cloneable {
 		// use break to set workingClock to ringTime, return to not
 		switch(repeatType) {
 			case REPEAT_ONCE_ABS:
-			case REPEAT_ONCE_REL:
 				return;
+			case REPEAT_ONCE_REL:
+				// only changes if the alarm is overdue
+				if (ringTime.after(sysClock)) { return; }
+				workingClock.add(Calendar.DAY_OF_MONTH, offsetDays);
+				workingClock.add(Calendar.HOUR_OF_DAY, offsetHours);
+				workingClock.add(Calendar.MINUTE, offsetMins);
+				break;
 			case REPEAT_DAY_WEEKLY:
 				// trying to avoid any namespace issues
 				{

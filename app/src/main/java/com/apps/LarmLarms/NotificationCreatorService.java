@@ -10,11 +10,11 @@ import android.util.Log;
 
 import androidx.core.app.NotificationCompat;
 
-public class NotificationService extends Service {
-	private static final String TAG = "NotificationService";
+public class NotificationCreatorService extends Service {
+	private static final String TAG = "NotificationCreatorService";
 	public static final String CHANNEL_ID = "RingingAlarms";
 
-	public NotificationService() {}
+	public NotificationCreatorService() {}
 
 	@Override
 	public int onStartCommand(Intent inIntent, int flags, int startId) {

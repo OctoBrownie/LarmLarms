@@ -293,6 +293,10 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 
 	/* **********************************  Other Methods  ********************************* */
 
+	/**
+	 * Sets the next alarm to ring. Does not create a new pending intent, rather updates the current
+	 * one. Tells AlarmManager to wake up and call NotificationCreatorService.
+	 */
 	public void setNextAlarmToRing() {
 		ListableInfo next = getNextRingingAlarm(dataset);
 		if (next.listable == null) {
@@ -300,7 +304,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 			return;
 		}
 
-		Intent intent = new Intent(context, NotificationService.class);
+		Intent intent = new Intent(context, NotificationCreatorService.class);
 		intent.putExtra(MainActivity.EXTRA_LISTABLE, next.listable.toEditString());
 		intent.putExtra(MainActivity.EXTRA_LISTABLE_INDEX, next.index);
 
@@ -309,7 +313,6 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 				PendingIntent.FLAG_UPDATE_CURRENT);
 
 		if (manager != null && pendingIntent != null) {
-			((Alarm) next.listable).updateRingTime();
 			manager.setExact(AlarmManager.RTC_WAKEUP, ((Alarm) next.listable).getAlarmTimeMillis(), pendingIntent);
 			Log.i(TAG, "Sent an intent to AlarmManager.");
 		}
@@ -375,7 +378,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 			CharSequence name = context.getString(R.string.notif_channel_name);
 			int importance = NotificationManager.IMPORTANCE_HIGH;
-			NotificationChannel channel = new NotificationChannel(NotificationService.CHANNEL_ID, name, importance);
+			NotificationChannel channel = new NotificationChannel(NotificationCreatorService.CHANNEL_ID, name, importance);
 
 			// Register the channel with the system; can't change the importance or behaviors after this
 			NotificationManager notificationManager = context.getSystemService(NotificationManager.class);

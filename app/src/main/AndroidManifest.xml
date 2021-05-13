@@ -28,7 +28,7 @@
 			android:excludeFromRecents="true"/>
 
 		<service
-			android:name=".NotificationService"
+			android:name=".NotificationCreatorService"
 			android:enabled="true"
 			android:exported="false" />
 	</application>
