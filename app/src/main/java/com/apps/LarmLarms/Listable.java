@@ -10,7 +10,7 @@ interface Listable {
 	// allows calling classes to differentiate between Alarms and Folders
 	boolean isAlarm();
 
-	// getter/setter for the (user-defined) name of the listable
+	// getter/setter for (user-defined) name of the listable
 	String getListableName();
 	void setListableName(String newName);
 
@@ -20,8 +20,12 @@ interface Listable {
 	// returns a string (a time) showing when the Alarm will repeat next (blank for folders)
 	String getNextRingTime();
 
-	// returns whether the Listable is on or off
+	// methods for whether the listable is active or not
 	boolean isActive();
+	void setActive(boolean isOn);
+	void turnOn();
+	void turnOff();
+	void toggleActive();
 
 	// returns the number of items within the Listable, including the Listable itself
 	int getNumItems();

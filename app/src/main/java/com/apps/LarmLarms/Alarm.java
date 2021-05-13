@@ -115,7 +115,6 @@ public final class Alarm implements Listable, Cloneable {
 
 	@Override
 	public String getListableName() { return name; }
-
 	@Override
 	public void setListableName(String name) {
 		if (name == null || name.equals("") || name.indexOf('\t') != -1) {
@@ -178,6 +177,14 @@ public final class Alarm implements Listable, Cloneable {
 
 	@Override
 	public boolean isActive() { return alarmIsActive; }
+	@Override
+	public void turnOn() { alarmIsActive = true; }
+	@Override
+	public void turnOff() { alarmIsActive = false; }
+	@Override
+	public void toggleActive() { alarmIsActive = !alarmIsActive; }
+	@Override
+	public void setActive(boolean active) { alarmIsActive = active; }
 
 	@Override
 	public String getNextRingTime() {
@@ -370,13 +377,6 @@ public final class Alarm implements Listable, Cloneable {
 	public boolean isAlarmVibrateOn() { return alarmVibrateIsOn; }
 	public void setAlarmVibrateOn(boolean on) { alarmVibrateIsOn = on; }
 
-	// TODO: also set/unset AlarmManager alarm?
-	// the corresponding getter is replaced by isActive()
-	public void turnOn() { alarmIsActive = true; }
-	public void turnOff() { alarmIsActive = false; }
-	public void toggleActive() { alarmIsActive = !alarmIsActive; }
-	public void setIsActive(boolean active) { alarmIsActive = active; }
-
 	public boolean isAlarmSoundOn() { return alarmSoundIsOn; }
 	public void setAlarmSoundOn(boolean on) { alarmSoundIsOn = on; }
 
@@ -399,7 +399,7 @@ public final class Alarm implements Listable, Cloneable {
 
 		// TODO: what happens if one of these fails?
 		Alarm res = new Alarm(currContext, fields[0]);
-		res.setIsActive(Boolean.parseBoolean(fields[1]));		// doesn't throw anything
+		res.setActive(Boolean.parseBoolean(fields[1]));		// doesn't throw anything
 
 		// res.setRepeatType(Integer.parseInt(fields[2]));
 		String[] repeatTypeInfo = fields[2].split(" ");

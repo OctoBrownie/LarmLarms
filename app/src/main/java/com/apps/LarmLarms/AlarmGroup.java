@@ -78,6 +78,14 @@ public final class AlarmGroup implements Listable, Cloneable {
 
 	@Override
 	public boolean isActive() { return isActive; }
+	@Override
+	public void setActive(boolean isOn) { isActive = isOn; }
+	@Override
+	public void turnOn() { isActive = true; }
+	@Override
+	public void turnOff() { isActive = false; }
+	@Override
+	public void toggleActive() { isActive = !isActive; }
 
 	@Override
 	public int getNumItems() {
@@ -137,12 +145,6 @@ public final class AlarmGroup implements Listable, Cloneable {
 	}
 
 	/* ***************************  Getter and Setter Methods  ****************************** */
-
-	// the corresponding getter is replaced by isActive()
-	public void setActive(boolean isOn) { isActive = isOn; }
-	public void turnOn() { isActive = true; }
-	public void turnOff() { isActive = false; }
-	public void toggleActive() { isActive = !isActive; }
 
 	public boolean getIsOpen() { return isOpen; }
 	public void openFolder() {

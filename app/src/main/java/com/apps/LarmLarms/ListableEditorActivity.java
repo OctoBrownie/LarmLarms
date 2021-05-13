@@ -211,6 +211,7 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 		// common fields
 		EditText nameInput = findViewById(R.id.nameInput);
 		workingListable.setListableName(nameInput.getText().toString());
+		workingListable.turnOn();
 
 		// encoding into an intent
 		String editString = workingListable.toEditString();

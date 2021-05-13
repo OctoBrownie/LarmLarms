@@ -107,6 +107,8 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 					((MainActivity) context).editExistingListable(curr_listable, getLayoutPosition());
 					return;
 				case R.id.on_switch:
+					curr_listable.toggleActive();
+					adapter.setNextAlarmToRing();
 					return;
 				case R.id.folder_icon:
 					((AlarmGroup) curr_listable).toggleOpen();
