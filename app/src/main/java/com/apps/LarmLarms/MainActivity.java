@@ -1,26 +1,26 @@
 package com.apps.LarmLarms;
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.FragmentTransaction;
-
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.FragmentTransaction;
+
 public class MainActivity extends AppCompatActivity {
 	private final static String TAG = "MainActivity";
 
 	// tag for intents carrying alarms
-	public final static String EXTRA_LISTABLE = "com.apps.AlarmsButBetter.ALARM";
-	public final static String EXTRA_LISTABLE_INDEX = "com.apps.AlarmsButBetter.ALARM_INDEX";
-	public final static String EXTRA_REQ_ID = "com.apps.AlarmsButBetter.REQ_ID";
+	final static String EXTRA_LISTABLE = "com.apps.AlarmsButBetter.ALARM";
+	final static String EXTRA_LISTABLE_INDEX = "com.apps.AlarmsButBetter.ALARM_INDEX";
+	final static String EXTRA_REQ_ID = "com.apps.AlarmsButBetter.REQ_ID";
 
 	// used when calling AlarmCreator, so we know the activity results came back from an AlarmCreator
-	public final static int REQ_NEW_ALARM = 0;
-	public final static int REQ_EDIT_ALARM = 1;
-	public final static int REQ_NEW_FOLDER = 2;
-	public final static int REQ_EDIT_FOLDER = 3;
+	final static int REQ_NEW_ALARM = 0;
+	final static int REQ_EDIT_ALARM = 1;
+	final static int REQ_NEW_FOLDER = 2;
+	final static int REQ_EDIT_FOLDER = 3;
 
 	// some important views
 	private RecyclerViewFrag myRecyclerFrag;
@@ -45,10 +45,6 @@ public class MainActivity extends AppCompatActivity {
 		myRecyclerFrag = (RecyclerViewFrag) getSupportFragmentManager().findFragmentByTag("recycler_frag");
 
 		if (myRecyclerFrag.isDataEmpty()) { hideFrag(); }
-
-		if (savedInstanceState == null) {
-			// TODO: if nothing is going in here, can delete the if statement
-		}
 
 		Log.i(TAG, "Activity created successfully.");
 	}
@@ -123,19 +119,19 @@ public class MainActivity extends AppCompatActivity {
 
 	/* ************************************  Other Methods  ************************************* */
 
-	public void showFrag() {
+	private void showFrag() {
 		fragContainer.setVisibility(View.VISIBLE);
 		noAlarmsText.setVisibility(View.GONE);
 		Log.i("RecyclerViewFragment", "Recycler view shown.");
 	}
 
-	public void hideFrag() {
+	private void hideFrag() {
 		fragContainer.setVisibility(View.GONE);
 		noAlarmsText.setVisibility(View.VISIBLE);
 		Log.i("RecyclerViewFragment", "Recycler view hidden.");
 	}
 
-	public void editExistingListable(final Listable listable, final int index) {
+	void editExistingListable(final Listable listable, final int index) {
 		// start new activity (AlarmCreator)
 		Intent intent = new Intent(this, ListableEditorActivity.class);
 

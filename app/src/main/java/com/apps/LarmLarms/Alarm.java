@@ -17,13 +17,13 @@ public final class Alarm implements Listable, Cloneable {
 	private final static String TAG = "Alarm";
 
 	// repeat types
-	public static final int REPEAT_ONCE_ABS = 0;
-	public static final int REPEAT_ONCE_REL = 1;
-	public static final int REPEAT_DAY_WEEKLY = 2;
-	public static final int REPEAT_DATE_MONTHLY = 3;
-	public static final int REPEAT_DAY_MONTHLY = 4;
-	public static final int REPEAT_DATE_YEARLY = 5;
-	public static final int REPEAT_OFFSET = 6;
+	static final int REPEAT_ONCE_ABS = 0;
+	static final int REPEAT_ONCE_REL = 1;
+	static final int REPEAT_DAY_WEEKLY = 2;
+	static final int REPEAT_DATE_MONTHLY = 3;
+	static final int REPEAT_DAY_MONTHLY = 4;
+	static final int REPEAT_DATE_YEARLY = 5;
+	static final int REPEAT_OFFSET = 6;
 
 	private static final int NUM_REPEAT_TYPES = 7;
 
@@ -265,9 +265,9 @@ public final class Alarm implements Listable, Cloneable {
 
 	/* *********************  Getter and Setter Methods  *************************** */
 
-	public Calendar getAlarmTimeCalendar() { return ringTime; }
-	public long getAlarmTimeMillis() { return ringTime.getTimeInMillis(); }
-	public void setAlarmTimeMillis(long time) {
+	Calendar getAlarmTimeCalendar() { return ringTime; }
+	long getAlarmTimeMillis() { return ringTime.getTimeInMillis(); }
+	void setAlarmTimeMillis(long time) {
 		if (time < 0) {
 			Log.e(TAG, "New calendar time was negative.");
 			return;
@@ -275,8 +275,8 @@ public final class Alarm implements Listable, Cloneable {
 		ringTime.setTimeInMillis(time);
 	}
 
-	public int getRepeatType() { return repeatType; }
-	public void setRepeatType(int type) {
+	int getRepeatType() { return repeatType; }
+	void setRepeatType(int type) {
 		if (type < 0 || type >= NUM_REPEAT_TYPES) {
 			Log.e(TAG, "Repeat type is invalid.");
 			return;
@@ -285,8 +285,8 @@ public final class Alarm implements Listable, Cloneable {
 		updateRingTime();
 	}
 
-	public boolean[] getRepeatDays() { return repeatDays; }
-	public boolean getRepeatDays(int index) {
+	boolean[] getRepeatDays() { return repeatDays; }
+	boolean getRepeatDays(int index) {
 		if (index < 0 || index >= 7) {
 			// TODO: better way to handle?
 			Log.e(TAG, "Index given to setRepeatDays is invalid.");
@@ -294,15 +294,7 @@ public final class Alarm implements Listable, Cloneable {
 		}
 		return repeatDays[index];
 	}
-	public void setRepeatDays(boolean[] daysToRepeat) {
-		if (daysToRepeat.length != 7) {
-			Log.e(TAG, "New repeat days array is not of length 7.");
-			return;
-		}
-		repeatDays = daysToRepeat;
-		updateRingTime();
-	}
-	public void setRepeatDays(int index, boolean active) {
+	void setRepeatDays(int index, boolean active) {
 		if (index < 0 || index >= 7) {
 			Log.e(TAG, "Index given to setRepeatDays is invalid.");
 			return;
@@ -311,8 +303,8 @@ public final class Alarm implements Listable, Cloneable {
 		updateRingTime();
 	}
 
-	public boolean[] getRepeatMonths() { return repeatMonths; }
-	public boolean getRepeatMonths(int index) {
+	boolean[] getRepeatMonths() { return repeatMonths; }
+	boolean getRepeatMonths(int index) {
 		if (index < 0 || index >= 12) {
 			// TODO: better way to handle?
 			Log.e(TAG, "Index given to setRepeatMonths is invalid.");
@@ -320,15 +312,7 @@ public final class Alarm implements Listable, Cloneable {
 		}
 		return repeatMonths[index];
 	}
-	public void setRepeatMonths(boolean[] monthsToRepeat) {
-		if (monthsToRepeat.length != 12) {
-			Log.e(TAG, "New repeat months array is not of length 12.");
-			return;
-		}
-		repeatDays = monthsToRepeat;
-		updateRingTime();
-	}
-	public void setRepeatMonths(int index, boolean active) {
+	void setRepeatMonths(int index, boolean active) {
 		if (index < 0 || index >= 12) {
 			Log.e(TAG, "Index given to setRepeatMonths is invalid.");
 			return;
@@ -337,8 +321,8 @@ public final class Alarm implements Listable, Cloneable {
 		updateRingTime();
 	}
 
-	public int getRepeatWeek() { return repeatWeek; }
-	public void setRepeatWeek(int newWeek) {
+	int getRepeatWeek() { return repeatWeek; }
+	void setRepeatWeek(int newWeek) {
 		if (newWeek < 0 || newWeek >= 5) {
 			Log.e(TAG, "New week to repeat on is invalid.");
 			return;
@@ -347,8 +331,8 @@ public final class Alarm implements Listable, Cloneable {
 		updateRingTime();
 	}
 
-	public int getOffsetHours() { return offsetHours; }
-	public void setOffsetHours(int hours) {
+	int getOffsetHours() { return offsetHours; }
+	void setOffsetHours(int hours) {
 		if (hours < 0 || hours > 24) {
 			Log.e(TAG, "New number of hours is invalid.");
 			return;
@@ -357,8 +341,8 @@ public final class Alarm implements Listable, Cloneable {
 		updateRingTime();
 	}
 
-	public int getOffsetDays() { return offsetDays; }
-	public void setOffsetDays(int days) {
+	int getOffsetDays() { return offsetDays; }
+	void setOffsetDays(int days) {
 		if (days < 0) {
 			Log.e(TAG, "New number of days is invalid.");
 			return;
@@ -367,8 +351,8 @@ public final class Alarm implements Listable, Cloneable {
 		updateRingTime();
 	}
 
-	public int getOffsetMins() { return offsetMins; }
-	public void setOffsetMins(int min) {
+	int getOffsetMins() { return offsetMins; }
+	void setOffsetMins(int min) {
 		if (min < 0 || min > 60) {
 			Log.e(TAG, "New number of minutes is invalid.");
 			return;
@@ -376,15 +360,15 @@ public final class Alarm implements Listable, Cloneable {
 		offsetMins = min;
 	}
 
-	public boolean isAlarmVibrateOn() { return alarmVibrateIsOn; }
-	public void setAlarmVibrateOn(boolean on) { alarmVibrateIsOn = on; }
+	boolean isAlarmVibrateOn() { return alarmVibrateIsOn; }
+	void setAlarmVibrateOn(boolean on) { alarmVibrateIsOn = on; }
 
-	public boolean isAlarmSoundOn() { return alarmSoundIsOn; }
-	public void setAlarmSoundOn(boolean on) { alarmSoundIsOn = on; }
+	boolean isAlarmSoundOn() { return alarmSoundIsOn; }
+	void setAlarmSoundOn(boolean on) { alarmSoundIsOn = on; }
 
 	/* ************************************  Static Methods  ********************************** */
 
-	public static Alarm fromEditString(Context currContext, String src) {
+	static Alarm fromEditString(Context currContext, String src) {
 		if (src == null) {
 			Log.e(TAG, "Edit string is null.");
 			return null;
@@ -463,7 +447,7 @@ public final class Alarm implements Listable, Cloneable {
 	}
 
 	// edit strings and store strings are pretty much the same for Alarms
-	public static Alarm fromStoreString(Context currContext, String src) {
+	static Alarm fromStoreString(Context currContext, String src) {
 		if (src == null) {
 			Log.e(TAG, "Store string is null.");
 			return null;
@@ -578,7 +562,7 @@ public final class Alarm implements Listable, Cloneable {
 	 *
 	 * TODO: could perhaps do something if there are no repeat results found (when everything is unchecked?)
 	 */
-	public void updateRingTime() {
+	void updateRingTime() {
 		if (!alarmIsActive) { return; }
 
 		GregorianCalendar sysClock = new GregorianCalendar(), workingClock = new GregorianCalendar();

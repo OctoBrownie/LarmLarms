@@ -13,9 +13,8 @@ import androidx.core.app.NotificationCompat;
 public class NotificationCreatorService extends Service {
 	private static final String TAG = "NotificationCreator";
 
-	public static final String CHANNEL_ID = "RingingAlarms";
-	public static final String NOTIFICATION_TAG = "LARMLARM_ALARM";
-	public static final int NOTIFICATION_ID = 210;
+	static final String CHANNEL_ID = "RingingAlarms";
+	static final int NOTIFICATION_ID = 210;
 
 	public NotificationCreatorService() {}
 

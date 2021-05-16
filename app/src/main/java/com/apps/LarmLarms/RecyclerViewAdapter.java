@@ -61,7 +61,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 		private final Switch switch_view;
 		private final ImageView image_view;
 
-		public RecyclerViewHolder (View card_view, Context curr_context) {
+		RecyclerViewHolder (View card_view, Context curr_context) {
 			super(card_view);
 
 			// saving the current context, needed in onClick callback
@@ -87,15 +87,15 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 
 		/* **************************  Getter and Setter Methods  ***************************** */
 
-		public View getView() { return view; }
+		View getCardView() { return view; }
 
-		public TextView getTitleText() { return title_view; }
-		public TextView getRepeatText() { return repeat_view; }
-		public TextView getTimeText() { return time_view; }
-		public Switch getOnSwitch() { return switch_view; }
-		public ImageView getImageView() { return image_view; }
+		TextView getTitleText() { return title_view; }
+		TextView getRepeatText() { return repeat_view; }
+		TextView getTimeText() { return time_view; }
+		Switch getOnSwitch() { return switch_view; }
+		ImageView getImageView() { return image_view; }
 
-		public void setAdapter(RecyclerViewAdapter newAdapter) { adapter = newAdapter; }
+		void setAdapter(RecyclerViewAdapter newAdapter) { adapter = newAdapter; }
 
 		/* ***********************************  Callbacks  ********************************* */
 
@@ -151,7 +151,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 		}
 	}
 
-	public RecyclerViewAdapter (Context current_context, ArrayList<Listable> data) {
+	RecyclerViewAdapter (Context current_context, ArrayList<Listable> data) {
 		context = current_context;
 		dataset = data;
 		datasetLookup = AlarmGroup.generateLookup(dataset);
@@ -191,11 +191,11 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 		int indents = AlarmGroup.getNumIndents(dataset, datasetLookup, position);
 		float dp = indents * context.getResources().getDimension(R.dimen.marginIncrement);
 		ViewGroup.MarginLayoutParams params =
-				new ViewGroup.MarginLayoutParams(view.getView().getLayoutParams());
+				new ViewGroup.MarginLayoutParams(view.getCardView().getLayoutParams());
 		// context.getResources().getDisplayMetrics().density gets the density scalar
 		params.setMarginStart((int) (context.getResources().getDisplayMetrics().density * dp));
-		view.getView().setLayoutParams(params);
-		view.getView().requestLayout();
+		view.getCardView().setLayoutParams(params);
+		view.getCardView().requestLayout();
 
 		// TODO: if this layout passing ends up being a bottleneck, can cache the current indent of
 		// a ViewHolder to reduce the # of layout passes necessary (if same indent)
@@ -206,22 +206,9 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 
 	/* ******************************  Getter and Setter Methods  ***************************** */
 
-	public ArrayList<Listable> getListables() { return dataset; }
+	ArrayList<Listable> getListables() { return dataset; }
 
-	/**
-	 * Gets the Listable at the specified relative index. Returns null if not found.
-	 * @param rel_index the index of the Listable required
-	 * @return Listable at rel_index or null if not found.
-	 */
-	public Listable getListable(int rel_index) {
-		if (rel_index < 0 || rel_index >= dataset.size()) {
-			Log.e(TAG, "Could not retrieve listable. Invalid index.");
-			return null;
-		}
-		return dataset.get(rel_index);
-	}
-
-	public Listable getListableAbs(int abs_index) {
+	Listable getListableAbs(int abs_index) {
 		if (abs_index < 0 || abs_index >= dataset.size()) {
 			Log.e(TAG, "Could not retrieve listable. Invalid index.");
 			return null;
@@ -229,7 +216,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 		return AlarmGroup.getListableAtAbsIndex(dataset, datasetLookup, abs_index);
 	}
 
-	public void setListables(ArrayList<Listable> new_list) {
+	void setListables(ArrayList<Listable> new_list) {
 		if (new_list == null) {
 			Log.e(TAG, "New list of alarms was null.");
 			return;
@@ -239,8 +226,8 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 		refreshLookup();
 	}
 
-	public ArrayList<Integer> getLookup() { return datasetLookup; }
-	public void refreshLookup() {
+	ArrayList<Integer> getLookup() { return datasetLookup; }
+	void refreshLookup() {
 		datasetLookup = AlarmGroup.generateLookup(dataset);
 		totalNumItems = AlarmGroup.getSizeOfList(dataset);
 		notifyDataSetChanged();
@@ -251,7 +238,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 	 * except totalNumItems doesn't include the parent (since there isn't one).
 	 * @param item the Listable to add to the list
 	 */
-	public void addListable(Listable item) {
+	void addListable(Listable item) {
 		if (totalNumItems != 0)
 			datasetLookup.add(totalNumItems);
 		dataset.add(item);
@@ -264,7 +251,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 	 * @param abs_index the absolute index of the Listable to set
 	 * @param item the new Listable to set it to
 	 */
-	public void setListableAbs(int abs_index, Listable item) {
+	void setListableAbs(int abs_index, Listable item) {
 		// TODO: could combine both searches into one and reimplement as another search method?
 		int index = AlarmGroup.getListableIndexAtAbsIndex(dataset, datasetLookup, abs_index);
 		if (index == -1) { return; }
@@ -280,7 +267,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 	 * @param rel_index the relative index of the Listable to set
 	 * @param item the new Listable to set it to
 	 */
-	public void setListableRel(int rel_index, Listable item) {
+	private void setListableRel(int rel_index, Listable item) {
 		int indexChange = item.getNumItems() - dataset.get(rel_index).getNumItems();
 		dataset.set(rel_index, item);
 
@@ -297,7 +284,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 	 * Sets the next alarm to ring. Does not create a new pending intent, rather updates the current
 	 * one. Tells AlarmManager to wake up and call NotificationCreatorService.
 	 */
-	public void setNextAlarmToRing() {
+	void setNextAlarmToRing() {
 		ListableInfo next = getNextRingingAlarm(dataset);
 		if (next.listable == null) {
 			Log.i(TAG, "No next listable to register to ring.");

@@ -71,18 +71,14 @@ public class RecyclerViewFrag extends Fragment {
 		writeAlarmsToDisk(getContext(), myAdapter);
 	}
 
-	/* *****************************  Getter and Setter Methods  ****************************** */
-
-	public RecyclerViewAdapter getAdapter() { return myAdapter; }
-
 	/* ************************************  Other Methods  ********************************** */
-	public boolean isDataEmpty() { return myAdapter.getItemCount() == 0; }
+	boolean isDataEmpty() { return myAdapter.getItemCount() == 0; }
 
 	/**
 	 * Initializes alarm data from file.
 	 * @return A populated ArrayList of Listables or an empty one in the case of an error
 	 */
-	public static ArrayList<Listable> getAlarmsFromDisk(Context context) {
+	static ArrayList<Listable> getAlarmsFromDisk(Context context) {
 		ArrayList<Listable> data = new ArrayList<>();
 
 		try {
@@ -138,7 +134,7 @@ public class RecyclerViewFrag extends Fragment {
 	/**
 	 * Writes all alarms in myAdapter to app-specific file storage, with file name ALARM_STORE_FILE_NAME
 	 */
-	public static void writeAlarmsToDisk(Context context, RecyclerViewAdapter adapter) {
+	static void writeAlarmsToDisk(Context context, RecyclerViewAdapter adapter) {
 		try {
 			File alarmFile = new File(context.getFilesDir(), ALARM_STORE_FILE_NAME);
 			//noinspection ResultOfMethodCallIgnored
@@ -165,13 +161,13 @@ public class RecyclerViewFrag extends Fragment {
 	 * Refreshes alarms to coordinate with updated settings (mostly for time formatting). The data
 	 * doesn't change at all, we just need to rebind the ViewHolders to get the correct date string.
 	 */
-	public void refreshAlarms() { myAdapter.notifyDataSetChanged(); }
+	void refreshAlarms() { myAdapter.notifyDataSetChanged(); }
 
 	/**
 	 * Adds a Listable to the end of the dataset.
 	 * @param item the new Listable to add
 	 */
-	public void addListable(Listable item) {
+	private void addListable(Listable item) {
 		if (item == null) {
 			Log.e(TAG, "Cannot add Listable. Invalid Listable.");
 			return;
@@ -188,7 +184,7 @@ public class RecyclerViewFrag extends Fragment {
 	 * @param index the index to replace with the Alarm
 	 * @param item the Listable to replace it with
 	 */
-	public void replaceListable(int index, Listable item) {
+	private void replaceListable(int index, Listable item) {
 		if (index < 0 || index >= myAdapter.getItemCount()) {
 			Log.e(TAG, "Cannot replace Listable. Invalid index received.");
 			return;
@@ -208,7 +204,7 @@ public class RecyclerViewFrag extends Fragment {
 	 * @param requestCode the code that we requested with
 	 * @param data the intent containing the returned Listable
 	 */
-	public void onListableCreatorResult(int requestCode, Intent data) {
+	void onListableCreatorResult(int requestCode, Intent data) {
 		Listable new_listable;
 		int index = data.getIntExtra(MainActivity.EXTRA_LISTABLE_INDEX, -1);
 
@@ -233,7 +229,7 @@ public class RecyclerViewFrag extends Fragment {
 				Log.i(TAG, "Existing alarm edited successfully.");
 				break;
 			case MainActivity.REQ_NEW_FOLDER:
-				new_listable = AlarmGroup.fromEditString(getContext(), data.getStringExtra(MainActivity.EXTRA_LISTABLE));
+				new_listable = AlarmGroup.fromEditString(data.getStringExtra(MainActivity.EXTRA_LISTABLE));
 				if (new_listable == null) {
 					Log.e(TAG, "ListableEditor returned with an invalid folder edit string.");
 					return;
@@ -244,7 +240,7 @@ public class RecyclerViewFrag extends Fragment {
 				break;
 			case MainActivity.REQ_EDIT_FOLDER:
 				// will not delete children Listables of original AlarmGroup
-				new_listable = AlarmGroup.fromEditString(getContext(), data.getStringExtra(MainActivity.EXTRA_LISTABLE));
+				new_listable = AlarmGroup.fromEditString(data.getStringExtra(MainActivity.EXTRA_LISTABLE));
 				if (new_listable == null) {
 					Log.e(TAG, "ListableEditor returned with an invalid folder edit string.");
 					return;

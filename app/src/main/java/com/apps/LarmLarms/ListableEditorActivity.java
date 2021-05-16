@@ -316,7 +316,7 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 	private void newFolderFieldSetup() {
 		isEditingAlarm = false;
 		isEditing = false;
-		workingListable = new AlarmGroup(this);
+		workingListable = new AlarmGroup();
 	}
 	private void editFolderFieldSetup() {
 		Intent callingIntent = getIntent();
@@ -325,8 +325,7 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 		isEditing = true;
 		listableIndex = callingIntent.getIntExtra(MainActivity.EXTRA_LISTABLE_INDEX, -1);
 
-		workingListable = AlarmGroup.fromEditString(this,
-				callingIntent.getStringExtra(MainActivity.EXTRA_LISTABLE));
+		workingListable = AlarmGroup.fromEditString(callingIntent.getStringExtra(MainActivity.EXTRA_LISTABLE));
 		if (workingListable == null) {
 			Log.e(TAG, "fromEditString returned null.");
 			exitActivity();

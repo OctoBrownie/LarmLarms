@@ -7,8 +7,10 @@
 	<!-- display strings: notifications, prefixed by "notif" -->
 	<string name="notif_channel_name">Alarms</string>
 	<string name="notif_ticker">Ringing alarm</string>
-	<string name="notif_dismiss_button">Dismiss</string>
-	<string name="notif_snooze_button">Snooze</string>
+	<!-- TODO: delete this later, when it's not being used -->
+	<string name="notif_exit">exit</string>
+	<string name="notif_dismiss_button">dismiss</string>
+	<string name="notif_snooze_button">snooze</string>
 
 	<!-- display strings: MainActivity, prefixed by "main" -->
 	<string name="main_no_alarms_text">There\'s nothing here!</string>
