@@ -3,7 +3,8 @@
 	package="com.apps.LarmLarms">
 	
 	<uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
-	
+	<uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+
 	<!-- TODO: change icon -->
 	<application
 		android:allowBackup="true"

@@ -379,6 +379,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 			CharSequence name = context.getString(R.string.notif_channel_name);
 			int importance = NotificationManager.IMPORTANCE_HIGH;
 			NotificationChannel channel = new NotificationChannel(NotificationCreatorService.CHANNEL_ID, name, importance);
+			channel.setShowBadge(false);
 
 			// Register the channel with the system; can't change the importance or behaviors after this
 			NotificationManager notificationManager = context.getSystemService(NotificationManager.class);

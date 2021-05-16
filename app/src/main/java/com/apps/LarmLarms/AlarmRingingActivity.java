@@ -2,6 +2,7 @@ package com.apps.LarmLarms;
 
 import android.app.KeyguardManager;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
@@ -76,9 +77,12 @@ public class AlarmRingingActivity extends AppCompatActivity {
 				Log.wtf(TAG, "The repeat type of the alarm was invalid.");
 				break;
 		}
+
+		Intent serviceIntent = new Intent(this, NotificationCreatorService.class);
+		stopService(serviceIntent);
+
 		RecyclerViewAdapter adapter = new RecyclerViewAdapter(this, RecyclerViewFrag.getAlarmsFromDisk(this));
 		adapter.setListableAbs(getIntent().getIntExtra(MainActivity.EXTRA_LISTABLE_INDEX, -1), currAlarm);
-		Log.i(TAG, "abs index to set: " + getIntent().getIntExtra(MainActivity.EXTRA_LISTABLE_INDEX, -1));
 
 		adapter.setNextAlarmToRing();
 		RecyclerViewFrag.writeAlarmsToDisk(this, adapter);
