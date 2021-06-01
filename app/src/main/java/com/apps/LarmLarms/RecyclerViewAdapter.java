@@ -30,6 +30,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 	private static final String TAG = "RecyclerViewAdapter";
 
 	// TODO: make this a root AlarmGroup instead, so we don't have to implement twice?
+	// TODO: perhaps abstract this data to a ContentProvider?
 	/**
 	 * Stores all the Listables (Alarms and AlarmGroups) present
 	 */
@@ -367,15 +368,15 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 			int importance = NotificationManager.IMPORTANCE_HIGH;
 			NotificationChannel channel = new NotificationChannel(NotificationCreatorService.CHANNEL_ID, name, importance);
 			channel.setShowBadge(false);
+			channel.setBypassDnd(true);
 
 			// Register the channel with the system; can't change the importance or behaviors after this
 			NotificationManager notificationManager = context.getSystemService(NotificationManager.class);
 			if (notificationManager == null) {
-				Log.e(TAG, "System returned null for the notification manager.");
+				Log.e(TAG, "System returned a null notification manager.");
 				return;
 			}
 			notificationManager.createNotificationChannel(channel);
 		}
-
 	}
 }

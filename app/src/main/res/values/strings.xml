@@ -46,6 +46,8 @@
 	<string name="alarm_editor_repeat_type_text">"Type of alarm: "</string>
 	<string name="alarm_editor_name_hint">Alarm name</string>
 	<string name="folder_editor_name_hint">Folder name</string>
+	<string name="alarm_editor_sound_button">Set Ringtone</string>
+	<string name="alarm_editor_silent">Silent</string>
 
 	<string name="alarm_editor_offset_days_text">"Days: "</string>
 	<string name="alarm_editor_offset_hours_text">"Hours: "</string>

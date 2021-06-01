@@ -145,7 +145,6 @@ public class MainActivity extends AppCompatActivity {
 
 		intent.putExtra(EXTRA_REQ_ID, req);
 
-		//noinspection deprecation
 		startActivityForResult(intent, req);
 	}
 }

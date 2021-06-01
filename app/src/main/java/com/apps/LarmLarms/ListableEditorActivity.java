@@ -2,6 +2,8 @@ package com.apps.LarmLarms;
 
 import android.content.Intent;
 import android.content.res.TypedArray;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.format.DateFormat;
 import android.util.Log;
@@ -28,6 +30,8 @@ import androidx.appcompat.app.AppCompatActivity;
 
 public class ListableEditorActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
 	private final static String TAG = "ListableEditor";
+
+	private final static int REQ_GET_RINGTONE = 0;
 
 	private Listable workingListable;
 
@@ -251,6 +255,26 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 		changeColors((TextView) view, newState);
 	}
 
+	/**
+	 * Callback for the set ringtone button. Opens another app to choose the audio file.
+	 * TODO: Perhaps make my own sound picker...?
+	 */
+	public void chooseSound(View view) {
+		Intent getSound = new Intent(RingtoneManager.ACTION_RINGTONE_PICKER);
+		startActivityForResult(getSound, REQ_GET_RINGTONE);
+	}
+
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		if (requestCode == REQ_GET_RINGTONE && resultCode == RESULT_OK) {
+			Uri uri = data.getParcelableExtra(RingtoneManager.EXTRA_RINGTONE_PICKED_URI);
+			((Alarm) workingListable).setRingtone(uri);
+
+			TextView t = findViewById(R.id.soundText);
+			t.setText(((Alarm) workingListable).getRingtoneName());
+		}
+	}
+
 	/* *************************  Callbacks from OnItemSelectedListener  ************************ */
 
 	/**
@@ -349,24 +373,29 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 		int currRepeatType = ((Alarm) workingListable).getRepeatType();
 		GregorianCalendar sysClock = new GregorianCalendar();
 		int timePickerHour, timePickerMin;
+		Alarm alarm = (Alarm) workingListable;
 
 		if (isEditing) {
 			// REQ_EDIT_ALARM
-			timePickerHour = ((Alarm) workingListable).getAlarmTimeCalendar().get(Calendar.HOUR_OF_DAY);
-			timePickerMin = ((Alarm) workingListable).getAlarmTimeCalendar().get(Calendar.MINUTE);
+			timePickerHour = alarm.getAlarmTimeCalendar().get(Calendar.HOUR_OF_DAY);
+			timePickerMin = alarm.getAlarmTimeCalendar().get(Calendar.MINUTE);
 
 			if (currRepeatType == Alarm.REPEAT_ONCE_REL || currRepeatType == Alarm.REPEAT_OFFSET) {
+				// TODO: use String.format() to format these numbers?
 				EditText curr;
 
 				curr = findViewById(R.id.alarmOffsetDaysInput);
-				curr.setText(Integer.toString(((Alarm) workingListable).getOffsetDays()));
+				curr.setText(Integer.toString(alarm.getOffsetDays()));
 
 				curr = findViewById(R.id.alarmOffsetHoursInput);
-				curr.setText(Integer.toString(((Alarm) workingListable).getOffsetHours()));
+				curr.setText(Integer.toString(alarm.getOffsetHours()));
 
 				curr = findViewById(R.id.alarmOffsetMinsInput);
-				curr.setText(Integer.toString(((Alarm) workingListable).getOffsetMins()));
+				curr.setText(Integer.toString(alarm.getOffsetMins()));
 			}
+
+			TextView alarmSoundLabel = findViewById(R.id.soundText);
+			alarmSoundLabel.setText(alarm.getRingtoneName());
 		}
 		else {
 			// REQ_NEW_ALARM
@@ -401,7 +430,7 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 				R.array.alarm_week_strings, android.R.layout.simple_spinner_dropdown_item);
 		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		spinner.setAdapter(adapter);
-		spinner.setSelection(((Alarm) workingListable).getRepeatWeek());
+		spinner.setSelection(alarm.getRepeatWeek());
 		spinner.setOnItemSelectedListener(this);
 
 		// DAY_MONTHLY day of week spinner
@@ -410,18 +439,18 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 				R.array.alarm_day_strings_long, android.R.layout.simple_spinner_dropdown_item);
 		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		spinner.setAdapter(adapter);
-		spinner.setSelection(((Alarm) workingListable).getAlarmTimeCalendar().get(Calendar.DAY_OF_WEEK) - 1);
+		spinner.setSelection(alarm.getAlarmTimeCalendar().get(Calendar.DAY_OF_WEEK) - 1);
 		spinner.setOnItemSelectedListener(this);
 
 		// DATE_MONTHLY day of month number picker
 		NumberPicker dateOfMonth = alarmDateOfMonthLayout.findViewById(R.id.alarmDateOfMonthInput);
 		dateOfMonth.setMinValue(1);
 		dateOfMonth.setMaxValue(31);
-		dateOfMonth.setValue(((Alarm) workingListable).getAlarmTimeCalendar().get(Calendar.DAY_OF_MONTH));
+		dateOfMonth.setValue(alarm.getAlarmTimeCalendar().get(Calendar.DAY_OF_MONTH));
 
 		// change colors of days and months layouts
-		changeColors(alarmDaysLayout, ((Alarm) workingListable).getRepeatDays());
-		changeColors(alarmMonthsLayout, ((Alarm) workingListable).getRepeatMonths());
+		changeColors(alarmDaysLayout, alarm.getRepeatDays());
+		changeColors(alarmMonthsLayout, alarm.getRepeatMonths());
 	}
 	private void folderUISetup() { setContentView(R.layout.activity_folder_editor); }
 

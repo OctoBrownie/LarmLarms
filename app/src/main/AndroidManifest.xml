@@ -20,6 +20,8 @@
 				<category android:name="android.intent.category.LAUNCHER" />
 			</intent-filter>
 		</activity>
+
+		<!-- TODO: add intent filter for ACTION_SET_ALARM? -->
 		<activity android:name=".ListableEditorActivity" />
 		<activity
 			android:name=".AlarmRingingActivity"

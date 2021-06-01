@@ -2,6 +2,9 @@ package com.apps.LarmLarms;
 
 import android.content.Context;
 import android.content.res.Resources;
+import android.media.Ringtone;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.util.Log;
 
 import java.text.DateFormat;
@@ -75,7 +78,7 @@ public final class Alarm implements Listable, Cloneable {
 	private boolean alarmVibrateIsOn;
 
 	private boolean alarmSoundIsOn;
-	// TODO: implement alarm ringtone
+	private Uri ringtoneUri;
 
 	/* **********************************  Constructors  ********************************* */
 
@@ -102,6 +105,9 @@ public final class Alarm implements Listable, Cloneable {
 		alarmVibrateIsOn = true;
 		alarmSoundIsOn = true;
 		alarmIsActive = true;
+
+		// TODO: use getActualDefaultRingtoneUri(context, type) or getDefaultRingtoneUri(type)?
+		ringtoneUri = RingtoneManager.getActualDefaultRingtoneUri(context, RingtoneManager.TYPE_ALARM);
 	}
 
 	public Alarm(Context currContext, String title) {
@@ -132,6 +138,7 @@ public final class Alarm implements Listable, Cloneable {
 		StringBuilder repeatString = new StringBuilder();
 		String date = DateFormat.getDateInstance(DateFormat.SHORT).format(ringTime.getTime());
 
+		// TODO: perhaps don't use a StringBuilder to make these strings and use String.format instead?
 		switch (repeatType) {
 			case REPEAT_ONCE_ABS:
 			case REPEAT_ONCE_REL:
@@ -360,11 +367,26 @@ public final class Alarm implements Listable, Cloneable {
 		offsetMins = min;
 	}
 
-	boolean isAlarmVibrateOn() { return alarmVibrateIsOn; }
-	void setAlarmVibrateOn(boolean on) { alarmVibrateIsOn = on; }
+	boolean isVibrateOn() { return alarmVibrateIsOn; }
+	void setVibrateOn(boolean on) { alarmVibrateIsOn = on; }
 
-	boolean isAlarmSoundOn() { return alarmSoundIsOn; }
-	void setAlarmSoundOn(boolean on) { alarmSoundIsOn = on; }
+	boolean isSoundOn() { return alarmSoundIsOn; }
+	void setSoundOn(boolean on) { alarmSoundIsOn = on; }
+
+	Uri getRingtone() { return ringtoneUri; }
+	void setRingtone(Uri newRingtone) {
+		if (newRingtone == null) {
+			Log.i(TAG, "The new ringtone is silent.");
+		}
+		ringtoneUri = newRingtone;
+	}
+	String getRingtoneName() {
+		Ringtone r = RingtoneManager.getRingtone(context, ringtoneUri);
+		if (r == null) {
+			return context.getResources().getString(R.string.alarm_editor_silent);
+		}
+		return r.getTitle(context);
+	}
 
 	/* ************************************  Static Methods  ********************************** */
 

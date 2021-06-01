@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- NOTE: designtime only x/y positions: layout_editor_absoluteX or layout_editor_absoluteY -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-	xmlns:app="http://schemas.android.com/apk/res-auto"
-	xmlns:tools="http://schemas.android.com/tools"
 	android:layout_width="match_parent"
 	android:layout_height="match_parent"
 	android:orientation="vertical"
@@ -41,6 +39,7 @@
 	Id names correspond to the field it fills in its Alarm object (the name field is filled
 	by EditText with id alarmNameInput)
 	Ids for fields are always appended with "Input" and their corresponding labels with "Text"
+	TODO: remove unnecessary ids, like for most labels
 	-->
 	<ScrollView
 		android:layout_width="match_parent"
@@ -429,6 +428,29 @@
 					android:inputType="textAutoComplete"
 					android:imeOptions="actionDone"
 					android:hint="@string/alarm_editor_name_hint" />
+			</LinearLayout>
+
+			<!-- ringtone layout -->
+			<LinearLayout
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:orientation="horizontal">
+				<android.widget.Button
+					style="@style/ButtonStyle.Borderless"
+
+					android:id="@+id/soundButton"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:onClick="chooseSound"
+					android:text="@string/alarm_editor_sound_button" />
+				<TextView
+					style="@style/EditorLabelStyle"
+
+					android:id="@+id/soundText"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:labelFor="@+id/alarmNameInput"
+					android:text="@null" />
 			</LinearLayout>
 		</LinearLayout>
 	</ScrollView>
