@@ -7,6 +7,10 @@ import android.media.RingtoneManager;
 import android.net.Uri;
 import android.util.Log;
 
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import java.text.DateFormat;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
@@ -29,12 +33,6 @@ public final class Alarm implements Listable, Cloneable {
 	static final int REPEAT_OFFSET = 6;
 
 	private static final int NUM_REPEAT_TYPES = 7;
-
-	/**
-	 * Number of fields in a single edit string (don't have one for store strings because they're the
-	 * same as edit strings + an extra field).
-	*/
-	private static final int NUM_EDIT_FIELDS = 4;
 
 	/* ***********************************  Instance Fields  ******************************** */
 
@@ -117,10 +115,10 @@ public final class Alarm implements Listable, Cloneable {
 
 	/* ****************************  Methods from Listable  ******************************* */
 
-	@Override
+	@Override @Contract(pure = true)
 	public boolean isAlarm() { return true; }
 
-	@Override
+	@Override @Contract(pure = true)
 	public String getListableName() { return name; }
 	@Override
 	public void setListableName(String name) {
@@ -131,7 +129,7 @@ public final class Alarm implements Listable, Cloneable {
 		this.name = name;
 	}
 
-	@Override
+	@NotNull @Override
 	public String getRepeatString() {
 		Resources res = context.getResources();
 
@@ -184,7 +182,7 @@ public final class Alarm implements Listable, Cloneable {
 		return repeatString.toString();
 	}
 
-	@Override
+	@Override @Contract(pure = true)
 	public boolean isActive() { return alarmIsActive; }
 	@Override
 	public void turnOn() { alarmIsActive = true; }
@@ -195,13 +193,13 @@ public final class Alarm implements Listable, Cloneable {
 	@Override
 	public void setActive(boolean active) { alarmIsActive = active; }
 
-	@Override
+	@NotNull @Override
 	public String getNextRingTime() {
 		// TODO: uppercase/lowercase as a setting? I like lowercase.
 		return DateFormat.getTimeInstance(DateFormat.SHORT).format(ringTime.getTime()).toLowerCase();
 	}
 
-	@Override
+	@Override @Contract(pure = true)
 	public int getNumItems() { return 1; }
 
 	@Override
@@ -217,7 +215,7 @@ public final class Alarm implements Listable, Cloneable {
 		return that;
 	}
 
-	@Override
+	@NotNull @Override
 	public String toEditString() {
 		StringBuilder alarmString = new StringBuilder(name).append('\t');
 		alarmString.append(Boolean.toString(alarmIsActive)).append('\t');
@@ -267,11 +265,12 @@ public final class Alarm implements Listable, Cloneable {
 		return alarmString.toString();
 	}
 
-	@Override
+	@NotNull @Override
 	public String toStoreString() { return "a\t" + toEditString(); }
 
 	/* *********************  Getter and Setter Methods  *************************** */
 
+	@Contract(pure = true)
 	Calendar getAlarmTimeCalendar() { return ringTime; }
 	long getAlarmTimeMillis() { return ringTime.getTimeInMillis(); }
 	void setAlarmTimeMillis(long time) {
@@ -282,6 +281,7 @@ public final class Alarm implements Listable, Cloneable {
 		ringTime.setTimeInMillis(time);
 	}
 
+	@Contract(pure = true)
 	int getRepeatType() { return repeatType; }
 	void setRepeatType(int type) {
 		if (type < 0 || type >= NUM_REPEAT_TYPES) {
@@ -292,6 +292,7 @@ public final class Alarm implements Listable, Cloneable {
 		updateRingTime();
 	}
 
+	@Contract(pure = true)
 	boolean[] getRepeatDays() { return repeatDays; }
 	boolean getRepeatDays(int index) {
 		if (index < 0 || index >= 7) {
@@ -310,6 +311,7 @@ public final class Alarm implements Listable, Cloneable {
 		updateRingTime();
 	}
 
+	@Contract(pure = true)
 	boolean[] getRepeatMonths() { return repeatMonths; }
 	boolean getRepeatMonths(int index) {
 		if (index < 0 || index >= 12) {
@@ -328,6 +330,7 @@ public final class Alarm implements Listable, Cloneable {
 		updateRingTime();
 	}
 
+	@Contract(pure = true)
 	int getRepeatWeek() { return repeatWeek; }
 	void setRepeatWeek(int newWeek) {
 		if (newWeek < 0 || newWeek >= 5) {
@@ -338,6 +341,7 @@ public final class Alarm implements Listable, Cloneable {
 		updateRingTime();
 	}
 
+	@Contract(pure = true)
 	int getOffsetHours() { return offsetHours; }
 	void setOffsetHours(int hours) {
 		if (hours < 0 || hours > 24) {
@@ -348,6 +352,7 @@ public final class Alarm implements Listable, Cloneable {
 		updateRingTime();
 	}
 
+	@Contract(pure = true)
 	int getOffsetDays() { return offsetDays; }
 	void setOffsetDays(int days) {
 		if (days < 0) {
@@ -358,6 +363,7 @@ public final class Alarm implements Listable, Cloneable {
 		updateRingTime();
 	}
 
+	@Contract(pure = true)
 	int getOffsetMins() { return offsetMins; }
 	void setOffsetMins(int min) {
 		if (min < 0 || min > 60) {
@@ -367,12 +373,15 @@ public final class Alarm implements Listable, Cloneable {
 		offsetMins = min;
 	}
 
+	@Contract(pure = true)
 	boolean isVibrateOn() { return alarmVibrateIsOn; }
 	void setVibrateOn(boolean on) { alarmVibrateIsOn = on; }
 
+	@Contract(pure = true)
 	boolean isSoundOn() { return alarmSoundIsOn; }
 	void setSoundOn(boolean on) { alarmSoundIsOn = on; }
 
+	@Contract(pure = true)
 	Uri getRingtone() { return ringtoneUri; }
 	void setRingtone(Uri newRingtone) {
 		if (newRingtone == null) {
@@ -390,6 +399,21 @@ public final class Alarm implements Listable, Cloneable {
 
 	/* ************************************  Static Methods  ********************************** */
 
+	/**
+	 * Returns a new Alarm based on the given string. Current edit string format (separated by tabs):
+	 * [alarm title]	[active]	[repeat info]	[next ring time]	[ringtone uri]
+	 * <br>
+	 * Repeat type info format (separated by spaces): [type] [type-specific data]
+	 * ONCE_ABS and DATE_YEARLY: none
+	 * ONCE_REL and OFFSET: [days] [hours] [mins]
+	 * DAY_WEEKLY: [true/false for every day]
+	 * DAY_MONTHLY: [week to repeat] [true/false for every month]
+	 * DATE_MONTHLY: [true/false for every month]
+	 * @param currContext current operating context
+	 * @param src edit string to build an Alarm out of
+	 * @return new Alarm based on the edit string
+	 */
+	@Nullable
 	static Alarm fromEditString(Context currContext, String src) {
 		if (src == null) {
 			Log.e(TAG, "Edit string is null.");
@@ -400,18 +424,15 @@ public final class Alarm implements Listable, Cloneable {
 		}
 
 		String[] fields = src.split("\t");
-		if (fields.length != NUM_EDIT_FIELDS) {
+		if (fields.length != 4) {
 			Log.e(TAG, "Edit string didn't have a correct number of fields.");
 			return null;
 		}
 
-		// TODO: what happens if one of these fails?
 		Alarm res = new Alarm(currContext, fields[0]);
 		res.setActive(Boolean.parseBoolean(fields[1]));		// doesn't throw anything
 
-		// res.setRepeatType(Integer.parseInt(fields[2]));
 		String[] repeatTypeInfo = fields[2].split(" ");
-		res.setRepeatType(Integer.parseInt(repeatTypeInfo[0]));		// throws NumberFormatException
 		switch(res.repeatType) {
 			case REPEAT_DAY_WEEKLY:
 				if (repeatTypeInfo.length != 8) {
@@ -447,9 +468,15 @@ public final class Alarm implements Listable, Cloneable {
 					Log.e(TAG, "Edit string had the wrong number of repeat type fields.");
 					return null;
 				}
-				res.offsetDays = Integer.parseInt(repeatTypeInfo[1]);
-				res.offsetHours = Integer.parseInt(repeatTypeInfo[2]);
-				res.offsetMins = Integer.parseInt(repeatTypeInfo[3]);
+				try {
+					res.offsetDays = Integer.parseInt(repeatTypeInfo[1]);
+					res.offsetHours = Integer.parseInt(repeatTypeInfo[2]);
+					res.offsetMins = Integer.parseInt(repeatTypeInfo[3]);
+				}
+				catch (NumberFormatException e) {
+					Log.e(TAG, "Edit string has incorrectly formatted offsets.");
+					return null;
+				}
 				break;
 			case REPEAT_ONCE_ABS:
 			case REPEAT_DATE_YEARLY:
@@ -463,12 +490,28 @@ public final class Alarm implements Listable, Cloneable {
 				return null;
 		}
 
+		try {
+			res.setRepeatType(Integer.parseInt(repeatTypeInfo[0]));
+		}
+		catch (NumberFormatException e) {
+			Log.e(TAG, "Edit string has an incorrectly formatted repeat type.");
+			return null;
+		}
+
 		res.ringTime.setTimeInMillis(Long.parseLong(fields[3]));
 
 		return res;
 	}
 
-	// edit strings and store strings are pretty much the same for Alarms
+	/**
+	 * Creates a new alarm from a stored Alarm string. Edit strings and store strings are pretty
+	 * much the same for Alarms. Current store string format (separated by tabs):
+	 * a	[edit string]
+	 *
+	 * @param currContext current operating context
+	 * @param src store string to build an Alarm out of
+	 * @return A new Alarm based on the store string
+	 */
 	static Alarm fromStoreString(Context currContext, String src) {
 		if (src == null) {
 			Log.e(TAG, "Store string is null.");
