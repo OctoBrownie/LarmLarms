@@ -43,6 +43,7 @@ public class NotificationCreatorService extends Service implements MediaPlayer.O
 
 		RemoteViews notifView = new RemoteViews(getPackageName(), R.layout.alarm_notification);
 		notifView.setTextViewText(R.id.alarm_name_text, currAlarm.getListableName());
+		// TODO: add new pending intents that actually reflect these buttons' purposes
 		notifView.setOnClickPendingIntent(R.id.snooze_button, fullScreenPendingIntent);
 		notifView.setOnClickPendingIntent(R.id.dismiss_button, fullScreenPendingIntent);
 
@@ -52,9 +53,8 @@ public class NotificationCreatorService extends Service implements MediaPlayer.O
 				.setContentText(currAlarm.getListableName())
 				.setTicker(getResources().getString(R.string.notif_ticker))
 				.setPriority(NotificationCompat.PRIORITY_MAX)
-				.setDefaults(Notification.DEFAULT_ALL)
-				// .setDefaults(Notification.DEFAULT_VIBRATE | Notification.DEFAULT_LIGHTS)
-				// .setSound(null)
+				.setDefaults(Notification.DEFAULT_VIBRATE | Notification.DEFAULT_LIGHTS)
+				.setSound(null)
 				.setContentIntent(fullScreenPendingIntent)
 				.setAutoCancel(true)
 				.setCategory(NotificationCompat.CATEGORY_ALARM)
@@ -64,12 +64,7 @@ public class NotificationCreatorService extends Service implements MediaPlayer.O
 				.setCustomContentView(notifView)
 				.setCustomBigContentView(notifView)
 				.setCustomHeadsUpContentView(notifView);
-		// use default vibration pattern
 
-		/*
-		ringtone = RingtoneManager.getRingtone(this, currAlarm.getRingtoneUri());
-		ringtone.play();
-		*/
 		mediaPlayer = new MediaPlayer();
 		mediaPlayer.setAudioAttributes(new AudioAttributes.Builder()
 				.setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
@@ -99,17 +94,13 @@ public class NotificationCreatorService extends Service implements MediaPlayer.O
 	public IBinder onBind(Intent intent) { return null; }
 
 	@Override
-	public void onDestroy() {
-		mediaPlayer.release();
-	}
+	public void onDestroy() { mediaPlayer.release(); }
 
 	/**
 	 * Callback for MediaPlayer.OnPreparedListener.
 	 */
 	@Override
-	public void onPrepared(MediaPlayer mp) {
-		mediaPlayer.start();
-	}
+	public void onPrepared(MediaPlayer mp) { mediaPlayer.start(); }
 
 	/**
 	 * Callback for MediaPlayer.OnErrorListener.
