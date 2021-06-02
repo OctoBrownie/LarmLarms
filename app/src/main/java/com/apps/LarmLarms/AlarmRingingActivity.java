@@ -60,7 +60,6 @@ public class AlarmRingingActivity extends AppCompatActivity {
 
 	// TODO: when this ISN'T the onclick for a button, remove the param
 	public void exitActivity(View v) {
-		// TODO: actually change the alarms in the stored data???
 		switch (currAlarm.getRepeatType()) {
 			case Alarm.REPEAT_ONCE_ABS:
 			case Alarm.REPEAT_ONCE_REL:

@@ -261,6 +261,9 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 	 */
 	public void chooseSound(View view) {
 		Intent getSound = new Intent(RingtoneManager.ACTION_RINGTONE_PICKER);
+		getSound.putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI,
+				((Alarm) workingListable).getRingtoneUri());
+		getSound.putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, RingtoneManager.TYPE_ALARM);
 		startActivityForResult(getSound, REQ_GET_RINGTONE);
 	}
 
@@ -268,7 +271,7 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		if (requestCode == REQ_GET_RINGTONE && resultCode == RESULT_OK) {
 			Uri uri = data.getParcelableExtra(RingtoneManager.EXTRA_RINGTONE_PICKED_URI);
-			((Alarm) workingListable).setRingtone(uri);
+			((Alarm) workingListable).setRingtoneUri(uri);
 
 			TextView t = findViewById(R.id.soundText);
 			t.setText(((Alarm) workingListable).getRingtoneName());
@@ -393,9 +396,6 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 				curr = findViewById(R.id.alarmOffsetMinsInput);
 				curr.setText(Integer.toString(alarm.getOffsetMins()));
 			}
-
-			TextView alarmSoundLabel = findViewById(R.id.soundText);
-			alarmSoundLabel.setText(alarm.getRingtoneName());
 		}
 		else {
 			// REQ_NEW_ALARM
@@ -451,6 +451,10 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 		// change colors of days and months layouts
 		changeColors(alarmDaysLayout, alarm.getRepeatDays());
 		changeColors(alarmMonthsLayout, alarm.getRepeatMonths());
+
+		// set name of the current ringtone
+		TextView alarmSoundLabel = findViewById(R.id.soundText);
+		alarmSoundLabel.setText(alarm.getRingtoneName());
 	}
 	private void folderUISetup() { setContentView(R.layout.activity_folder_editor); }
 

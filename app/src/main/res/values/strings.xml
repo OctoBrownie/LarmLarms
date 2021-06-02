@@ -9,8 +9,9 @@
 	<string name="notif_ticker">Ringing alarm</string>
 	<!-- TODO: delete this later, when it's not being used -->
 	<string name="notif_exit">exit</string>
-	<string name="notif_dismiss_button">dismiss</string>
-	<string name="notif_snooze_button">snooze</string>
+	<string name="notif_dismiss">dismiss</string>
+	<string name="notif_snooze">snooze</string>
+	<string name="notif_service_description">Starts alarms and plays alarm ringtones.</string>
 
 	<!-- display strings: MainActivity, prefixed by "main" -->
 	<string name="main_no_alarms_text">There\'s nothing here!</string>

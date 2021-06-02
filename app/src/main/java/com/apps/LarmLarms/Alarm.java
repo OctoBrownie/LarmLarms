@@ -259,6 +259,11 @@ public final class Alarm implements Listable, Cloneable {
 		}
 
 		alarmString.append('\t').append(Long.toString(ringTime.getTimeInMillis()));
+		alarmString.append('\t');
+		if (ringtoneUri == null)
+			alarmString.append(context.getResources().getString(R.string.alarm_editor_silent));
+		else
+			alarmString.append(ringtoneUri.toString());
 
 		// TODO: encode the other parts in here (don't forget to add a tab char before it)
 
@@ -382,8 +387,8 @@ public final class Alarm implements Listable, Cloneable {
 	void setSoundOn(boolean on) { alarmSoundIsOn = on; }
 
 	@Contract(pure = true)
-	Uri getRingtone() { return ringtoneUri; }
-	void setRingtone(Uri newRingtone) {
+	Uri getRingtoneUri() { return ringtoneUri; }
+	void setRingtoneUri(Uri newRingtone) {
 		if (newRingtone == null) {
 			Log.i(TAG, "The new ringtone is silent.");
 		}
@@ -409,12 +414,12 @@ public final class Alarm implements Listable, Cloneable {
 	 * DAY_WEEKLY: [true/false for every day]
 	 * DAY_MONTHLY: [week to repeat] [true/false for every month]
 	 * DATE_MONTHLY: [true/false for every month]
-	 * @param currContext current operating context
+	 * @param context current operating context
 	 * @param src edit string to build an Alarm out of
 	 * @return new Alarm based on the edit string
 	 */
 	@Nullable
-	static Alarm fromEditString(Context currContext, String src) {
+	static Alarm fromEditString(Context context, String src) {
 		if (src == null) {
 			Log.e(TAG, "Edit string is null.");
 			return null;
@@ -424,12 +429,12 @@ public final class Alarm implements Listable, Cloneable {
 		}
 
 		String[] fields = src.split("\t");
-		if (fields.length != 4) {
+		if (fields.length != 5) {
 			Log.e(TAG, "Edit string didn't have a correct number of fields.");
 			return null;
 		}
 
-		Alarm res = new Alarm(currContext, fields[0]);
+		Alarm res = new Alarm(context, fields[0]);
 		res.setActive(Boolean.parseBoolean(fields[1]));		// doesn't throw anything
 
 		String[] repeatTypeInfo = fields[2].split(" ");
@@ -499,6 +504,10 @@ public final class Alarm implements Listable, Cloneable {
 		}
 
 		res.ringTime.setTimeInMillis(Long.parseLong(fields[3]));
+		if (context.getResources().getString(R.string.alarm_editor_silent).equals(fields[4]))
+			res.setRingtoneUri(null);
+		else
+			res.setRingtoneUri(Uri.parse(fields[4]));
 
 		return res;
 	}

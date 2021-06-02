@@ -4,17 +4,23 @@ import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
+import android.media.AudioAttributes;
+import android.media.MediaPlayer;
 import android.os.IBinder;
+import android.os.PowerManager;
 import android.util.Log;
 import android.widget.RemoteViews;
 
 import androidx.core.app.NotificationCompat;
 
-public class NotificationCreatorService extends Service {
+public class NotificationCreatorService extends Service implements MediaPlayer.OnPreparedListener,
+		MediaPlayer.OnErrorListener {
 	private static final String TAG = "NotificationCreator";
 
 	static final String CHANNEL_ID = "RingingAlarms";
 	static final int NOTIFICATION_ID = 210;
+
+	private MediaPlayer mediaPlayer;
 
 	public NotificationCreatorService() {}
 
@@ -47,6 +53,8 @@ public class NotificationCreatorService extends Service {
 				.setTicker(getResources().getString(R.string.notif_ticker))
 				.setPriority(NotificationCompat.PRIORITY_MAX)
 				.setDefaults(Notification.DEFAULT_ALL)
+				// .setDefaults(Notification.DEFAULT_VIBRATE | Notification.DEFAULT_LIGHTS)
+				// .setSound(null)
 				.setContentIntent(fullScreenPendingIntent)
 				.setAutoCancel(true)
 				.setCategory(NotificationCompat.CATEGORY_ALARM)
@@ -54,7 +62,34 @@ public class NotificationCreatorService extends Service {
 				.setFullScreenIntent(fullScreenPendingIntent, true)
 				.setStyle(new NotificationCompat.DecoratedCustomViewStyle())
 				.setCustomContentView(notifView)
-				.setCustomBigContentView(notifView);
+				.setCustomBigContentView(notifView)
+				.setCustomHeadsUpContentView(notifView);
+		// use default vibration pattern
+
+		/*
+		ringtone = RingtoneManager.getRingtone(this, currAlarm.getRingtoneUri());
+		ringtone.play();
+		*/
+		mediaPlayer = new MediaPlayer();
+		mediaPlayer.setAudioAttributes(new AudioAttributes.Builder()
+				.setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+				.setUsage(AudioAttributes.USAGE_ALARM)
+				.build()
+		);
+		mediaPlayer.setLooping(true);
+		mediaPlayer.setWakeMode(this, PowerManager.PARTIAL_WAKE_LOCK);
+
+		try {
+			mediaPlayer.setDataSource(this, currAlarm.getRingtoneUri());
+			mediaPlayer.setOnPreparedListener(this);
+			mediaPlayer.prepareAsync();
+		}
+		catch (Exception e) {
+			Log.e(TAG, "Something went wrong while initializing the alarm sounds.");
+			stopSelf();
+			return Service.START_NOT_STICKY;
+		}
+
 		startForeground(NOTIFICATION_ID, builder.build());
 
 		return Service.START_NOT_STICKY;
@@ -62,4 +97,29 @@ public class NotificationCreatorService extends Service {
 
 	@Override
 	public IBinder onBind(Intent intent) { return null; }
+
+	@Override
+	public void onDestroy() {
+		mediaPlayer.release();
+	}
+
+	/**
+	 * Callback for MediaPlayer.OnPreparedListener.
+	 */
+	@Override
+	public void onPrepared(MediaPlayer mp) {
+		mediaPlayer.start();
+	}
+
+	/**
+	 * Callback for MediaPlayer.OnErrorListener.
+	 */
+	@Override
+	public boolean onError(MediaPlayer mp, int what, int extra) {
+		Log.e(TAG, "Something went wrong while playing the alarm sounds.");
+		mediaPlayer.release();
+		stopSelf();
+		return false;
+	}
+
 }

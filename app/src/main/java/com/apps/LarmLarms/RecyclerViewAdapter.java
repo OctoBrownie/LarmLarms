@@ -25,7 +25,6 @@ import androidx.recyclerview.widget.RecyclerView;
  * Gets data for the RecyclerView holding alarms. It takes a list of Listables (Alarms and AlarmGroups)
  * as its dataset.
  */
-
 public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.RecyclerViewHolder> {
 	private static final String TAG = "RecyclerViewAdapter";
 
@@ -369,6 +368,9 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 			NotificationChannel channel = new NotificationChannel(NotificationCreatorService.CHANNEL_ID, name, importance);
 			channel.setShowBadge(false);
 			channel.setBypassDnd(true);
+			channel.enableLights(true);
+			channel.enableVibration(true);
+			channel.setSound(null, null);
 
 			// Register the channel with the system; can't change the importance or behaviors after this
 			NotificationManager notificationManager = context.getSystemService(NotificationManager.class);
