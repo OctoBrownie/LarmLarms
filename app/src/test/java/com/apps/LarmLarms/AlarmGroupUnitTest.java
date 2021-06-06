@@ -4,7 +4,7 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 /**
  * Unit tests for the AlarmGroup class.
@@ -13,11 +13,11 @@ public class AlarmGroupUnitTest {
 	/* **********************************  Searching Tests  ********************************* */
 	@Test
 	public void findOuterIndexTest() throws Exception {
-		AlarmGroup folder = new AlarmGroup(null, "test");
+		AlarmGroup folder = new AlarmGroup("test");
 		folder.addListable(new Alarm(null, "alarm 1"));
 		folder.addListable(new Alarm(null, "alarm 2"));
 
-		AlarmGroup innerFolder = new AlarmGroup(null, "inner");
+		AlarmGroup innerFolder = new AlarmGroup("inner");
 		innerFolder.addListable(new Alarm(null, "alarm 3"));
 
 		folder.addListable(innerFolder);
@@ -34,11 +34,11 @@ public class AlarmGroupUnitTest {
 
 	@Test
 	public void absIndexTest () throws Exception {
-		AlarmGroup folder = new AlarmGroup(null, "test");
+		AlarmGroup folder = new AlarmGroup("test");
 		folder.addListable(new Alarm(null, "alarm 1"));
 		folder.addListable(new Alarm(null, "alarm 2"));
 
-		AlarmGroup innerFolder = new AlarmGroup(null, "inner");
+		AlarmGroup innerFolder = new AlarmGroup("inner");
 		innerFolder.addListable(new Alarm(null, "alarm 3"));
 
 		folder.addListable(innerFolder);
@@ -65,15 +65,15 @@ public class AlarmGroupUnitTest {
 		// within folder, the lookup should be [0, 1, 2, 9] and length 11 (includes itself)
 		// within innerFolder, the lookup should be [0, 1, 2] and length 7 (includes itself)
 		// within doubleInner, the lookup should be [0, 1, 2] and length 4 (includes itself)
-		AlarmGroup folder = new AlarmGroup(null, "test");
+		AlarmGroup folder = new AlarmGroup("test");
 		folder.addListable(new Alarm(null, "alarm 1"));
 		folder.addListable(new Alarm(null, "alarm 2"));
 
-		AlarmGroup innerFolder = new AlarmGroup(null, "inner");
+		AlarmGroup innerFolder = new AlarmGroup("inner");
 		innerFolder.addListable(new Alarm(null, "alarm 3"));
 		innerFolder.addListable(new Alarm(null, "alarm 4"));
 
-		AlarmGroup doubleInner = new AlarmGroup(null, "double double");
+		AlarmGroup doubleInner = new AlarmGroup("double double");
 		doubleInner.addListable(new Alarm(null, "alarm 5"));
 		doubleInner.addListable(new Alarm(null, "alarm 6"));
 		doubleInner.addListable(new Alarm(null, "alarm 7"));
@@ -110,15 +110,15 @@ public class AlarmGroupUnitTest {
 
 	@Test
 	public void getRelIndexTest () throws Exception {
-		AlarmGroup folder = new AlarmGroup(null, "test");
+		AlarmGroup folder = new AlarmGroup("test");
 		folder.addListable(new Alarm(null, "alarm 1"));		// index 0
 		folder.addListable(new Alarm(null, "alarm 2"));		// index 1
 
-		AlarmGroup innerFolder = new AlarmGroup(null, "inner");	// index 2
+		AlarmGroup innerFolder = new AlarmGroup("inner");	// index 2
 		innerFolder.addListable(new Alarm(null, "alarm 3"));		// index 3
 		innerFolder.addListable(new Alarm(null, "alarm 4"));		// index 4
 
-		AlarmGroup doubleInner = new AlarmGroup(null, "double double");	// index 5
+		AlarmGroup doubleInner = new AlarmGroup("double double");	// index 5
 		doubleInner.addListable(new Alarm(null, "alarm 5"));				// index 6
 		doubleInner.addListable(new Alarm(null, "alarm 6"));				// index 7
 		doubleInner.addListable(new Alarm(null, "alarm 7"));				// index 8
@@ -155,11 +155,11 @@ public class AlarmGroupUnitTest {
 
 	@Test
 	public void getParentTest () throws Exception {
-		AlarmGroup folder = new AlarmGroup(null, "test");
+		AlarmGroup folder = new AlarmGroup("test");
 		folder.addListable(new Alarm(null, "alarm 1"));	// index 0
 		folder.addListable(new Alarm(null, "alarm 2"));	// index 1
 
-		AlarmGroup innerFolder = new AlarmGroup(null, "inner");	// index 2
+		AlarmGroup innerFolder = new AlarmGroup("inner");	// index 2
 		innerFolder.addListable(new Alarm(null, "alarm 3"));		// index 3
 
 		folder.addListable(innerFolder);
@@ -189,7 +189,7 @@ public class AlarmGroupUnitTest {
 	 */
 	@Test
 	public void alarmGroupAddTest() throws Exception {
-		AlarmGroup folder = new AlarmGroup(null, "test");
+		AlarmGroup folder = new AlarmGroup("test");
 		ArrayList<Integer> lookupAnswer = new ArrayList<>();
 		assertEquals(true, lookupAnswer.equals(folder.getListablesLookup()));
 
@@ -203,7 +203,7 @@ public class AlarmGroupUnitTest {
 		lookupAnswer.add(1);
 		assertEquals(true, lookupAnswer.equals(folder.getListablesLookup()));
 
-		AlarmGroup innerFolder = new AlarmGroup(null, "inner");
+		AlarmGroup innerFolder = new AlarmGroup("inner");
 		innerFolder.addListable(new Alarm(null, "alarm 3"));
 		folder.addListable(innerFolder);
 		assertEquals(5, folder.getNumItems());
@@ -224,11 +224,11 @@ public class AlarmGroupUnitTest {
 	// tests whether the lookup tables are correct
 	@Test
 	public void alarmGroupLookupTest() throws Exception {
-		AlarmGroup folder = new AlarmGroup(null, "test");
+		AlarmGroup folder = new AlarmGroup("test");
 		folder.addListable(new Alarm(null, "alarm 1"));
 		folder.addListable(new Alarm(null, "alarm 2"));
 
-		AlarmGroup innerFolder = new AlarmGroup(null, "inner");
+		AlarmGroup innerFolder = new AlarmGroup("inner");
 		innerFolder.addListable(new Alarm(null, "alarm 3"));
 
 		folder.addListable(innerFolder);
@@ -275,11 +275,11 @@ public class AlarmGroupUnitTest {
 	 */
 	@Test
 	public void storeStringTest() throws Exception {
-		AlarmGroup folder = new AlarmGroup(null, "test");		// index 0
+		AlarmGroup folder = new AlarmGroup("test");		// index 0
 		folder.addListable(new Alarm(null, "alarm 1"));		// index 1
 		folder.addListable(new Alarm(null, "alarm 2"));		// index 2
 
-		AlarmGroup innerFolder = new AlarmGroup(null, "inner");		// index 3
+		AlarmGroup innerFolder = new AlarmGroup("inner");		// index 3
 		innerFolder.addListable(new Alarm(null, "alarm 3"));			// index 4
 
 		folder.addListable(innerFolder);
@@ -333,11 +333,11 @@ public class AlarmGroupUnitTest {
 	 */
 	@Test
 	public void editStringTest() throws Exception {
-		AlarmGroup folder = new AlarmGroup(null, "test");		// index 0
+		AlarmGroup folder = new AlarmGroup("test");		// index 0
 		folder.addListable(new Alarm(null, "alarm 1"));		// index 1
 		folder.addListable(new Alarm(null, "alarm 2"));		// index 2
 
-		AlarmGroup innerFolder = new AlarmGroup(null, "inner");		// index 3
+		AlarmGroup innerFolder = new AlarmGroup("inner");		// index 3
 		innerFolder.addListable(new Alarm(null, "alarm 3"));			// index 4
 
 		folder.addListable(innerFolder);
@@ -347,7 +347,7 @@ public class AlarmGroupUnitTest {
 		String s = folder.toEditString();
 		System.out.println("Testing string: \n" + s);
 
-		AlarmGroup tester = AlarmGroup.fromEditString(null, s);
+		AlarmGroup tester = AlarmGroup.fromEditString(s);
 		if (tester == null) { throw new AssertionError(); }
 
 		assertEquals("test", tester.getListableName());
