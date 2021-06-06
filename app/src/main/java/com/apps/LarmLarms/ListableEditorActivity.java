@@ -339,6 +339,8 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 			Log.e(TAG, "fromEditString returned null.");
 			exitActivity();
 		}
+
+		((Alarm)workingListable).unsnooze();
 	}
 	private void newFolderFieldSetup() {
 		isEditingAlarm = false;

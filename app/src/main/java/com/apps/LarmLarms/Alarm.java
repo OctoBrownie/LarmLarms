@@ -17,6 +17,7 @@ import java.util.GregorianCalendar;
 
 /**
  * Class managing alarms and their behavior.
+ * TODO: implement Parcelable so edit strings become unnecessary?
  */
 public final class Alarm implements Listable, Cloneable {
 	/* ************************************  Static Fields  *********************************** */
@@ -73,6 +74,9 @@ public final class Alarm implements Listable, Cloneable {
 	 */
 	private boolean alarmIsActive;
 
+	private boolean alarmSnoozed;		// TODO: save snoozed state to disk
+	private int numSnoozes;
+
 	private boolean alarmVibrateIsOn;
 
 	private boolean alarmSoundIsOn;
@@ -104,6 +108,9 @@ public final class Alarm implements Listable, Cloneable {
 		alarmSoundIsOn = true;
 		alarmIsActive = true;
 
+		alarmSnoozed = false;
+		numSnoozes = 0;
+
 		// TODO: use getActualDefaultRingtoneUri(context, type) or getDefaultRingtoneUri(type)?
 		ringtoneUri = RingtoneManager.getActualDefaultRingtoneUri(context, RingtoneManager.TYPE_ALARM);
 	}
@@ -132,6 +139,8 @@ public final class Alarm implements Listable, Cloneable {
 	@NotNull @Override
 	public String getRepeatString() {
 		Resources res = context.getResources();
+
+		// TODO: show that the alarm is snoozed if it is
 
 		StringBuilder repeatString = new StringBuilder();
 		String date = DateFormat.getDateInstance(DateFormat.SHORT).format(ringTime.getTime());
@@ -215,10 +224,14 @@ public final class Alarm implements Listable, Cloneable {
 		return that;
 	}
 
+	/**
+	 * Creates an edit string from the current alarm. For edit string format, see fromEditString(Context,
+	 * String)
+	 */
 	@NotNull @Override
 	public String toEditString() {
 		StringBuilder alarmString = new StringBuilder(name).append('\t');
-		alarmString.append(Boolean.toString(alarmIsActive)).append('\t');
+		alarmString.append(alarmIsActive).append('\t');
 
 		switch (repeatType) {
 			case REPEAT_ONCE_ABS:
@@ -258,13 +271,15 @@ public final class Alarm implements Listable, Cloneable {
 				return "";
 		}
 
-		alarmString.append('\t').append(Long.toString(ringTime.getTimeInMillis()));
+		alarmString.append('\t').append(ringTime.getTimeInMillis());
 		alarmString.append('\t');
 		if (ringtoneUri == null)
 			alarmString.append(context.getResources().getString(R.string.alarm_editor_silent));
 		else
 			alarmString.append(ringtoneUri.toString());
 
+		alarmString.append('\t').append(alarmSnoozed);
+		alarmString.append('\t').append(numSnoozes);
 		// TODO: encode the other parts in here (don't forget to add a tab char before it)
 
 		return alarmString.toString();
@@ -379,6 +394,9 @@ public final class Alarm implements Listable, Cloneable {
 	}
 
 	@Contract(pure = true)
+	boolean getIsSnoozed() { return alarmSnoozed; }
+
+	@Contract(pure = true)
 	boolean isVibrateOn() { return alarmVibrateIsOn; }
 	void setVibrateOn(boolean on) { alarmVibrateIsOn = on; }
 
@@ -406,7 +424,8 @@ public final class Alarm implements Listable, Cloneable {
 
 	/**
 	 * Returns a new Alarm based on the given string. Current edit string format (separated by tabs):
-	 * [alarm title]	[active]	[repeat info]	[next ring time]	[ringtone uri]
+	 * [alarm title]	[active]	[repeat info]	[next ring time]	[ringtone uri]	[is snoozed]
+	 * [number of snoozes]
 	 * <br>
 	 * Repeat type info format (separated by spaces): [type] [type-specific data]
 	 * ONCE_ABS and DATE_YEARLY: none
@@ -429,7 +448,7 @@ public final class Alarm implements Listable, Cloneable {
 		}
 
 		String[] fields = src.split("\t");
-		if (fields.length != 5) {
+		if (fields.length != 7) {
 			Log.e(TAG, "Edit string didn't have a correct number of fields.");
 			return null;
 		}
@@ -508,6 +527,16 @@ public final class Alarm implements Listable, Cloneable {
 			res.setRingtoneUri(null);
 		else
 			res.setRingtoneUri(Uri.parse(fields[4]));
+
+		res.alarmSnoozed = Boolean.parseBoolean(fields[5]);
+
+		try {
+			res.numSnoozes = Integer.parseInt(fields[6]);
+		}
+		catch (NumberFormatException e) {
+			Log.e(TAG, "Edit string has an incorrectly formatted number of snoozes.");
+			return null;
+		}
 
 		return res;
 	}
@@ -637,7 +666,7 @@ public final class Alarm implements Listable, Cloneable {
 	 * TODO: could perhaps do something if there are no repeat results found (when everything is unchecked?)
 	 */
 	void updateRingTime() {
-		if (!alarmIsActive) { return; }
+		if (!alarmIsActive || alarmSnoozed) { return; }
 
 		GregorianCalendar sysClock = new GregorianCalendar(), workingClock = new GregorianCalendar();
 		int thisMonth = sysClock.get(Calendar.MONTH), currMonth = thisMonth;
@@ -723,5 +752,22 @@ public final class Alarm implements Listable, Cloneable {
 				return;
 		}
 		ringTime.setTimeInMillis(workingClock.getTimeInMillis());
+	}
+
+	void snooze() {
+		alarmSnoozed = true;
+		numSnoozes++;
+		// TODO: change number of minutes to snooze?
+		ringTime.add(Calendar.MINUTE, 5);
+	}
+
+	/**
+	 * Unsnoozes the alarm if it was snoozed previously. Won't do anything if it wasn't snoozed.
+	 */
+	void unsnooze() {
+		alarmSnoozed = false;
+
+		ringTime.add(Calendar.MINUTE, -5*numSnoozes);
+		numSnoozes = 0;
 	}
 }

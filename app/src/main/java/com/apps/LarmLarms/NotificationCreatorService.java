@@ -13,6 +13,10 @@ import android.widget.RemoteViews;
 
 import androidx.core.app.NotificationCompat;
 
+/**
+ * A very short-term service that runs in the background of a currently ringing alarm. Manages the
+ * notification for the alarm and playing the alarm sounds.
+ */
 public class NotificationCreatorService extends Service implements MediaPlayer.OnPreparedListener,
 		MediaPlayer.OnErrorListener {
 	private static final String TAG = "NotificationCreator";

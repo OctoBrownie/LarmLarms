@@ -33,7 +33,7 @@ public class AlarmRingingActivity extends AppCompatActivity {
 			setTurnScreenOn(true);
 			KeyguardManager key = (KeyguardManager) getSystemService(Context.KEYGUARD_SERVICE);
 			if (key == null) {
-				exitActivity(null);
+				exitActivity();
 				return;
 			}
 			key.requestDismissKeyguard(this, null);
@@ -41,7 +41,7 @@ public class AlarmRingingActivity extends AppCompatActivity {
 		else if (Build.VERSION.SDK_INT == Build.VERSION_CODES.O) {
 			KeyguardManager key = (KeyguardManager) getSystemService(Context.KEYGUARD_SERVICE);
 			if (key == null) {
-				exitActivity(null);
+				exitActivity();
 				return;
 			}
 			key.requestDismissKeyguard(this, null);
@@ -58,8 +58,24 @@ public class AlarmRingingActivity extends AppCompatActivity {
 		name.setText(currAlarm.getListableName());
 	}
 
-	// TODO: when this ISN'T the onclick for a button, remove the param
-	public void exitActivity(View v) {
+	/**
+	 * Snoozes the current alarm and exits teh activity. Also serves as the onclick for the snooze
+	 * button.
+	 * @param v unused view
+	 */
+	public void snooze(View v) {
+		currAlarm.snooze();
+		exitActivity();
+	}
+
+	/**
+	 * Dismisses the current alarm, sets the next alarm to ring, and exits the activity. Also serves
+	 * as the onclick for the dismiss button.
+	 * @param v unused view
+	 */
+	public void dismiss(View v) {
+		currAlarm.unsnooze();
+
 		switch (currAlarm.getRepeatType()) {
 			case Alarm.REPEAT_ONCE_ABS:
 			case Alarm.REPEAT_ONCE_REL:
@@ -73,10 +89,17 @@ public class AlarmRingingActivity extends AppCompatActivity {
 				currAlarm.updateRingTime();
 				break;
 			default:
-				Log.wtf(TAG, "The repeat type of the alarm was invalid.");
+				Log.wtf(TAG, "The repeat type of the alarm was invalid...?");
 				break;
 		}
 
+		exitActivity();
+	}
+
+	/**
+	 * Sets the next alarm to ring and exits.
+	 */
+	public void exitActivity() {
 		Intent serviceIntent = new Intent(this, NotificationCreatorService.class);
 		stopService(serviceIntent);
 

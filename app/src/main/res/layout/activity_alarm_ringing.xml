@@ -3,7 +3,7 @@
 	xmlns:tools="http://schemas.android.com/tools"
 
 	android:layout_width="match_parent"
-	android:layout_height="wrap_content"
+	android:layout_height="match_parent"
 	android:layout_gravity="center_vertical|center_horizontal"
 	android:orientation="vertical"
 	android:theme="@style/Theme.AppTheme"
@@ -23,9 +23,19 @@
 	<android.widget.Button
 		style="@style/ButtonStyle.Borderless"
 
-		android:id="@+id/saveButton"
+		android:id="@+id/snoozeButton"
+		android:layout_width="match_parent"
+		android:layout_height="0dp"
+		android:layout_weight="5"
+		android:onClick="snooze"
+		android:text="@string/notif_snooze" />
+	<android.widget.Button
+		style="@style/ButtonStyle.Borderless"
+
+		android:id="@+id/dismissButton"
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
-		android:onClick="exitActivity"
-		android:text="@string/notif_exit" />
+		android:layout_weight="1"
+		android:onClick="dismiss"
+		android:text="@string/notif_dismiss" />
 </LinearLayout>

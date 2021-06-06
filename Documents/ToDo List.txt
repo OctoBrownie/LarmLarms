@@ -1,4 +1,6 @@
-ToDo list for general features that need to be implemented or bugs to be fixed
+To do list for general features that need to be implemented or bugs to be fixed
+
+CURRENTLY WORKING ON: 
 
 make the UI look prettier
 	some repeat strings don't really look nice (ex: offset strings are always plural + sound funky, exception months are shorthand and don't have an "and" between the last two exception months)
