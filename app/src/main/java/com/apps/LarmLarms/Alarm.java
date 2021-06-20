@@ -12,6 +12,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.text.DateFormat;
+import java.text.DateFormatSymbols;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 
@@ -55,10 +56,16 @@ public final class Alarm implements Listable, Cloneable {
 	 */
 	private Calendar ringTime;
 
-	// for REPEAT_DAY_WEEKLY
+	/**
+	 * Used for REPEAT_DAY_WEEKLY. Is an array with length 7 whose indices correspond to Calendar
+	 * day constants if you have to add 1 to the indices (or subtract 1 from the constants).
+	 */
 	private boolean[] repeatDays;
 
-	// for REPEAT_DATE_MONTHLY and REPEAT_DAY_MONTHLY
+	/**
+	 * Used for REPEAT_DATE_MONTHLY and REPEAT_DAY_MONTHLY. Is an array with length 12 whose indices
+	 * correspond to Calendar month constants.
+	 */
 	private boolean[] repeatMonths;
 
 	// for REPEAT_DAY_MONTHLY
@@ -74,7 +81,7 @@ public final class Alarm implements Listable, Cloneable {
 	 */
 	private boolean alarmIsActive;
 
-	private boolean alarmSnoozed;		// TODO: save snoozed state to disk
+	private boolean alarmSnoozed;
 	private int numSnoozes;
 
 	private boolean alarmVibrateIsOn;
@@ -142,53 +149,43 @@ public final class Alarm implements Listable, Cloneable {
 
 		// TODO: show that the alarm is snoozed if it is
 
-		StringBuilder repeatString = new StringBuilder();
-		String date = DateFormat.getDateInstance(DateFormat.SHORT).format(ringTime.getTime());
+		String repeatString = "";
+		String dateStr = DateFormat.getDateInstance(DateFormat.SHORT).format(ringTime.getTime());
+		String[] ordinals = res.getStringArray(R.array.alarm_ordinals);
 
-		// TODO: perhaps don't use a StringBuilder to make these strings and use String.format instead?
 		switch (repeatType) {
 			case REPEAT_ONCE_ABS:
 			case REPEAT_ONCE_REL:
-				repeatString.append(res.getString(R.string.main_once_abs_rel_prefix));
-				repeatString.append(date);
+				repeatString = String.format(res.getString(R.string.alarm_once_abs_rel), dateStr);
 				break;
 			case REPEAT_DAY_WEEKLY:
-				repeatString.append(getWeeklyDisplayString());
+				repeatString = getWeeklyDisplayString();
 				break;
 			case REPEAT_DATE_MONTHLY:
 				int dateOfMonth = ringTime.get(Calendar.DATE);
-				String[] suffixStrings = res.getStringArray(R.array.alarm_date_suffix_strings);
-
-				repeatString.append(res.getString(R.string.main_generic_repeat_string));
-				repeatString.append(dateOfMonth);
-				repeatString.append(suffixStrings[Math.min(dateOfMonth, suffixStrings.length) - 1]);
-				repeatString.append(res.getString(R.string.main_monthly_suffix));
-				repeatString.append(getExceptionMonthsString());
+				repeatString = String.format(res.getString(R.string.alarm_date_monthly),
+						ordinals[dateOfMonth - 1], getExceptionMonthsString());
 				break;
 			case REPEAT_DAY_MONTHLY:
-				repeatString.append(res.getString(R.string.main_generic_repeat_string));
-				repeatString.append(res.getStringArray(R.array.alarm_week_strings)[repeatWeek]);
-				repeatString.append(res.getString(R.string.space));
-				repeatString.append(res.getStringArray(R.array.alarm_day_strings_long)[
-						ringTime.get(Calendar.DAY_OF_WEEK) - 1]);
-				repeatString.append(res.getString(R.string.main_monthly_suffix));
-				repeatString.append(getExceptionMonthsString());
+				String[] weekdays = (new DateFormatSymbols()).getWeekdays();
+				repeatString = String.format(res.getString(R.string.alarm_day_monthly),
+						res.getStringArray(R.array.alarm_week_strings)[repeatWeek],
+						weekdays[ringTime.get(Calendar.DAY_OF_WEEK)],
+						getExceptionMonthsString());
 				break;
 			case REPEAT_DATE_YEARLY:
-				repeatString.append(res.getString(R.string.main_date_yearly_prefix));
-				repeatString.append(date);
+				// TODO: don't show the year
+				repeatString = String.format(res.getString(R.string.alarm_date_yearly), dateStr);
 				break;
 			case REPEAT_OFFSET:
-				repeatString.append(res.getString(R.string.main_generic_repeat_string));
-				repeatString.append(getOffsetString());
-				repeatString.append(res.getString(R.string.main_offset_text_5));
-				repeatString.append(date);
+				repeatString = String.format(res.getString(R.string.alarm_offset),
+						getOffsetString(), dateStr);
 				break;
 			default:
 				Log.e(TAG, "Unknown repeat type!");
 				break;
 		}
-		return repeatString.toString();
+		return repeatString;
 	}
 
 	@Override @Contract(pure = true)
@@ -457,6 +454,13 @@ public final class Alarm implements Listable, Cloneable {
 		res.setActive(Boolean.parseBoolean(fields[1]));		// doesn't throw anything
 
 		String[] repeatTypeInfo = fields[2].split(" ");
+		try {
+			res.setRepeatType(Integer.parseInt(repeatTypeInfo[0]));
+		}
+		catch (NumberFormatException e) {
+			Log.e(TAG, "Edit string has an incorrectly formatted repeat type.");
+			return null;
+		}
 		switch(res.repeatType) {
 			case REPEAT_DAY_WEEKLY:
 				if (repeatTypeInfo.length != 8) {
@@ -514,14 +518,6 @@ public final class Alarm implements Listable, Cloneable {
 				return null;
 		}
 
-		try {
-			res.setRepeatType(Integer.parseInt(repeatTypeInfo[0]));
-		}
-		catch (NumberFormatException e) {
-			Log.e(TAG, "Edit string has an incorrectly formatted repeat type.");
-			return null;
-		}
-
 		res.ringTime.setTimeInMillis(Long.parseLong(fields[3]));
 		if (context.getResources().getString(R.string.alarm_editor_silent).equals(fields[4]))
 			res.setRingtoneUri(null);
@@ -574,80 +570,81 @@ public final class Alarm implements Listable, Cloneable {
 	private String getWeeklyDisplayString() {
 		Resources res = context.getResources();
 
-		StringBuilder days = new StringBuilder(res.getString(R.string.main_weekly_prefix));
+		StringBuilder days = new StringBuilder();
 		String separator = res.getString(R.string.separator);
-		String[] dayStrings = res.getStringArray(R.array.alarm_day_strings_short);
+		String[] dayStrings = (new DateFormatSymbols()).getShortWeekdays();
 
 		boolean everyDayFlag = true, weekdayFlag = true, weekendFlag = true;
 
 		for (int i = 0; i < repeatDays.length; i++) {
 			if (repeatDays[i]) {
-				days.append(dayStrings[i]).append(separator);
+				days.append(dayStrings[i + 1]).append(separator);
 			}
 			everyDayFlag &= repeatDays[i];
-			if (i == 0 || i == 6) { weekendFlag &= repeatDays[i]; }
+			if (i + 1 == Calendar.SATURDAY || i + 1 == Calendar.SUNDAY) { weekendFlag &= repeatDays[i]; }
 			else { weekdayFlag &= repeatDays[i]; }
 		}
 
 		// special cases
-		if (days.toString().isEmpty()) { return res.getString(R.string.main_no_repeats_string); }
-		else if (everyDayFlag) { return res.getString(R.string.main_weekly_everyday); }
-		else if (weekdayFlag) { return res.getString(R.string.main_weekly_weekdays); }
-		else if (weekendFlag) { return res.getString(R.string.main_weekly_weekends); }
+		if (days.toString().isEmpty()) { return res.getString(R.string.alarm_no_repeats_string); }
+		else if (everyDayFlag) { return res.getString(R.string.alarm_weekly_everyday); }
+		else if (weekdayFlag) { return res.getString(R.string.alarm_weekly_weekdays); }
+		else if (weekendFlag) { return res.getString(R.string.alarm_weekly_weekends); }
 
-		days.delete(days.length() - separator.length(), days.length());		// delete the last comma
-		return days.toString();
+		days.delete(days.length() - separator.length(), days.length());		// delete the last separator
+		return String.format(res.getString(R.string.alarm_weekly), days);
 	}
 
+	/**
+	 * Returns the exception months string, or empty string if no exceptions.
+	 * @return formatted string resource main_monthly_exception or empty
+	 */
+	@NotNull
 	private String getExceptionMonthsString() {
 		Resources res = context.getResources();
 
 		StringBuilder months = new StringBuilder();
 		String separator = res.getString(R.string.separator);
-		String[] monthStrings = res.getStringArray(R.array.alarm_month_strings);
+		String[] monthStrings = (new DateFormatSymbols()).getShortMonths();
 
 		for (int i = 0; i < repeatMonths.length; i++) {
 			if (!repeatMonths[i]) {
 				months.append(monthStrings[i]);
-				months.append(res.getString(R.string.separator));
+				months.append(separator);
 			}
 		}
-		if (months.toString().isEmpty()) { return ""; }
+		if (months.length() == 0) { return ""; }
+		// TODO: other month exceptions?
 
 		months.delete(months.length() - separator.length(), months.length());	// delete the last comma
-		months.insert(0, res.getString(R.string.main_monthly_exception_text));
-		return months.toString();
+		return String.format(res.getString(R.string.alarm_monthly_exception), months.toString());
 	}
 
 	/**
-	 * Builds a string for offsets.
+	 * Builds a string for offsets. Returns a new string with days, hours, and minutes.
 	 */
 	private String getOffsetString() {
-		boolean deleteLastComma = false;
+		boolean previous = false;
 		StringBuilder offsetString = new StringBuilder();
-		String separator = context.getResources().getString(R.string.separator);
+		Resources res = context.getResources();
+		String separator = res.getString(R.string.separator);
+		String finalSeparator = context.getResources().getString(R.string.final_separator);
 
 		if (offsetDays != 0) {
-			offsetString.append(offsetDays);
-			offsetString.append(context.getResources().getString(R.string.main_offset_text_2)).append(separator);
-			deleteLastComma = true;
+			offsetString.append(String.format(res.getString(R.string.alarm_offset_days), offsetDays));
+			previous = true;
 		}
 		if (offsetHours != 0) {
-			offsetString.append(offsetHours);
-			offsetString.append(context.getResources().getString(R.string.main_offset_text_3)).append(separator);
-			deleteLastComma = true;
+			if (previous) offsetString.append(separator);
+			offsetString.append(String.format(res.getString(R.string.alarm_offset_hours), offsetHours));
+			previous = true;
 		}
 		if (offsetMins != 0) {
-			offsetString.append(offsetMins);
-			offsetString.append(context.getResources().getString(R.string.main_offset_text_4));
-			deleteLastComma = false;
+			if (previous) offsetString.append(finalSeparator);
+			offsetString.append(String.format(res.getString(R.string.alarm_offset_mins), offsetMins));
 		}
-		if (offsetString.toString().isEmpty()) {
-			return context.getResources().getString(R.string.main_no_repeats_string);
-		}
-
-		if (deleteLastComma) {
-			offsetString.delete(offsetString.length() - separator.length(), offsetString.length());
+		if (offsetString.length() == 0) {
+			return res.getString(R.string.alarm_no_repeats_string);
 		}
 
 		return offsetString.toString();

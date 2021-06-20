@@ -8,22 +8,25 @@ make the UI look prettier
 add switches for ringtone and vibration (?) 
 add slider for ringtone volume 
 customizable vibrations? 
-	if we do this, probably want to manage our own Vibrator instead of relying on the NotificationChannel's (can't change per alarm)
+	if we do this, probably want to manage our own Vibrator instead of relying on the NotificationChannel's (can't change per alarm, is editable by user in settings)
 add a settings activity (?)
 style all components
 	also ensure all components of a single type all have the same style (or children of it)
-schedule alarms with AlarmManager
 some documentation for each method and field? Also make documentation less... conversational?
 make snake_case and camelCase variables and stuff all consistent?
 make CardViews draggable (to reorder within folders??)
 	helpful Android documentation: https://developer.android.com/guide/topics/ui/drag-drop
-perhaps make setter functions return a ref to the object (chain setting stuff)
+perhaps make setter functions return a ref to the object (allow chain setting)
 remove superfluous methods and unnecessary fields 
 	same with styles or strings or colors or attr or dimens or...
 silent exiting (+ logging) when encountering issues or raising exceptions?
 could remove the isActive field in edit strings (not REALLY necessary... I think)
 could probably remove a lot of ids (i.e. for the text labels)
 could possibly give user choice for some color presets (like the "sandy blue" theme that it almost feels like we're going for right now)
+can maybe use FlexboxLayout for alarm editor
+	Google blog post: https://android-developers.googleblog.com/2017/02/build-flexible-layouts-with.html
+	GitHub: https://github.com/google/flexbox-layout
 
 BUGS
-sometimes creates a duplicate alarm right after the first one is dismissed 
+sometimes a duplicate alarm (same name and everything) rings right after the first one is dismissed
+	seems to only happen while the main app is open 

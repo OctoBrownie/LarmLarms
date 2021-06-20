@@ -1,5 +1,6 @@
 package com.apps.LarmLarms;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.res.TypedArray;
 import android.media.RingtoneManager;
@@ -18,6 +19,9 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.TimePicker;
 
+import java.text.DateFormatSymbols;
+import java.text.NumberFormat;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
@@ -133,11 +137,16 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 	 * An onclick callback for the save button. Closes the AlarmCreator, returns RESULT_OK and
 	 * the Listable (in string form) in the intent.
 	*/
-	public void saveAlarm(View view) {
+	public void saveListable(View view) {
 		// TODO: validate any field inputs?
-		Log.i(TAG, "Sending new alarm back to the caller.");
+		Log.i(TAG, "Sending new listable back to the caller.");
 
-		// saving data
+		// common fields
+		EditText nameInput = findViewById(R.id.nameInput);
+		workingListable.setListableName(nameInput.getText().toString());
+		workingListable.turnOn();
+
+		// saving alarm data
 		if (isEditingAlarm) {
 			Calendar alarmCalendar = ((Alarm) workingListable).getAlarmTimeCalendar();
 
@@ -155,35 +164,39 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 				case Alarm.REPEAT_OFFSET:
 					EditText currEditText;
 					int days, hours, mins;
+					NumberFormat format = NumberFormat.getInstance();
+					format.setParseIntegerOnly(true);
 
 					currEditText = alarmOffsetDaysLayout.findViewById(R.id.alarmOffsetDaysInput);
 					try {
-						days = Integer.parseInt(currEditText.getText().toString());
-					} catch (NumberFormatException e) {
+						days = format.parse(currEditText.getText().toString()).intValue();
+					} catch (ParseException e) {
+						Log.e(TAG, "Couldn't parse the days to offset.");
 						days = 0;
 					}
 
 					currEditText = alarmOffsetHoursLayout.findViewById(R.id.alarmOffsetHoursInput);
 					try {
-						hours = Integer.parseInt(currEditText.getText().toString());
-					} catch (NumberFormatException e) {
+						hours = format.parse(currEditText.getText().toString()).intValue();
+					} catch (ParseException e) {
+						Log.e(TAG, "Couldn't parse the hours to offset.");
 						hours = 0;
 					}
 
 					currEditText = alarmOffsetMinsLayout.findViewById(R.id.alarmOffsetMinsInput);
 					try {
-						mins = Integer.parseInt(currEditText.getText().toString());
-					} catch (NumberFormatException e) {
+						mins = format.parse(currEditText.getText().toString()).intValue();
+					} catch (ParseException e) {
+						Log.e(TAG, "Couldn't parse the minutes to offset.");
 						mins = 0;
 					}
 
+					// starts with curr time/date
+					GregorianCalendar newCalendar = new GregorianCalendar();
 					if (((Alarm) workingListable).getRepeatType() == Alarm.REPEAT_ONCE_REL) {
-						// starts with curr time/date
-						GregorianCalendar newCalendar = new GregorianCalendar();
 						newCalendar.add(Calendar.DAY_OF_MONTH, days);
 						newCalendar.add(Calendar.HOUR_OF_DAY, hours);
 						newCalendar.add(Calendar.MINUTE, mins);
-						((Alarm) workingListable).setAlarmTimeMillis(newCalendar.getTimeInMillis());
 					}
 					else {
 						hours = hours + mins/60;
@@ -195,6 +208,7 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 						((Alarm) workingListable).setOffsetHours(hours);
 						((Alarm) workingListable).setOffsetMins(mins);
 					}
+					((Alarm) workingListable).setAlarmTimeMillis(newCalendar.getTimeInMillis());
 					break;
 				case Alarm.REPEAT_DATE_MONTHLY:
 					NumberPicker picker = alarmDateOfMonthLayout.findViewById(R.id.alarmDateOfMonthInput);
@@ -211,11 +225,6 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 
 			((Alarm) workingListable).updateRingTime();
 		}
-
-		// common fields
-		EditText nameInput = findViewById(R.id.nameInput);
-		workingListable.setListableName(nameInput.getText().toString());
-		workingListable.turnOn();
 
 		// encoding into an intent
 		String editString = workingListable.toEditString();
@@ -361,7 +370,9 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 		}
 	}
 
+	@SuppressLint("DefaultLocale")
 	private void alarmUISetup() {
+		// TODO: to speed this specific method up, could do some of this setup when swapping alarm types?
 		setContentView(R.layout.activity_alarm_editor);
 
 		// getting handles to views
@@ -390,13 +401,13 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 				EditText curr;
 
 				curr = findViewById(R.id.alarmOffsetDaysInput);
-				curr.setText(Integer.toString(alarm.getOffsetDays()));
+				curr.setText(String.format("%d", alarm.getOffsetDays()));
 
 				curr = findViewById(R.id.alarmOffsetHoursInput);
-				curr.setText(Integer.toString(alarm.getOffsetHours()));
+				curr.setText(String.format("%d", alarm.getOffsetHours()));
 
 				curr = findViewById(R.id.alarmOffsetMinsInput);
-				curr.setText(Integer.toString(alarm.getOffsetMins()));
+				curr.setText(String.format("%d", alarm.getOffsetMins()));
 			}
 		}
 		else {
@@ -419,7 +430,7 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 		// repeatType spinner
 		spinner = findViewById(R.id.alarmRepeatTypeInput);
 		adapter = ArrayAdapter.createFromResource(this,
-				R.array.alarm_repeat_strings, android.R.layout.simple_spinner_dropdown_item);
+				R.array.alarm_editor_repeat_strings, android.R.layout.simple_spinner_dropdown_item);
 		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		spinner.setAdapter(adapter);
 		spinner.setOnItemSelectedListener(this);
@@ -437,8 +448,8 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 
 		// DAY_MONTHLY day of week spinner
 		spinner = alarmDayMonthlyLayout.findViewById(R.id.alarmDayOfWeekInput);
-		adapter = ArrayAdapter.createFromResource(this,
-				R.array.alarm_day_strings_long, android.R.layout.simple_spinner_dropdown_item);
+		adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item);
+		adapter.addAll((new DateFormatSymbols()).getWeekdays());
 		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		spinner.setAdapter(adapter);
 		spinner.setSelection(alarm.getAlarmTimeCalendar().get(Calendar.DAY_OF_WEEK) - 1);
@@ -451,8 +462,8 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 		dateOfMonth.setValue(alarm.getAlarmTimeCalendar().get(Calendar.DAY_OF_MONTH));
 
 		// change colors of days and months layouts
-		changeColors(alarmDaysLayout, alarm.getRepeatDays());
-		changeColors(alarmMonthsLayout, alarm.getRepeatMonths());
+		setupWeekDays();
+		setupMonths();
 
 		// set name of the current ringtone
 		TextView alarmSoundLabel = findViewById(R.id.soundText);
@@ -551,13 +562,12 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 	}
 
 	/**
-	 * Changes the colors of the views in group (not just direct children) according to the mask.
-	 * Changes up to the length of the mask or all of the views in group, whichever comes first.
-	 * @param group the ViewGroup to change the colors of views in
+	 * Changes the colors of the children specified according to the mask. Changes up to the length
+	 * of the mask or all of the views in group, whichever comes first.
+	 * @param children the children change the colors of views for
 	 * @param mask the boolean mask to use, where true is highlighted, false is not
 	 */
-	private void changeColors(ViewGroup group, boolean[] mask) {
-		ArrayList<View> children = getAllChildren(group);
+	private void changeColors(ArrayList<View> children, boolean[] mask) {
 		int max = Math.min(children.size(), mask.length);
 		TextView t;
 
@@ -582,5 +592,31 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 		else { view.setTextColor(textColors.getColor(1, 0)); }
 
 		textColors.recycle();
+	}
+
+	private void setupWeekDays() {
+		Alarm alarm = (Alarm) workingListable;
+		ArrayList<View> children = getAllChildren(alarmDaysLayout);
+		String[] dayStrings = (new DateFormatSymbols()).getShortWeekdays();
+
+		changeColors(children, alarm.getRepeatDays());
+
+		// loops through Calendar constants for days, starts at 1 and ends at 7
+		for (int i = 1; i < dayStrings.length; i++) {
+			((TextView) children.get(i - 1)).setText(dayStrings[i]);
+		}
+	}
+
+	private void setupMonths() {
+		Alarm alarm = (Alarm) workingListable;
+		ArrayList<View> children = getAllChildren(alarmMonthsLayout);
+		String[] monthStrings = (new DateFormatSymbols()).getShortMonths();
+
+		changeColors(children, alarm.getRepeatMonths());
+
+		// loops through Calendar constants for months, starts at 0 and ends at 11
+		for (int i = 0; i < monthStrings.length; i++) {
+			((TextView) children.get(i)).setText(monthStrings[i]);
+		}
 	}
 }

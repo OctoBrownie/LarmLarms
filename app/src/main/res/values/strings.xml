@@ -1,8 +1,9 @@
-<resources>
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
 	<!-- display strings: general, no prefixes -->
 	<string name="app_name">Larm Larms</string>
 	<string name="space">" "</string>
 	<string name="separator">", "</string>
+	<string name="final_separator">" and "</string>
 
 	<!-- display strings: notifications, prefixed by "notif" -->
 	<string name="notif_channel_name">Alarms</string>
@@ -13,26 +14,31 @@
 	<string name="notif_snooze">snooze</string>
 	<string name="notif_service_description">Starts alarms and plays alarm ringtones.</string>
 
+	<!-- alarm repeat type display strings, prefixed by "alarm" -->
+	<string name="alarm_no_repeats_string">none</string>
+
+	<string name="alarm_once_abs_rel">Once on <xliff:g id="date" example="2000/01/01">%s</xliff:g></string>
+	<string name="alarm_weekly">Weekly on <xliff:g id="days" example="Mon, Tue">%s</xliff:g></string>
+	<string name="alarm_weekly_everyday">Every day</string>
+	<string name="alarm_weekly_weekdays">Weekdays</string>
+	<string name="alarm_weekly_weekends">Weekends</string>
+	<string name="alarm_date_monthly">Every <xliff:g id="ordinal" example="1st">%1$s</xliff:g> of the month
+		<xliff:g id="alarm_monthly_exception">%2$s</xliff:g></string>
+	<string name="alarm_day_monthly">Every <xliff:g id="ordinal" example="1st">%1$s</xliff:g>
+		<xliff:g id="day of week" example="Monday">%2$s</xliff:g> of the
+		month<xliff:g id="alarm_monthly_exception">%3$s</xliff:g></string>
+	<string name="alarm_monthly_exception">, except <xliff:g id="months" example="Jan, Feb">%s</xliff:g></string>
+	<string name="alarm_date_yearly">Every year on <xliff:g id="date" example="2000/01/01">%s</xliff:g></string>
+	<!-- TODO: it's always plural? -->
+	<string name="alarm_offset">Every <xliff:g id="offset" example="2 days, 2 hours and 5 minutes">%1$s</xliff:g>
+		<xliff:g id="newline">%n</xliff:g>Next ring date: <xliff:g id="date" example="2000/01/01">%2$s</xliff:g></string>
+	<string name="alarm_offset_days"><xliff:g id="days" example="2">%d</xliff:g> days</string>
+	<string name="alarm_offset_hours"><xliff:g id="hours" example="2">%d</xliff:g> hours</string>
+	<string name="alarm_offset_mins"><xliff:g id="mins" example="2">%d</xliff:g> minutes</string>
+
 	<!-- display strings: MainActivity, prefixed by "main" -->
 	<string name="main_no_alarms_text">There\'s nothing here!</string>
 	<string name="main_add_alarm_button">+</string>
-
-	<!-- MainActivity repeat type display strings -->
-	<string name="main_generic_repeat_string">"Every "</string>
-	<string name="main_no_repeats_string">none</string>
-
-	<string name="main_once_abs_rel_prefix">"Once on "</string>
-	<string name="main_weekly_prefix">"Weekly on "</string>
-	<string name="main_weekly_everyday">Every day</string>
-	<string name="main_weekly_weekdays">Weekdays</string>
-	<string name="main_weekly_weekends">Weekends</string>
-	<string name="main_monthly_suffix">" of the month"</string>
-	<string name="main_monthly_exception_text">", except for "</string>
-	<string name="main_date_yearly_prefix">"Every year on "</string>
-	<string name="main_offset_text_2">" days"</string>
-	<string name="main_offset_text_3">" hours"</string>
-	<string name="main_offset_text_4">" minutes"</string>
-	<string name="main_offset_text_5">"\nNext ring date: "</string>
 
 	<!-- description strings: MainActivity, prefixed by "main," suffixed by "descrip" -->
 	<string name="main_add_folder_button_descrip">Add folder</string>
@@ -61,80 +67,19 @@
 
 	<string name="alarm_editor_weeks_text">"Ring week: "</string>
 
-	<string name="alarm_editor_days_1_short">Sun</string>
-	<string name="alarm_editor_days_2_short">Mon</string>
-	<string name="alarm_editor_days_3_short">Tue</string>
-	<string name="alarm_editor_days_4_short">Wed</string>
-	<string name="alarm_editor_days_5_short">Thu</string>
-	<string name="alarm_editor_days_6_short">Fri</string>
-	<string name="alarm_editor_days_7_short">Sat</string>
-
-	<string name="alarm_editor_days_1_long">Sunday</string>
-	<string name="alarm_editor_days_2_long">Monday</string>
-	<string name="alarm_editor_days_3_long">Tuesday</string>
-	<string name="alarm_editor_days_4_long">Wednesday</string>
-	<string name="alarm_editor_days_5_long">Thursday</string>
-	<string name="alarm_editor_days_6_long">Friday</string>
-	<string name="alarm_editor_days_7_long">Saturday</string>
-
-	<string name="alarm_editor_months_1">Jan</string>
-	<string name="alarm_editor_months_2">Feb</string>
-	<string name="alarm_editor_months_3">Mar</string>
-	<string name="alarm_editor_months_4">Apr</string>
-	<string name="alarm_editor_months_5">May</string>
-	<string name="alarm_editor_months_6">Jun</string>
-	<string name="alarm_editor_months_7">Jul</string>
-	<string name="alarm_editor_months_8">Aug</string>
-	<string name="alarm_editor_months_9">Sep</string>
-	<string name="alarm_editor_months_10">Oct</string>
-	<string name="alarm_editor_months_11">Nov</string>
-	<string name="alarm_editor_months_12">Dec</string>
-
-	<string-array name="alarm_day_strings_short">
-		<item>@string/alarm_editor_days_1_short</item>
-		<item>@string/alarm_editor_days_2_short</item>
-		<item>@string/alarm_editor_days_3_short</item>
-		<item>@string/alarm_editor_days_4_short</item>
-		<item>@string/alarm_editor_days_5_short</item>
-		<item>@string/alarm_editor_days_6_short</item>
-		<item>@string/alarm_editor_days_7_short</item>
-	</string-array>
-
-	<string-array name="alarm_day_strings_long">
-		<item>@string/alarm_editor_days_1_long</item>
-		<item>@string/alarm_editor_days_2_long</item>
-		<item>@string/alarm_editor_days_3_long</item>
-		<item>@string/alarm_editor_days_4_long</item>
-		<item>@string/alarm_editor_days_5_long</item>
-		<item>@string/alarm_editor_days_6_long</item>
-		<item>@string/alarm_editor_days_7_long</item>
-	</string-array>
-
-	<string-array name="alarm_date_suffix_strings">
-		<item>st</item>
-		<item>nd</item>
-		<item>rd</item>
-		<item>th</item>
-	</string-array>
-
-	<string-array name="alarm_month_strings">
-		<item>@string/alarm_editor_months_1</item>
-		<item>@string/alarm_editor_months_2</item>
-		<item>@string/alarm_editor_months_3</item>
-		<item>@string/alarm_editor_months_4</item>
-		<item>@string/alarm_editor_months_5</item>
-		<item>@string/alarm_editor_months_6</item>
-		<item>@string/alarm_editor_months_7</item>
-		<item>@string/alarm_editor_months_8</item>
-		<item>@string/alarm_editor_months_9</item>
-		<item>@string/alarm_editor_months_10</item>
-		<item>@string/alarm_editor_months_11</item>
-		<item>@string/alarm_editor_months_12</item>
+	<string-array name="alarm_ordinals">
+		<item>1st</item> <item>2nd</item> <item>3rd</item> <item>4th</item> <item>5th</item>
+		<item>6th</item> <item>7th</item> <item>8th</item> <item>9th</item> <item>10th</item>
+		<item>11th</item> <item>12th</item> <item>13th</item> <item>14th</item> <item>15th</item>
+		<item>16th</item> <item>17th</item> <item>18th</item> <item>19th</item> <item>20th</item>
+		<item>21st</item> <item>22nd</item> <item>23rd</item> <item>24th</item> <item>25th</item>
+		<item>26th</item> <item>27th</item> <item>28th</item> <item>29th</item> <item>30th</item>
+		<item>31st</item>
 	</string-array>
 
 	<!-- NOTE: it is assumed in ListableEditor that these items correspond (in the same order) to
 		 the repeat type constants defined in Alarm. -->
-	<string-array name="alarm_repeat_strings">
+	<string-array name="alarm_editor_repeat_strings">
 		<item>ring once (pick a date/time)</item>
 		<item>ring once (offset of current date/time)</item>
 		<item>ring every week on certain days</item>
