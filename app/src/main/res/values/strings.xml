@@ -1,15 +1,13 @@
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
-	<!-- display strings: general, no prefixes -->
+	<!-- general display strings, no prefixes -->
 	<string name="app_name">Larm Larms</string>
 	<string name="space">" "</string>
 	<string name="separator">", "</string>
 	<string name="final_separator">" and "</string>
 
-	<!-- display strings: notifications, prefixed by "notif" -->
+	<!-- notification display strings, prefixed by "notif" -->
 	<string name="notif_channel_name">Alarms</string>
 	<string name="notif_ticker">Ringing alarm</string>
-	<!-- TODO: delete this later, when it's not being used -->
-	<string name="notif_exit">exit</string>
 	<string name="notif_dismiss">dismiss</string>
 	<string name="notif_snooze">snooze</string>
 	<string name="notif_service_description">Starts alarms and plays alarm ringtones.</string>
@@ -36,15 +34,18 @@
 	<string name="alarm_offset_hours"><xliff:g id="hours" example="2">%d</xliff:g> hours</string>
 	<string name="alarm_offset_mins"><xliff:g id="mins" example="2">%d</xliff:g> minutes</string>
 
-	<!-- display strings: MainActivity, prefixed by "main" -->
+	<!-- MainActivity display strings, prefixed by "main" -->
 	<string name="main_no_alarms_text">There\'s nothing here!</string>
 	<string name="main_add_alarm_button">+</string>
 
-	<!-- description strings: MainActivity, prefixed by "main," suffixed by "descrip" -->
+	<!-- RecyclerViewHolder context menu display strings, prefixed by "listable_menu" -->
+	<string name="listable_menu_delete">Delete alarm</string>
+
+	<!-- MainActivity description strings, prefixed by "main," suffixed by "descrip" -->
 	<string name="main_add_folder_button_descrip">Add folder</string>
 	<string name="main_folder_icon_descrip">Folder icon</string>
 
-	<!-- display strings: AlarmCreator, prefixed by "editor"
+	<!-- AlarmCreator display strings, prefixed by "editor"
 		 if for Alarms specifically, prefixed by "alarm_editor"
 		 if for AlarmGroups specifically, prefixed by "folder_editor" -->
 	<string name="editor_back_button">back</string>

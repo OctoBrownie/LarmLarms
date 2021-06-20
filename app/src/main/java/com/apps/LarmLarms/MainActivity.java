@@ -3,6 +3,8 @@ package com.apps.LarmLarms;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.ContextMenu;
+import android.view.MenuInflater;
 import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -90,8 +92,6 @@ public class MainActivity extends AppCompatActivity {
 	 */
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		// TODO: Could perhaps put this stuff in RecyclerViewFrag, since that's what's supposed to
-		// be worrying about stuff?
 		// TODO: if this isn't true for some other activity we come back from, change
 		if (resultCode == RESULT_CANCELED) {
 			Log.i(TAG, "Action cancelled.");
@@ -117,6 +117,21 @@ public class MainActivity extends AppCompatActivity {
 
 	}
 
+	/**
+	 * Creates a floating context menu for the passed view. Only used for Listables within the
+	 * RecyclerView.
+	 * @param menu the menu to inflate into
+	 * @param v the view to inflate a menu for
+	 * @param menuInfo extra info about the menu
+	 */
+	// TODO: on my phone at least, context menu looks like a popup menu
+	@Override
+	public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+		super.onCreateContextMenu(menu, v, menuInfo);
+		MenuInflater inflater = getMenuInflater();
+		inflater.inflate(R.menu.listable_menu, menu);
+	}
+
 	/* ************************************  Other Methods  ************************************* */
 
 	private void showFrag() {
@@ -135,7 +150,7 @@ public class MainActivity extends AppCompatActivity {
 		// start new activity (AlarmCreator)
 		Intent intent = new Intent(this, ListableEditorActivity.class);
 
-		// add extras (the Listable, the index, the req id)
+		// add extras (Listable, index, req id)
 		intent.putExtra(EXTRA_LISTABLE, listable.toEditString());
 		intent.putExtra(EXTRA_LISTABLE_INDEX, index);
 

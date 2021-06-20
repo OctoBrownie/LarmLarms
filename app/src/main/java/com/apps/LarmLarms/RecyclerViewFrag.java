@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -70,6 +71,84 @@ public class RecyclerViewFrag extends Fragment {
 		super.onStop();
 		writeAlarmsToDisk(getContext(), myAdapter);
 	}
+
+	/* ************************************  Callbacks  ************************************** */
+
+	/**
+	 * Should be called when ListableEditor returns with a Listable. Deals with the listables based
+	 * on request code.
+	 * @param requestCode the code that we requested with
+	 * @param data the intent containing the returned Listable
+	 */
+	void onListableCreatorResult(int requestCode, Intent data) {
+		Listable new_listable;
+		int index = data.getIntExtra(MainActivity.EXTRA_LISTABLE_INDEX, -1);
+
+		switch(requestCode) {
+			case MainActivity.REQ_NEW_ALARM:
+				new_listable = Alarm.fromEditString(getContext(), data.getStringExtra(MainActivity.EXTRA_LISTABLE));
+				if (new_listable == null) {
+					Log.e(TAG, "ListableEditor returned with an invalid alarm edit string.");
+					return;
+				}
+				// TODO: add new alarm where its supposed to be nested
+				addListable(new_listable);
+				Log.i(TAG, "New alarm saved successfully.");
+				break;
+			case MainActivity.REQ_EDIT_ALARM:
+				new_listable = Alarm.fromEditString(getContext(), data.getStringExtra(MainActivity.EXTRA_LISTABLE));
+				if (new_listable == null) {
+					Log.e(TAG, "ListableEditor returned with an invalid alarm edit string.");
+					return;
+				}
+				replaceListable(index, new_listable);
+				Log.i(TAG, "Existing alarm edited successfully.");
+				break;
+			case MainActivity.REQ_NEW_FOLDER:
+				new_listable = AlarmGroup.fromEditString(data.getStringExtra(MainActivity.EXTRA_LISTABLE));
+				if (new_listable == null) {
+					Log.e(TAG, "ListableEditor returned with an invalid folder edit string.");
+					return;
+				}
+				// TODO: add new folder where its supposed to be nested
+				addListable(new_listable);
+				Log.i(TAG, "New folder saved successfully.");
+				break;
+			case MainActivity.REQ_EDIT_FOLDER:
+				// will not delete children Listables of original AlarmGroup
+				new_listable = AlarmGroup.fromEditString(data.getStringExtra(MainActivity.EXTRA_LISTABLE));
+				if (new_listable == null) {
+					Log.e(TAG, "ListableEditor returned with an invalid folder edit string.");
+					return;
+				}
+
+				Listable old_listable = myAdapter.getListableAbs(index);
+				if (old_listable == null || old_listable.isAlarm()) {
+					Log.e(TAG, "ListableEditor returned with an invalid index.");
+					return;
+				}
+				((AlarmGroup) new_listable).setListablesInside(((AlarmGroup) old_listable).getListablesInside());
+
+				replaceListable(index, new_listable);
+				Log.i(TAG, "Existing folder edited successfully.");
+				break;
+		}
+
+		writeAlarmsToDisk(getContext(), myAdapter);
+		myAdapter.setNextAlarmToRing();
+	}
+
+	@Override
+	public boolean onContextItemSelected(MenuItem item) {
+		switch(item.getItemId()) {
+			case R.id.optionDelete:
+				// TODO: implement
+				return true;
+			default:
+				return super.onContextItemSelected(item);
+		}
+	}
+
 
 	/* ************************************  Other Methods  ********************************** */
 	boolean isDataEmpty() { return myAdapter.getItemCount() == 0; }
@@ -196,69 +275,5 @@ public class RecyclerViewFrag extends Fragment {
 
 		myAdapter.setListableAbs(index, item);
 		myAdapter.notifyItemRangeChanged(index, myAdapter.getItemCount() - index);
-	}
-
-	/**
-	 * Should be called when ListableEditor returns with a Listable. Deals with the listables based
-	 * on request code.
-	 * @param requestCode the code that we requested with
-	 * @param data the intent containing the returned Listable
-	 */
-	void onListableCreatorResult(int requestCode, Intent data) {
-		Listable new_listable;
-		int index = data.getIntExtra(MainActivity.EXTRA_LISTABLE_INDEX, -1);
-
-		switch(requestCode) {
-			case MainActivity.REQ_NEW_ALARM:
-				new_listable = Alarm.fromEditString(getContext(), data.getStringExtra(MainActivity.EXTRA_LISTABLE));
-				if (new_listable == null) {
-					Log.e(TAG, "ListableEditor returned with an invalid alarm edit string.");
-					return;
-				}
-				// TODO: add new alarm where its supposed to be nested
-				addListable(new_listable);
-				Log.i(TAG, "New alarm saved successfully.");
-				break;
-			case MainActivity.REQ_EDIT_ALARM:
-				new_listable = Alarm.fromEditString(getContext(), data.getStringExtra(MainActivity.EXTRA_LISTABLE));
-				if (new_listable == null) {
-					Log.e(TAG, "ListableEditor returned with an invalid alarm edit string.");
-					return;
-				}
-				replaceListable(index, new_listable);
-				Log.i(TAG, "Existing alarm edited successfully.");
-				break;
-			case MainActivity.REQ_NEW_FOLDER:
-				new_listable = AlarmGroup.fromEditString(data.getStringExtra(MainActivity.EXTRA_LISTABLE));
-				if (new_listable == null) {
-					Log.e(TAG, "ListableEditor returned with an invalid folder edit string.");
-					return;
-				}
-				// TODO: add new folder where its supposed to be nested
-				addListable(new_listable);
-				Log.i(TAG, "New folder saved successfully.");
-				break;
-			case MainActivity.REQ_EDIT_FOLDER:
-				// will not delete children Listables of original AlarmGroup
-				new_listable = AlarmGroup.fromEditString(data.getStringExtra(MainActivity.EXTRA_LISTABLE));
-				if (new_listable == null) {
-					Log.e(TAG, "ListableEditor returned with an invalid folder edit string.");
-					return;
-				}
-
-				Listable old_listable = myAdapter.getListableAbs(index);
-				if (old_listable == null || old_listable.isAlarm()) {
-					Log.e(TAG, "ListableEditor returned with an invalid index.");
-					return;
-				}
-				((AlarmGroup) new_listable).setListablesInside(((AlarmGroup) old_listable).getListablesInside());
-
-				replaceListable(index, new_listable);
-				Log.i(TAG, "Existing folder edited successfully.");
-				break;
-		}
-
-		writeAlarmsToDisk(getContext(), myAdapter);
-		myAdapter.setNextAlarmToRing();
 	}
 }

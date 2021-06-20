@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- floating menu for listables, accessible by a long click -->
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:tools="http://schemas.android.com/tools"
+	tools:context="com.apps.LarmLarms.RecyclerViewFrag" >
+	<!-- TODO: create more options -->
+	<item
+		android:id="@+id/optionDelete"
+		android:title="@string/listable_menu_delete"/>
+</menu>

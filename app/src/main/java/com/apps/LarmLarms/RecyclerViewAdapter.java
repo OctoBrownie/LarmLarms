@@ -151,8 +151,8 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 		}
 	}
 
-	RecyclerViewAdapter (Context current_context, ArrayList<Listable> data) {
-		context = current_context;
+	RecyclerViewAdapter (Context curr_context, ArrayList<Listable> data) {
+		context = curr_context;
 		dataset = data;
 		datasetLookup = AlarmGroup.generateLookup(dataset);
 		totalNumItems = AlarmGroup.getSizeOfList(dataset);
@@ -169,6 +169,8 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 		View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.recycler_view_item, parent, false);
 		RecyclerViewHolder r = new RecyclerViewHolder(v, context);
 		r.setAdapter(this);
+		((MainActivity) context).registerForContextMenu(v);
+
 		return r;
 	}
 

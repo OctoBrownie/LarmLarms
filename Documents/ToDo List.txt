@@ -10,6 +10,8 @@ add slider for ringtone volume
 customizable vibrations? 
 	if we do this, probably want to manage our own Vibrator instead of relying on the NotificationChannel's (can't change per alarm, is editable by user in settings)
 add a settings activity (?)
+use a (color) selector to make disabled alarms more obvious 
+	see https://programmer.ink/think/a-detailed-explanation-of-the-use-of-selector-in-android.html
 style all components
 	also ensure all components of a single type all have the same style (or children of it)
 some documentation for each method and field? Also make documentation less... conversational?
