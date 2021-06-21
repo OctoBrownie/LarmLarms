@@ -218,13 +218,13 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 		return AlarmGroup.getListableAtAbsIndex(dataset, datasetLookup, abs_index);
 	}
 
-	void setListables(ArrayList<Listable> new_list) {
-		if (new_list == null) {
+	void setListables(ArrayList<Listable> newList) {
+		if (newList == null) {
 			Log.e(TAG, "New list of alarms was null.");
 			return;
 		}
 
-		dataset = new_list;
+		dataset = newList;
 		refreshLookup();
 	}
 
@@ -250,15 +250,15 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 
 	/**
 	 * Sets item as the new Listable in the dataset at the absolute index
-	 * @param abs_index the absolute index of the Listable to set
+	 * @param absIndex the absolute index of the Listable to set
 	 * @param item the new Listable to set it to
 	 */
-	void setListableAbs(int abs_index, Listable item) {
+	void setListableAbs(int absIndex, Listable item) {
 		// TODO: could combine both searches into one and reimplement as another search method?
-		int index = AlarmGroup.getListableIndexAtAbsIndex(dataset, datasetLookup, abs_index);
+		int index = AlarmGroup.getListableIndexAtAbsIndex(dataset, datasetLookup, absIndex);
 		if (index == -1) { return; }
 
-		AlarmGroup folder = AlarmGroup.getParentListableAtAbsIndex(dataset, datasetLookup, abs_index);
+		AlarmGroup folder = AlarmGroup.getParentListableAtAbsIndex(dataset, datasetLookup, absIndex);
 		if (folder == null) { setListableRel(index, item); }
 		else { folder.replaceListable(index, item); }
 		refreshLookup();
@@ -266,15 +266,15 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 
 	/**
 	 * Sets item as the new Listable in the dataset at the relative index
-	 * @param rel_index the relative index of the Listable to set
+	 * @param relIndex the relative index of the Listable to set
 	 * @param item the new Listable to set it to
 	 */
-	private void setListableRel(int rel_index, Listable item) {
-		int indexChange = item.getNumItems() - dataset.get(rel_index).getNumItems();
-		dataset.set(rel_index, item);
+	private void setListableRel(int relIndex, Listable item) {
+		int indexChange = item.getNumItems() - dataset.get(relIndex).getNumItems();
+		dataset.set(relIndex, item);
 
 		// add index change to all lookup indices
-		for (int i = rel_index + 1; i < datasetLookup.size(); i++) {
+		for (int i = relIndex + 1; i < datasetLookup.size(); i++) {
 			datasetLookup.set(i, datasetLookup.get(i) + indexChange);
 		}
 		totalNumItems += indexChange;
@@ -295,7 +295,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 
 		Intent intent = new Intent(context, NotificationCreatorService.class);
 		intent.putExtra(MainActivity.EXTRA_LISTABLE, next.listable.toEditString());
-		intent.putExtra(MainActivity.EXTRA_LISTABLE_INDEX, next.index);
+		intent.putExtra(MainActivity.EXTRA_LISTABLE_INDEX, next.relIndex);
 
 		AlarmManager manager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
 		PendingIntent pendingIntent = PendingIntent.getService(context, 0, intent,
@@ -333,11 +333,11 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 				if (nextAlarm.listable == null) { nextAlarm.listable = l; }
 				else if (((Alarm) l).getAlarmTimeMillis() < ((Alarm) nextAlarm.listable).getAlarmTimeMillis()) {
 					nextAlarm.listable = l;
-					nextAlarm.index = currIndex;
+					nextAlarm.relIndex = currIndex;
 					currIndex += 1 + listablesInNextAlarmFolder;
 					listablesInNextAlarmFolder = 0;
 				}
-				else { nextAlarm.index++; }
+				else { nextAlarm.relIndex++; }
 			}
 			else {
 				ListableInfo possible = getNextRingingAlarm(((AlarmGroup) l).getListablesInside());
@@ -348,13 +348,13 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 				if (nextAlarm.listable == null) {
 					nextAlarm.listable = possible.listable;
 					listablesInNextAlarmFolder = l.getNumItems();
-					nextAlarm.index = currIndex;
-					currIndex += possible.index;
+					nextAlarm.relIndex = currIndex;
+					currIndex += possible.relIndex;
 				}
 				else if (((Alarm) possible.listable).getAlarmTimeMillis() <
 						((Alarm) nextAlarm.listable).getAlarmTimeMillis()) {
 					nextAlarm.listable = possible.listable;
-					currIndex += 1 + listablesInNextAlarmFolder + possible.index;
+					currIndex += 1 + listablesInNextAlarmFolder + possible.relIndex;
 					listablesInNextAlarmFolder = l.getNumItems();
 				}
 				else { currIndex += l.getNumItems(); }

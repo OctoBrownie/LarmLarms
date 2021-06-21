@@ -5,11 +5,14 @@ package com.apps.LarmLarms;
  */
 
 class ListableInfo {
-	int index;
+	int relIndex, numIndents;
 	Listable listable;
+	AlarmGroup parentListable;
 
 	ListableInfo() {
-		index = 0;
+		relIndex = 0;
+		numIndents = 0;
 		listable = null;
+		parentListable = null;
 	}
 }

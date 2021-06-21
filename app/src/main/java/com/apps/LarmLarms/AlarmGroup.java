@@ -159,19 +159,19 @@ public final class AlarmGroup implements Listable, Cloneable {
 
 	/**
 	 * Gets the Listable at the given relative index.
-	 * @param rel_index the relative index of the Listable required
+	 * @param relIndex the relative index of the Listable required
 	 * @return returns the Listable at the relative index, or null if not found
 	 */
-	Listable getListable(int rel_index) {
-		if (rel_index < 0 || rel_index >= listablesInside.size()) {
+	Listable getListable(int relIndex) {
+		if (relIndex < 0 || relIndex >= listablesInside.size()) {
 			Log.e(TAG, "Couldn't get Listable. Index is out of bounds.");
 			return null;
 		}
-		return listablesInside.get(rel_index);
+		return listablesInside.get(relIndex);
 	}
 
-	void replaceListable(int rel_index, Listable item) {
-		if (rel_index < 0 || rel_index >= listablesInside.size()) {
+	void replaceListable(int relIndex, Listable item) {
+		if (relIndex < 0 || relIndex >= listablesInside.size()) {
 			Log.e(TAG, "Couldn't set Listable. Index is out of bounds.");
 			return;
 		} else if (item == null) {
@@ -179,11 +179,11 @@ public final class AlarmGroup implements Listable, Cloneable {
 			return;
 		}
 
-		int indexChange = item.getNumItems() - listablesInside.get(rel_index).getNumItems();
-		listablesInside.set(rel_index, item);
+		int indexChange = item.getNumItems() - listablesInside.get(relIndex).getNumItems();
+		listablesInside.set(relIndex, item);
 
 		// add index change to all lookup indices and totalNumItems
-		for (int i = rel_index + 1; i < listablesInside.size(); i++) {
+		for (int i = relIndex + 1; i < listablesInside.size(); i++) {
 			listablesLookup.set(i, listablesLookup.get(i) + indexChange);
 		}
 		totalNumItems += indexChange;
@@ -406,16 +406,16 @@ public final class AlarmGroup implements Listable, Cloneable {
 	 * @param data The actual list of Listables to search through. Won't change the data within
 	 *             the structure.
 	 * @param lookup The lookup list for the data list. Won't change the data within the structure.
-	 * @param src_index The absolute index of the Listable we're looking for.
+	 * @param srcIndex The absolute index of the Listable we're looking for.
 	 * @return returns the Listable at the specified index, or null if not found.
 	 */
 	static Listable getListableAtAbsIndex(ArrayList<Listable> data,
-												 ArrayList<Integer> lookup, final int src_index) {
+												 ArrayList<Integer> lookup, final int srcIndex) {
 		// represents the relative index of the Listable that is or contains the Listable we're looking for
-		int index = findOuterListableIndex(lookup, src_index, AlarmGroup.getSizeOfList(data));
+		int index = findOuterListableIndex(lookup, srcIndex, AlarmGroup.getSizeOfList(data));
 
 		// represents the absolute index of the Listable we're looking for in the current folder
-		int abs_index = src_index;
+		int abs_index = srcIndex;
 		AlarmGroup curr_folder;
 
 		while (index != -1) {
@@ -439,16 +439,16 @@ public final class AlarmGroup implements Listable, Cloneable {
 	 * @param data The actual list of Listables to search through. Won't change the data within
 	 *             the structure.
 	 * @param lookup The lookup list for the data list. Won't change the data within the structure.
-	 * @param src_index The absolute index of the Listable whose parent we're looking for.
+	 * @param srcIndex The absolute index of the Listable whose parent we're looking for.
 	 * @return returns the Listable's relative index at the specified absolute index, or -1 if not found.
 	 */
 	static int getListableIndexAtAbsIndex(ArrayList<Listable> data,
-												 ArrayList<Integer> lookup, final int src_index) {
+												 ArrayList<Integer> lookup, final int srcIndex) {
 		// represents the relative index of the Listable that is or contains the Listable we're looking for
-		int index = findOuterListableIndex(lookup, src_index, AlarmGroup.getSizeOfList(data));
+		int index = findOuterListableIndex(lookup, srcIndex, AlarmGroup.getSizeOfList(data));
 
 		// represents the absolute index of the Listable we're looking for in the current folder
-		int abs_index = src_index;
+		int abs_index = srcIndex;
 		AlarmGroup curr_folder;
 
 		while (index != -1) {
@@ -473,17 +473,17 @@ public final class AlarmGroup implements Listable, Cloneable {
 	 * @param data The actual list of Listables to search through. Won't change the data within
 	 *             the structure.
 	 * @param lookup The lookup list for the data list. Won't change the data within the structure.
-	 * @param src_index The absolute index of the Listable whose parent we're looking for.
+	 * @param srcIndex The absolute index of the Listable whose parent we're looking for.
 	 * @return returns the Listable at the specified index, or null if not found. If the original
 	 * data list is the parent, will also return null.
 	 */
 	static AlarmGroup getParentListableAtAbsIndex(ArrayList<Listable> data,
-														 ArrayList<Integer> lookup, final int src_index) {
+														 ArrayList<Integer> lookup, final int srcIndex) {
 		// represents the relative index of the Listable that is or contains the Listable we're looking for
-		int index = findOuterListableIndex(lookup, src_index, AlarmGroup.getSizeOfList(data));
+		int index = findOuterListableIndex(lookup, srcIndex, AlarmGroup.getSizeOfList(data));
 
 		// represents the absolute index of the Listable we're looking for in the current folder
-		int abs_index = src_index;
+		int abs_index = srcIndex;
 		AlarmGroup curr_folder = null;
 
 		while (index != -1) {
@@ -506,19 +506,22 @@ public final class AlarmGroup implements Listable, Cloneable {
 	/**
 	 * Finds how many AlarmGroups a specific Listable in the given dataset is nested under (not
 	 * being nested is considered 0).
-	 * @param src_index the absolute position of the Listable to search for
+	 * @param data The actual list of Listables to search through. Won't change the data within
+	 *             the structure.
+	 * @param lookup The lookup list for the data list. Won't change the data within the structure.
+	 * @param srcIndex the absolute position of the Listable to search for
 	 * @return the number of AlarmGroups the Listable is nested under, or -1 if the index is out of
 	 * 		   bounds
 	 */
-	static int getNumIndents(ArrayList<Listable> data, ArrayList<Integer> lookup, final int src_index) {
+	static int getNumIndents(ArrayList<Listable> data, ArrayList<Integer> lookup, final int srcIndex) {
 		// represents the relative index of the Listable that is or contains the Listable we're looking for
-		int index = findOuterListableIndex(lookup, src_index, AlarmGroup.getSizeOfList(data));
+		int index = findOuterListableIndex(lookup, srcIndex, AlarmGroup.getSizeOfList(data));
 		if (index == -1) { return -1; }
 
 		int indents = 0;
 
 		// represents the absolute index of the Listable we're looking for in the current folder
-		int abs_index = src_index;
+		int abs_index = srcIndex;
 		AlarmGroup curr_folder;
 
 		while (index != -1) {
@@ -536,7 +539,50 @@ public final class AlarmGroup implements Listable, Cloneable {
 		}
 		Log.e(TAG, "Could not find the specified Listable's number of indents within the source data/lookup.");
 		return -1;
+	}
 
+	/**
+	 * Searches for a Listable at srcIndex and returns data within a ListableInfo about it.
+	 * @param data The actual list of Listables to search through. Won't change the data within
+	 *             the structure.
+	 * @param lookup The lookup list for the data list. Won't change the data within the structure.
+	 * @param srcIndex the absolute position of the Listable to search for
+	 * @return a ListableInfo describing everything it can about the Listable at srcIndex, or null
+	 * if the Listable was not found
+	 */
+	static ListableInfo getListableInfo(ArrayList<Listable> data, ArrayList<Integer> lookup,
+										int srcIndex) {
+		ListableInfo info = new ListableInfo();
+		int index = findOuterListableIndex(lookup, srcIndex, AlarmGroup.getSizeOfList(data));
+		if (index == -1) { return null; }
+
+		int indents = 0;
+
+		// represents the absolute index of the Listable we're looking for in the current folder
+		int absIndex = srcIndex;
+		AlarmGroup currFolder = null;
+
+		while (index != -1) {
+			// must be the element itself in the current folder
+			if (lookup.get(index) == absIndex) {
+				info.relIndex = index;
+				info.numIndents = indents;
+				info.listable = data.get(index);
+				info.parentListable = currFolder;
+
+				return info;
+			}
+
+			// listable is within an AlarmGroup, subtract 1 to take into account the folder itself
+			absIndex = absIndex - 1 - index;
+			currFolder = (AlarmGroup) data.get(index);
+			lookup = currFolder.getListablesLookup();
+			data = currFolder.getListablesInside();
+			index = findOuterListableIndex(lookup, absIndex, currFolder.getNumItems() - 1);
+			indents++;
+		}
+		Log.e(TAG, "Could not find the specified Listable's number of indents within the source data/lookup.");
+		return null;
 	}
 
 	/**

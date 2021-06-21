@@ -138,6 +138,7 @@ public class RecyclerViewFrag extends Fragment {
 		myAdapter.setNextAlarmToRing();
 	}
 
+	// TODO: reimplement as a dialog
 	@Override
 	public boolean onContextItemSelected(MenuItem item) {
 		switch(item.getItemId()) {
