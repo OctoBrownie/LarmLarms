@@ -149,14 +149,6 @@ public final class AlarmGroup implements Listable, Cloneable {
 
 	@Contract(pure = true)
 	boolean getIsOpen() { return isOpen; }
-	void openFolder() {
-		isOpen = true;
-		refreshLookup();
-	}
-	void closeFolder() {
-		isOpen = false;
-		refreshLookup();
-	}
 	void toggleOpen() {
 		isOpen = !isOpen;
 		refreshLookup();
@@ -540,6 +532,7 @@ public final class AlarmGroup implements Listable, Cloneable {
 
 	void deleteListable(final int relIndex) {
 		listables.remove(relIndex);
+		refreshLookup();
 	}
 
 	/* **************************  Manipulating Listables (Absolute)  *************************** */
@@ -572,7 +565,12 @@ public final class AlarmGroup implements Listable, Cloneable {
 			return;
 		}
 
-		i.parentListable.setListable(i.relIndex, item);
+		if (i.parentListable == null) {
+			setListable(i.relIndex, item);
+		}
+		else {
+			i.parentListable.setListable(i.relIndex, item);
+		}
 		refreshLookup();
 	}
 
@@ -583,7 +581,12 @@ public final class AlarmGroup implements Listable, Cloneable {
 			return;
 		}
 
-		i.parentListable.deleteListable(i.relIndex);
+		if (i.parentListable == null) {
+			deleteListable(i.relIndex);
+		}
+		else {
+			i.parentListable.deleteListable(i.relIndex);
+		}
 		refreshLookup();
 	}
 
@@ -592,6 +595,9 @@ public final class AlarmGroup implements Listable, Cloneable {
 	@Override @Contract(pure = true)
 	public String toString() { return name; }
 
+	/**
+	 * Updates the lookup list and the total number of items in the AlarmGroup.
+	 */
 	void refreshLookup() {
 		if (isOpen) {
 			lookup = generateLookup(listables);

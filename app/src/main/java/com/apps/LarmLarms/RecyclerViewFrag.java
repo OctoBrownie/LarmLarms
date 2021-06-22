@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -137,19 +136,6 @@ public class RecyclerViewFrag extends Fragment {
 		writeAlarmsToDisk(getContext(), myAdapter);
 		myAdapter.setNextAlarmToRing();
 	}
-
-	// TODO: reimplement as a dialog
-	@Override
-	public boolean onContextItemSelected(MenuItem item) {
-		switch(item.getItemId()) {
-			case R.id.optionDelete:
-				// TODO: implement
-				return true;
-			default:
-				return super.onContextItemSelected(item);
-		}
-	}
-
 
 	/* ************************************  Other Methods  ********************************** */
 	boolean isDataEmpty() { return myAdapter.getItemCount() == 0; }

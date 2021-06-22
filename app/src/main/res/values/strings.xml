@@ -34,12 +34,31 @@
 	<string name="alarm_offset_hours"><xliff:g id="hours" example="2">%d</xliff:g> hours</string>
 	<string name="alarm_offset_mins"><xliff:g id="mins" example="2">%d</xliff:g> minutes</string>
 
+	<string-array name="alarm_ordinals">
+		<item>1st</item> <item>2nd</item> <item>3rd</item> <item>4th</item> <item>5th</item>
+		<item>6th</item> <item>7th</item> <item>8th</item> <item>9th</item> <item>10th</item>
+		<item>11th</item> <item>12th</item> <item>13th</item> <item>14th</item> <item>15th</item>
+		<item>16th</item> <item>17th</item> <item>18th</item> <item>19th</item> <item>20th</item>
+		<item>21st</item> <item>22nd</item> <item>23rd</item> <item>24th</item> <item>25th</item>
+		<item>26th</item> <item>27th</item> <item>28th</item> <item>29th</item> <item>30th</item>
+		<item>31st</item>
+	</string-array>
+
+	<!-- RecyclerViewHolder context menu display strings, prefixed by "listable_menu"
+		 If you change the order of these, make sure to change it in RecyclerViewAdapter
+	-->
+	<string name="listable_menu_delete_alarm">Delete alarm</string>
+	<string name="listable_menu_delete_folder">Delete folder</string>
+	<string-array name="listable_menu_alarms">
+		<item>@string/listable_menu_delete_alarm</item>
+	</string-array>
+	<string-array name="listable_menu_folders">
+		<item>@string/listable_menu_delete_folder</item>
+	</string-array>
+
 	<!-- MainActivity display strings, prefixed by "main" -->
 	<string name="main_no_alarms_text">There\'s nothing here!</string>
 	<string name="main_add_alarm_button">+</string>
-
-	<!-- RecyclerViewHolder context menu display strings, prefixed by "listable_menu" -->
-	<string name="listable_menu_delete">Delete alarm</string>
 
 	<!-- MainActivity description strings, prefixed by "main," suffixed by "descrip" -->
 	<string name="main_add_folder_button_descrip">Add folder</string>
@@ -67,16 +86,6 @@
 	<string name="alarm_editor_day_monthly_text_1">"Every "</string>
 
 	<string name="alarm_editor_weeks_text">"Ring week: "</string>
-
-	<string-array name="alarm_ordinals">
-		<item>1st</item> <item>2nd</item> <item>3rd</item> <item>4th</item> <item>5th</item>
-		<item>6th</item> <item>7th</item> <item>8th</item> <item>9th</item> <item>10th</item>
-		<item>11th</item> <item>12th</item> <item>13th</item> <item>14th</item> <item>15th</item>
-		<item>16th</item> <item>17th</item> <item>18th</item> <item>19th</item> <item>20th</item>
-		<item>21st</item> <item>22nd</item> <item>23rd</item> <item>24th</item> <item>25th</item>
-		<item>26th</item> <item>27th</item> <item>28th</item> <item>29th</item> <item>30th</item>
-		<item>31st</item>
-	</string-array>
 
 	<!-- NOTE: it is assumed in ListableEditor that these items correspond (in the same order) to
 		 the repeat type constants defined in Alarm. -->

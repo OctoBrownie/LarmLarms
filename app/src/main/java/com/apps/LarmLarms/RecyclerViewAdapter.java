@@ -5,6 +5,7 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.drawable.Animatable;
 import android.graphics.drawable.Drawable;
@@ -27,6 +28,7 @@ import androidx.recyclerview.widget.RecyclerView;
  */
 public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.RecyclerViewHolder> {
 	private static final String TAG = "RecyclerViewAdapter";
+	private static final String DIALOG_FRAG_TAG = "RecyclerView dialog";
 
 	// TODO: perhaps abstract this data to a ContentProvider?
 	/**
@@ -38,35 +40,35 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 
 	// required view holder class for the RecyclerView
 	public static class RecyclerViewHolder extends RecyclerView.ViewHolder
-		implements View.OnClickListener {
+		implements View.OnClickListener, View.OnLongClickListener, DialogInterface.OnClickListener {
 		private static String TAG = "RecyclerViewHolder";
 
-		private Listable curr_listable;
+		private Listable listable;
 		private Context context;
 		private RecyclerViewAdapter adapter;
 		private Drawable openAnim, closeAnim;
 
 		// handles to views
 		private final View view;
-		private final TextView title_view;
-		private final TextView repeat_view;
-		private final TextView time_view;
-		private final Switch switch_view;
-		private final ImageView image_view;
+		private final TextView titleView;
+		private final TextView repeatView;
+		private final TextView timeView;
+		private final Switch switchView;
+		private final ImageView imageView;
 
-		RecyclerViewHolder (View card_view, Context curr_context) {
-			super(card_view);
+		RecyclerViewHolder (View cardView, Context currContext) {
+			super(cardView);
 
 			// saving the current context, needed in onClick callback
-			context = curr_context;
+			context = currContext;
 
 			// caching handles to the holder's views
-			view = card_view;
-			title_view = card_view.findViewById(R.id.title_text);
-			repeat_view = card_view.findViewById(R.id.repeat_text);
-			time_view = card_view.findViewById(R.id.time_text);
-			switch_view = card_view.findViewById(R.id.on_switch);
-			image_view = card_view.findViewById(R.id.folder_icon);
+			view = cardView;
+			titleView = cardView.findViewById(R.id.title_text);
+			repeatView = cardView.findViewById(R.id.repeat_text);
+			timeView = cardView.findViewById(R.id.time_text);
+			switchView = cardView.findViewById(R.id.on_switch);
+			imageView = cardView.findViewById(R.id.folder_icon);
 
 			// cache vector drawables
 			openAnim = context.getResources().getDrawable(R.drawable.folder_open_animation, context.getTheme());
@@ -74,19 +76,20 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 
 			// create onclick callbacks
 			view.setOnClickListener(this);
-			switch_view.setOnClickListener(this);
-			image_view.setOnClickListener(this);
+			view.setOnLongClickListener(this);
+			switchView.setOnClickListener(this);
+			imageView.setOnClickListener(this);
 		}
 
 		/* **************************  Getter and Setter Methods  ***************************** */
 
 		View getCardView() { return view; }
 
-		TextView getTitleText() { return title_view; }
-		TextView getRepeatText() { return repeat_view; }
-		TextView getTimeText() { return time_view; }
-		Switch getOnSwitch() { return switch_view; }
-		ImageView getImageView() { return image_view; }
+		TextView getTitleText() { return titleView; }
+		TextView getRepeatText() { return repeatView; }
+		TextView getTimeText() { return timeView; }
+		Switch getOnSwitch() { return switchView; }
+		ImageView getImageView() { return imageView; }
 
 		void setAdapter(RecyclerViewAdapter newAdapter) { adapter = newAdapter; }
 
@@ -95,21 +98,42 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 		// onClick listener for view holders
 		@Override
 		public void onClick(View v) {
+			Log.i(TAG, "Clicked layout position: " + getLayoutPosition());
 			switch(v.getId()) {
 				case R.id.card_view:
-					((MainActivity) context).editExistingListable(curr_listable, getLayoutPosition());
+					((MainActivity) context).editExistingListable(listable, getLayoutPosition());
 					return;
 				case R.id.on_switch:
-					curr_listable.toggleActive();
+					listable.toggleActive();
 					adapter.setNextAlarmToRing();
 					return;
 				case R.id.folder_icon:
-					((AlarmGroup) curr_listable).toggleOpen();
-					adapter.refreshLookup();
+					((AlarmGroup) listable).toggleOpen();
 					return;
 				default:
 					Log.e(TAG, "Unexpected view using the recycler view holder onClick method.");
 			}
+		}
+
+		// onClick listener for dialog click
+		@Override
+		public void onClick(DialogInterface dialog, int which) {
+			switch (which) {
+				case 0:
+					// delete the current listable
+					adapter.deleteListableAbs(getLayoutPosition());
+					break;
+				default:
+					Log.e(TAG, "There was an invalid choice in the Listable dialog.");
+					break;
+			}
+		}
+
+		@Override
+		public boolean onLongClick(View v) {
+			RecyclerDialogFrag diag = new RecyclerDialogFrag(this, listable.isAlarm());
+			diag.show(((MainActivity) context).getSupportFragmentManager(), DIALOG_FRAG_TAG);
+			return true;
 		}
 
 		/* **********************************  Other Methods  ********************************** */
@@ -121,7 +145,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 			getTimeText().setText(l.getNextRingTime());
 			getOnSwitch().setChecked(l.isActive());
 
-			curr_listable = l;
+			listable = l;
 			if (l.isAlarm()) {
 				getImageView().setVisibility(View.GONE);
 				getTimeText().setVisibility(View.VISIBLE);
@@ -131,21 +155,21 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 				getImageView().setVisibility(View.VISIBLE);
 				getTimeText().setVisibility(View.GONE);
 
-				if (((AlarmGroup) curr_listable).getIsOpen()) {
+				if (((AlarmGroup) listable).getIsOpen()) {
 					// open it
-					image_view.setImageDrawable(openAnim);
+					imageView.setImageDrawable(openAnim);
 				}
 				else {
 					// close it
-					image_view.setImageDrawable(closeAnim);
+					imageView.setImageDrawable(closeAnim);
 				}
-				((Animatable) image_view.getDrawable()).start();
+				((Animatable) imageView.getDrawable()).start();
 			}
 		}
 	}
 
-	RecyclerViewAdapter (Context curr_context, ArrayList<Listable> data) {
-		context = curr_context;
+	RecyclerViewAdapter (Context currContext, ArrayList<Listable> data) {
+		context = currContext;
 		dataset = new AlarmGroup();
 		dataset.setListables(data);
 
@@ -161,7 +185,6 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 		View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.recycler_view_item, parent, false);
 		RecyclerViewHolder r = new RecyclerViewHolder(v, context);
 		r.setAdapter(this);
-		((MainActivity) context).registerForContextMenu(v);
 
 		return r;
 	}
@@ -201,18 +224,10 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 
 	ArrayList<Listable> getListables() { return dataset.getListables(); }
 
-	Listable getListableAbs(int absIndex) {
-		return dataset.getListableAbs(absIndex);
-	}
+	Listable getListableAbs(int absIndex) { return dataset.getListableAbs(absIndex); }
 
 	void setListables(ArrayList<Listable> newList) {
 		dataset.setListables(newList);
-		refreshLookup();
-	}
-
-	ArrayList<Integer> getLookup() { return dataset.getLookup(); }
-	void refreshLookup() {
-		dataset.refreshLookup();
 		notifyDataSetChanged();
 	}
 
@@ -233,14 +248,19 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 	 * @param absIndex the absolute index of the Listable to set
 	 * @param item the new Listable to set it to
 	 */
-	void setListableAbs(int absIndex, Listable item) { dataset.setListableAbs(absIndex, item); }
+	void setListableAbs(int absIndex, Listable item) {
+		dataset.setListableAbs(absIndex, item);
+		notifyDataSetChanged();
+	}
 
 	/**
-	 * Sets item as the new Listable in the dataset at the relative index
-	 * @param relIndex the relative index of the Listable to set
-	 * @param item the new Listable to set it to
+	 * Deletes the item in the dataset at the absolute index
+	 * @param absIndex the absolute index of the Listable to set
 	 */
-	private void setListableRel(int relIndex, Listable item) { dataset.setListable(relIndex, item); }
+	private void deleteListableAbs(int absIndex) {
+		dataset.deleteListableAbs(absIndex);
+		notifyDataSetChanged();
+	}
 
 	/* **********************************  Other Methods  ********************************* */
 

@@ -1,10 +1,9 @@
 To do list for general features that need to be implemented or bugs to be fixed
 
-CURRENTLY WORKING ON: 
+CURRENTLY WORKING ON: moving existing Listables around (drag and drop or ListableEditor) 
 
 make the UI look prettier
 	some repeat strings don't really look nice (ex: offset strings are always plural + sound funky, exception months are shorthand and don't have an "and" between the last two exception months)
-	also not recommended to use the string concatenation that we're using currently
 add switches for ringtone and vibration (?) 
 add slider for ringtone volume 
 customizable vibrations? 
@@ -28,6 +27,8 @@ could possibly give user choice for some color presets (like the "sandy blue" th
 can maybe use FlexboxLayout for alarm editor
 	Google blog post: https://android-developers.googleblog.com/2017/02/build-flexible-layouts-with.html
 	GitHub: https://github.com/google/flexbox-layout
+could make alarm loading asynchronous, so that layout is more responsive...?
+	however, when it boots up, that means that the alarm list wouldn't be loaded yet
 
 BUGS
 sometimes a duplicate alarm (same name and everything) rings right after the first one is dismissed

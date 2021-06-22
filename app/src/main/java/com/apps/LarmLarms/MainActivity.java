@@ -3,8 +3,6 @@ package com.apps.LarmLarms;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.ContextMenu;
-import android.view.MenuInflater;
 import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -115,21 +113,6 @@ public class MainActivity extends AppCompatActivity {
 				Log.e(TAG, "Unknown request code returned.");
 		}
 
-	}
-
-	/**
-	 * Creates a floating context menu for the passed view. Only used for Listables within the
-	 * RecyclerView.
-	 * @param menu the menu to inflate into
-	 * @param v the view to inflate a menu for
-	 * @param menuInfo extra info about the menu
-	 */
-	// TODO: on my phone at least, context menu looks like a popup menu
-	@Override
-	public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
-		super.onCreateContextMenu(menu, v, menuInfo);
-		MenuInflater inflater = getMenuInflater();
-		inflater.inflate(R.menu.listable_menu, menu);
 	}
 
 	/* ************************************  Other Methods  ************************************* */

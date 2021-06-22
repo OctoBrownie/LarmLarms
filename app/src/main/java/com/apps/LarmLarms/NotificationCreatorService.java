@@ -22,7 +22,7 @@ public class NotificationCreatorService extends Service implements MediaPlayer.O
 	private static final String TAG = "NotificationCreator";
 
 	static final String CHANNEL_ID = "RingingAlarms";
-	static final int NOTIFICATION_ID = 210;
+	static final int NOTIFICATION_ID = 42;
 
 	private MediaPlayer mediaPlayer;
 
@@ -99,6 +99,8 @@ public class NotificationCreatorService extends Service implements MediaPlayer.O
 
 	@Override
 	public void onDestroy() { mediaPlayer.release(); }
+
+	/* ****************************  MediaPlayer Lifecycle Methods  ***************************** */
 
 	/**
 	 * Callback for MediaPlayer.OnPreparedListener.
