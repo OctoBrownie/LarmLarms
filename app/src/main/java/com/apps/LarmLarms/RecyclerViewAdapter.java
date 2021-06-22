@@ -28,18 +28,11 @@ import androidx.recyclerview.widget.RecyclerView;
 public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.RecyclerViewHolder> {
 	private static final String TAG = "RecyclerViewAdapter";
 
-	// TODO: make this a root AlarmGroup instead, so we don't have to implement twice?
 	// TODO: perhaps abstract this data to a ContentProvider?
 	/**
 	 * Stores all the Listables (Alarms and AlarmGroups) present
 	 */
-	private ArrayList<Listable> dataset;
-	/**
-	 * Stores the absolute indices of currently displayed Listables. Should always be updated, unless
-	 * in the middle of an operation that changes the dataset.
-	 */
-	private ArrayList<Integer> datasetLookup;
-	private int totalNumItems;		// unlike AlarmGroup, this does NOT include the parent
+	private AlarmGroup dataset;
 
 	private Context context;
 
@@ -153,9 +146,8 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 
 	RecyclerViewAdapter (Context curr_context, ArrayList<Listable> data) {
 		context = curr_context;
-		dataset = data;
-		datasetLookup = AlarmGroup.generateLookup(dataset);
-		totalNumItems = AlarmGroup.getSizeOfList(dataset);
+		dataset = new AlarmGroup();
+		dataset.setListables(data);
 
 		createNotificationChannel();
 		setNextAlarmToRing();
@@ -181,17 +173,16 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 	 */
 	@Override
 	public void onBindViewHolder (RecyclerViewHolder view, final int position) {
-		Listable l = AlarmGroup.getListableAtAbsIndex(dataset, datasetLookup, position);
-		if (l == null) {
+		ListableInfo i = dataset.getListableInfo(position);
+		if (i == null) {
 			Log.e(TAG, "Listable at absolute index " + position + " does not exist!");
 			return;
 		}
 
-		view.changeListable(l);
+		view.changeListable(i.listable);
 
 		// TODO: max indentation based on screen size?
-		int indents = AlarmGroup.getNumIndents(dataset, datasetLookup, position);
-		float dp = indents * context.getResources().getDimension(R.dimen.marginIncrement);
+		float dp = i.numIndents * context.getResources().getDimension(R.dimen.marginIncrement);
 		ViewGroup.MarginLayoutParams params =
 				new ViewGroup.MarginLayoutParams(view.getCardView().getLayoutParams());
 		// context.getResources().getDisplayMetrics().density gets the density scalar
@@ -204,34 +195,24 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 	}
 
 	@Override
-	public int getItemCount() { return totalNumItems; }
+	public int getItemCount() { return dataset.getNumItems() - 1; }
 
 	/* ******************************  Getter and Setter Methods  ***************************** */
 
-	ArrayList<Listable> getListables() { return dataset; }
+	ArrayList<Listable> getListables() { return dataset.getListables(); }
 
-	Listable getListableAbs(int abs_index) {
-		if (abs_index < 0 || abs_index >= dataset.size()) {
-			Log.e(TAG, "Could not retrieve listable. Invalid index.");
-			return null;
-		}
-		return AlarmGroup.getListableAtAbsIndex(dataset, datasetLookup, abs_index);
+	Listable getListableAbs(int absIndex) {
+		return dataset.getListableAbs(absIndex);
 	}
 
 	void setListables(ArrayList<Listable> newList) {
-		if (newList == null) {
-			Log.e(TAG, "New list of alarms was null.");
-			return;
-		}
-
-		dataset = newList;
+		dataset.setListables(newList);
 		refreshLookup();
 	}
 
-	ArrayList<Integer> getLookup() { return datasetLookup; }
+	ArrayList<Integer> getLookup() { return dataset.getLookup(); }
 	void refreshLookup() {
-		datasetLookup = AlarmGroup.generateLookup(dataset);
-		totalNumItems = AlarmGroup.getSizeOfList(dataset);
+		dataset.refreshLookup();
 		notifyDataSetChanged();
 	}
 
@@ -241,44 +222,25 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 	 * @param item the Listable to add to the list
 	 */
 	void addListable(Listable item) {
-		if (totalNumItems != 0)
-			datasetLookup.add(totalNumItems);
-		dataset.add(item);
-		totalNumItems += item.getNumItems();
-		notifyItemRangeInserted(datasetLookup.get(Math.max(datasetLookup.size() - 2, 0)), item.getNumItems());
+		dataset.addListable(item);
+		ArrayList<Integer> lookup = dataset.getLookup();
+		notifyItemRangeInserted(lookup.get(Math.max(lookup.size() - 1, 0)), item.getNumItems());
 	}
 
 	/**
-	 * Sets item as the new Listable in the dataset at the absolute index
+	 * Sets item as the new Listable in the dataset at the absolute index. If the index doesn't exist,
+	 * doesn't do anything.
 	 * @param absIndex the absolute index of the Listable to set
 	 * @param item the new Listable to set it to
 	 */
-	void setListableAbs(int absIndex, Listable item) {
-		// TODO: could combine both searches into one and reimplement as another search method?
-		int index = AlarmGroup.getListableIndexAtAbsIndex(dataset, datasetLookup, absIndex);
-		if (index == -1) { return; }
-
-		AlarmGroup folder = AlarmGroup.getParentListableAtAbsIndex(dataset, datasetLookup, absIndex);
-		if (folder == null) { setListableRel(index, item); }
-		else { folder.replaceListable(index, item); }
-		refreshLookup();
-	}
+	void setListableAbs(int absIndex, Listable item) { dataset.setListableAbs(absIndex, item); }
 
 	/**
 	 * Sets item as the new Listable in the dataset at the relative index
 	 * @param relIndex the relative index of the Listable to set
 	 * @param item the new Listable to set it to
 	 */
-	private void setListableRel(int relIndex, Listable item) {
-		int indexChange = item.getNumItems() - dataset.get(relIndex).getNumItems();
-		dataset.set(relIndex, item);
-
-		// add index change to all lookup indices
-		for (int i = relIndex + 1; i < datasetLookup.size(); i++) {
-			datasetLookup.set(i, datasetLookup.get(i) + indexChange);
-		}
-		totalNumItems += indexChange;
-	}
+	private void setListableRel(int relIndex, Listable item) { dataset.setListable(relIndex, item); }
 
 	/* **********************************  Other Methods  ********************************* */
 
@@ -287,7 +249,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 	 * one. Tells AlarmManager to wake up and call NotificationCreatorService.
 	 */
 	void setNextAlarmToRing() {
-		ListableInfo next = getNextRingingAlarm(dataset);
+		ListableInfo next = getNextRingingAlarm(dataset.getListables());
 		if (next.listable == null) {
 			Log.i(TAG, "No next listable to register to ring.");
 			return;
@@ -340,7 +302,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 				else { nextAlarm.relIndex++; }
 			}
 			else {
-				ListableInfo possible = getNextRingingAlarm(((AlarmGroup) l).getListablesInside());
+				ListableInfo possible = getNextRingingAlarm(((AlarmGroup) l).getListables());
 				if (possible.listable == null) {
 					currIndex += l.getNumItems();
 					continue;

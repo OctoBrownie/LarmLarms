@@ -127,7 +127,7 @@ public class RecyclerViewFrag extends Fragment {
 					Log.e(TAG, "ListableEditor returned with an invalid index.");
 					return;
 				}
-				((AlarmGroup) new_listable).setListablesInside(((AlarmGroup) old_listable).getListablesInside());
+				((AlarmGroup) new_listable).setListables(((AlarmGroup) old_listable).getListables());
 
 				replaceListable(index, new_listable);
 				Log.i(TAG, "Existing folder edited successfully.");
