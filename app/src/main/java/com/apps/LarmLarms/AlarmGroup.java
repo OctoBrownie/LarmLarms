@@ -118,7 +118,7 @@ public final class AlarmGroup implements Listable, Cloneable {
 	 * Creates an edit string for the current folder. Only stores the folder itself and doesn't have a
 	 * type identifier
 	 */
-	@Override @Contract(pure = true)
+	@NotNull @Override @Contract(pure = true)
 	public String toEditString() {
 		// TODO: implement toString for AlarmGroup
 		String res = name;
@@ -131,9 +131,9 @@ public final class AlarmGroup implements Listable, Cloneable {
 	 * Creates a string for storing the current folder. Stores folder with type identifier and
 	 * recursively stores all its children as well
 	 */
-	@Override @Contract(pure = true)
+	@NotNull @Override @Contract(pure = true)
 	public String toStoreString() {
-		StringBuilder res = new StringBuilder("f\t" + toEditString());
+		StringBuilder res = new StringBuilder(getStoreStringSingle());
 		res.append('\n');
 
 		for (Listable l : listables) {
@@ -141,6 +141,7 @@ public final class AlarmGroup implements Listable, Cloneable {
 			String[] lines = l.toStoreString().split("\n");		// recursive call with extra steps
 			for (String line : lines) { res.append('\t').append(line).append('\n'); }
 		}
+		res.deleteCharAt(res.length() - 1);		// deleting the last \n
 
 		return res.toString();
 	}
@@ -592,13 +593,38 @@ public final class AlarmGroup implements Listable, Cloneable {
 
 	/* ***********************************  Other Methods  ************************************** */
 
-	@Override @Contract(pure = true)
+	@NotNull @Override @Contract(pure = true)
 	public String toString() { return name; }
+
+	/**
+	 * Builds the line of the store string that represents the AlarmGroup itself.
+	 */
+	@NotNull @Contract(pure = true)
+	private String getStoreStringSingle() {
+		return "f\t" + toEditString();
+	}
+
+	/**
+	 * Returns a string describing the AlarmGroup and any AlarmGroups within it
+	 * @return a String that can be decoded with fromStoreString()
+	 */
+	@NotNull @Contract(pure = true)
+	public String toReducedString() {
+		StringBuilder builder = new StringBuilder(getStoreStringSingle());
+		builder.append('\n');
+		for (Listable l : listables) {
+			if (!l.isAlarm()) {
+				// recursive call
+				builder.append('\t').append( ((AlarmGroup)l).toReducedString()).append('\n');
+			}
+		}
+		return builder.toString();
+	}
 
 	/**
 	 * Updates the lookup list and the total number of items in the AlarmGroup.
 	 */
-	void refreshLookup() {
+	private void refreshLookup() {
 		if (isOpen) {
 			lookup = generateLookup(listables);
 			totalNumItems = getSizeOfList(listables) + 1;

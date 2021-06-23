@@ -20,6 +20,7 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.RecyclerView;
 
 /**
@@ -30,7 +31,6 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 	private static final String TAG = "RecyclerViewAdapter";
 	private static final String DIALOG_FRAG_TAG = "RecyclerView dialog";
 
-	// TODO: perhaps abstract this data to a ContentProvider?
 	/**
 	 * Stores all the Listables (Alarms and AlarmGroups) present
 	 */
@@ -98,10 +98,9 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 		// onClick listener for view holders
 		@Override
 		public void onClick(View v) {
-			Log.i(TAG, "Clicked layout position: " + getLayoutPosition());
 			switch(v.getId()) {
 				case R.id.card_view:
-					((MainActivity) context).editExistingListable(listable, getLayoutPosition());
+					adapter.editExistingListable(listable, getLayoutPosition());
 					return;
 				case R.id.on_switch:
 					listable.toggleActive();
@@ -109,6 +108,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 					return;
 				case R.id.folder_icon:
 					((AlarmGroup) listable).toggleOpen();
+					adapter.notifyDataSetChanged();
 					return;
 				default:
 					Log.e(TAG, "Unexpected view using the recycler view holder onClick method.");
@@ -170,7 +170,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 
 	RecyclerViewAdapter (Context currContext, ArrayList<Listable> data) {
 		context = currContext;
-		dataset = new AlarmGroup();
+		dataset = new AlarmGroup(context.getResources().getString(R.string.root_folder));
 		dataset.setListables(data);
 
 		createNotificationChannel();
@@ -280,8 +280,8 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 		}
 
 		Intent intent = new Intent(context, NotificationCreatorService.class);
-		intent.putExtra(MainActivity.EXTRA_LISTABLE, next.listable.toEditString());
-		intent.putExtra(MainActivity.EXTRA_LISTABLE_INDEX, next.relIndex);
+		intent.putExtra(ListableEditorActivity.EXTRA_LISTABLE, next.listable.toEditString());
+		intent.putExtra(ListableEditorActivity.EXTRA_LISTABLE_INDEX, next.absIndex);
 
 		AlarmManager manager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
 		PendingIntent pendingIntent = PendingIntent.getService(context, 0, intent,
@@ -295,20 +295,20 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 
 	/**
 	 * Searches for the next Alarm that will ring. Returns the listable and absolute index of the
-	 * listable within a ListableInfo struct.
+	 * listable (within the current dataset) within a ListableInfo struct.
 	 * @param data the dataset to look through
-	 * @return a ListableInfo with alarm and index filled correctly
+	 * @return a ListableInfo with alarm and absolute index filled correctly
 	 */
 	private static ListableInfo getNextRingingAlarm(ArrayList<Listable> data) {
 		ListableInfo nextAlarm = new ListableInfo();
 		Listable l;
-		int currIndex = 0, listablesInNextAlarmFolder = 0;
+		int absIndex = 0;
 
 		for (int i = 0; i < data.size(); i++) {
 			l = data.get(i);
 
 			if (!l.isActive()) {
-				currIndex += l.getNumItems();
+				absIndex += l.getNumItems();
 				continue;
 			}
 
@@ -316,34 +316,27 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 				((Alarm) l).updateRingTime();
 
 				// check whether it could be the next listable
-				if (nextAlarm.listable == null) { nextAlarm.listable = l; }
-				else if (((Alarm) l).getAlarmTimeMillis() < ((Alarm) nextAlarm.listable).getAlarmTimeMillis()) {
+				if (nextAlarm.listable == null || ((Alarm) l).getAlarmTimeMillis() <
+						((Alarm) nextAlarm.listable).getAlarmTimeMillis()) {
 					nextAlarm.listable = l;
-					nextAlarm.relIndex = currIndex;
-					currIndex += 1 + listablesInNextAlarmFolder;
-					listablesInNextAlarmFolder = 0;
+					nextAlarm.absIndex = absIndex;
 				}
-				else { nextAlarm.relIndex++; }
+				absIndex++;
 			}
 			else {
 				ListableInfo possible = getNextRingingAlarm(((AlarmGroup) l).getListables());
+				// there is no candidate in this folder
 				if (possible.listable == null) {
-					currIndex += l.getNumItems();
+					absIndex += l.getNumItems();
 					continue;
 				}
-				if (nextAlarm.listable == null) {
-					nextAlarm.listable = possible.listable;
-					listablesInNextAlarmFolder = l.getNumItems();
-					nextAlarm.relIndex = currIndex;
-					currIndex += possible.relIndex;
-				}
-				else if (((Alarm) possible.listable).getAlarmTimeMillis() <
+				// we had no candidate before or this candidate is better
+				if (nextAlarm.listable == null || ((Alarm) possible.listable).getAlarmTimeMillis() <
 						((Alarm) nextAlarm.listable).getAlarmTimeMillis()) {
 					nextAlarm.listable = possible.listable;
-					currIndex += 1 + listablesInNextAlarmFolder + possible.relIndex;
-					listablesInNextAlarmFolder = l.getNumItems();
+					nextAlarm.absIndex = absIndex + possible.absIndex;
 				}
-				else { currIndex += l.getNumItems(); }
+				absIndex += l.getNumItems();
 			}
 		}
 		return nextAlarm;
@@ -368,5 +361,24 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 			}
 			notificationManager.createNotificationChannel(channel);
 		}
+	}
+
+	void editExistingListable(final Listable listable, final int index) {
+		// start new activity (AlarmCreator)
+		Intent intent = new Intent(context, ListableEditorActivity.class);
+
+		// add extras (Listable, index, req id)
+		intent.putExtra(ListableEditorActivity.EXTRA_LISTABLE, listable.toEditString());
+		intent.putExtra(ListableEditorActivity.EXTRA_LISTABLE_INDEX, index);
+		// intent.putExtra(ListableEditorActivity.EXTRA_FOLDERS, dataset.toReducedString());
+		Log.i(TAG, "Dataset's reduced string: " + dataset.toReducedString());
+
+		int req;
+		if (listable.isAlarm()) { req = ListableEditorActivity.REQ_EDIT_ALARM; }
+		else { req = ListableEditorActivity.REQ_EDIT_FOLDER; }
+
+		intent.putExtra(ListableEditorActivity.EXTRA_REQ_ID, req);
+
+		((AppCompatActivity)context).startActivityForResult(intent, req);
 	}
 }

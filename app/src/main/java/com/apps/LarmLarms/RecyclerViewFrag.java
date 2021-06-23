@@ -8,6 +8,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -81,41 +83,45 @@ public class RecyclerViewFrag extends Fragment {
 	 */
 	void onListableCreatorResult(int requestCode, Intent data) {
 		Listable new_listable;
-		int index = data.getIntExtra(MainActivity.EXTRA_LISTABLE_INDEX, -1);
+		int index = data.getIntExtra(ListableEditorActivity.EXTRA_LISTABLE_INDEX, -1);
 
 		switch(requestCode) {
-			case MainActivity.REQ_NEW_ALARM:
-				new_listable = Alarm.fromEditString(getContext(), data.getStringExtra(MainActivity.EXTRA_LISTABLE));
+			case ListableEditorActivity.REQ_NEW_ALARM:
+				new_listable = Alarm.fromEditString(getContext(),
+						data.getStringExtra(ListableEditorActivity.EXTRA_LISTABLE));
 				if (new_listable == null) {
 					Log.e(TAG, "ListableEditor returned with an invalid alarm edit string.");
 					return;
 				}
 				// TODO: add new alarm where its supposed to be nested
-				addListable(new_listable);
+				myAdapter.addListable(new_listable);
 				Log.i(TAG, "New alarm saved successfully.");
 				break;
-			case MainActivity.REQ_EDIT_ALARM:
-				new_listable = Alarm.fromEditString(getContext(), data.getStringExtra(MainActivity.EXTRA_LISTABLE));
+			case ListableEditorActivity.REQ_EDIT_ALARM:
+				new_listable = Alarm.fromEditString(getContext(),
+						data.getStringExtra(ListableEditorActivity.EXTRA_LISTABLE));
 				if (new_listable == null) {
 					Log.e(TAG, "ListableEditor returned with an invalid alarm edit string.");
 					return;
 				}
-				replaceListable(index, new_listable);
+				myAdapter.setListableAbs(index, new_listable);
 				Log.i(TAG, "Existing alarm edited successfully.");
 				break;
-			case MainActivity.REQ_NEW_FOLDER:
-				new_listable = AlarmGroup.fromEditString(data.getStringExtra(MainActivity.EXTRA_LISTABLE));
+			case ListableEditorActivity.REQ_NEW_FOLDER:
+				new_listable = AlarmGroup.fromEditString(
+						data.getStringExtra(ListableEditorActivity.EXTRA_LISTABLE));
 				if (new_listable == null) {
 					Log.e(TAG, "ListableEditor returned with an invalid folder edit string.");
 					return;
 				}
 				// TODO: add new folder where its supposed to be nested
-				addListable(new_listable);
+				myAdapter.addListable(new_listable);
 				Log.i(TAG, "New folder saved successfully.");
 				break;
-			case MainActivity.REQ_EDIT_FOLDER:
+			case ListableEditorActivity.REQ_EDIT_FOLDER:
 				// will not delete children Listables of original AlarmGroup
-				new_listable = AlarmGroup.fromEditString(data.getStringExtra(MainActivity.EXTRA_LISTABLE));
+				new_listable = AlarmGroup.fromEditString(
+						data.getStringExtra(ListableEditorActivity.EXTRA_LISTABLE));
 				if (new_listable == null) {
 					Log.e(TAG, "ListableEditor returned with an invalid folder edit string.");
 					return;
@@ -128,7 +134,7 @@ public class RecyclerViewFrag extends Fragment {
 				}
 				((AlarmGroup) new_listable).setListables(((AlarmGroup) old_listable).getListables());
 
-				replaceListable(index, new_listable);
+				myAdapter.setListableAbs(index, new_listable);
 				Log.i(TAG, "Existing folder edited successfully.");
 				break;
 		}
@@ -144,6 +150,7 @@ public class RecyclerViewFrag extends Fragment {
 	 * Initializes alarm data from file.
 	 * @return A populated ArrayList of Listables or an empty one in the case of an error
 	 */
+	@NotNull
 	static ArrayList<Listable> getAlarmsFromDisk(Context context) {
 		ArrayList<Listable> data = new ArrayList<>();
 
@@ -175,7 +182,7 @@ public class RecyclerViewFrag extends Fragment {
 					currFolder.append(currLine);
 				}
 				else {
-					Log.e(TAG, "Invalid line in alarms.txt");
+					Log.e(TAG, "Invalid line in alarms.txt: " + currLine);
 					return new ArrayList<>();
 				}
 				currLine = bReader.readLine();
@@ -215,6 +222,8 @@ public class RecyclerViewFrag extends Fragment {
 			// delete the last '\n'
 			if (builder.length() != 0) builder.deleteCharAt(builder.length() - 1);
 
+			System.out.println("Here is what we wrote to disk: " + builder.toString());
+
 			os.write(builder.toString().getBytes());
 			os.close();
 		}
@@ -228,39 +237,4 @@ public class RecyclerViewFrag extends Fragment {
 	 * doesn't change at all, we just need to rebind the ViewHolders to get the correct date string.
 	 */
 	void refreshAlarms() { myAdapter.notifyDataSetChanged(); }
-
-	/**
-	 * Adds a Listable to the end of the dataset.
-	 * @param item the new Listable to add
-	 */
-	private void addListable(Listable item) {
-		if (item == null) {
-			Log.e(TAG, "Cannot add Listable. Invalid Listable.");
-			return;
-		}
-		int startAbsPos = myAdapter.getItemCount();		// where the item should be added
-
-		myAdapter.addListable(item);
-		myAdapter.notifyItemRangeInserted(startAbsPos, item.getNumItems());
-	}
-
-	/**
-	 * Replaces the Listable at the specified index. If an error is encountered, it will silently
-	 * exit.
-	 * @param index the index to replace with the Alarm
-	 * @param item the Listable to replace it with
-	 */
-	private void replaceListable(int index, Listable item) {
-		if (index < 0 || index >= myAdapter.getItemCount()) {
-			Log.e(TAG, "Cannot replace Listable. Invalid index received.");
-			return;
-		}
-		else if (item == null) {
-			Log.e(TAG, "Cannot replace Listable. Invalid Listable.");
-			return;
-		}
-
-		myAdapter.setListableAbs(index, item);
-		myAdapter.notifyItemRangeChanged(index, myAdapter.getItemCount() - index);
-	}
 }

@@ -30,7 +30,8 @@ public class NotificationCreatorService extends Service implements MediaPlayer.O
 
 	@Override
 	public int onStartCommand(Intent inIntent, int flags, int startId) {
-		Alarm currAlarm = Alarm.fromEditString(this, inIntent.getStringExtra(MainActivity.EXTRA_LISTABLE));
+		Alarm currAlarm = Alarm.fromEditString(this,
+				inIntent.getStringExtra(ListableEditorActivity.EXTRA_LISTABLE));
 		if (currAlarm == null) {
 			Log.e(TAG, "Alarm was invalid.");
 			stopSelf();
@@ -39,9 +40,9 @@ public class NotificationCreatorService extends Service implements MediaPlayer.O
 
 		Intent fullScreenIntent = new Intent(this, AlarmRingingActivity.class);
 		fullScreenIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-		fullScreenIntent.putExtra(MainActivity.EXTRA_LISTABLE, currAlarm.toEditString());
-		fullScreenIntent.putExtra(MainActivity.EXTRA_LISTABLE_INDEX,
-				inIntent.getIntExtra(MainActivity.EXTRA_LISTABLE_INDEX, -1));
+		fullScreenIntent.putExtra(ListableEditorActivity.EXTRA_LISTABLE, currAlarm.toEditString());
+		fullScreenIntent.putExtra(ListableEditorActivity.EXTRA_LISTABLE_INDEX,
+				inIntent.getIntExtra(ListableEditorActivity.EXTRA_LISTABLE_INDEX, -1));
 		PendingIntent fullScreenPendingIntent = PendingIntent.getActivity(this, 0, fullScreenIntent,
 				PendingIntent.FLAG_UPDATE_CURRENT);
 
@@ -100,7 +101,7 @@ public class NotificationCreatorService extends Service implements MediaPlayer.O
 	@Override
 	public void onDestroy() { mediaPlayer.release(); }
 
-	/* ****************************  MediaPlayer Lifecycle Methods  ***************************** */
+	/* ********************************  MediaPlayer Callbacks  ******************************** */
 
 	/**
 	 * Callback for MediaPlayer.OnPreparedListener.

@@ -35,7 +35,20 @@ import androidx.appcompat.app.AppCompatActivity;
 public class ListableEditorActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
 	private final static String TAG = "ListableEditor";
 
-	private final static int REQ_GET_RINGTONE = 0;
+	// tags for intents carrying alarms
+	final static String EXTRA_LISTABLE = "com.apps.AlarmsButBetter.ALARM";
+	final static String EXTRA_LISTABLE_INDEX = "com.apps.AlarmsButBetter.ALARM_INDEX";
+	final static String EXTRA_REQ_ID = "com.apps.AlarmsButBetter.REQ_ID";
+	final static String EXTRA_FOLDERS = "com.apps.AlarmsButBetter.FOLDERS";
+
+	// for inbound intents
+	final static int REQ_NEW_ALARM = 0;
+	final static int REQ_EDIT_ALARM = 1;
+	final static int REQ_NEW_FOLDER = 2;
+	final static int REQ_EDIT_FOLDER = 3;
+
+	// for outbound intents
+	private final static int REQ_GET_RINGTONE = 4;
 
 	private Listable workingListable;
 
@@ -62,26 +75,26 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		int startedState = getIntent().getIntExtra(MainActivity.EXTRA_REQ_ID, -1);
+		int startedState = getIntent().getIntExtra(EXTRA_REQ_ID, -1);
 
 		// NOTE: this switch statement is only for setting up activity variables, NOT queuing any UI
 		// changes, since the content view hasn't been set up yet.
 		switch(startedState) {
-			case MainActivity.REQ_NEW_ALARM:
+			case REQ_NEW_ALARM:
 				newAlarmFieldSetup();
 				Log.i(TAG, "Creating a new alarm.");
 				break;
 				
-			case MainActivity.REQ_EDIT_ALARM:
+			case REQ_EDIT_ALARM:
 				editAlarmFieldSetup();
 				Log.i(TAG, "Editing an existing alarm.");
 				break;
 				
-			case MainActivity.REQ_NEW_FOLDER:
+			case REQ_NEW_FOLDER:
 				newFolderFieldSetup();
 				Log.i(TAG, "Creating a new folder.");
 				break;
-			case MainActivity.REQ_EDIT_FOLDER:
+			case REQ_EDIT_FOLDER:
 				editFolderFieldSetup();
 				Log.i(TAG, "Editing an existing folder.");
 				break;
@@ -97,11 +110,11 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 
 		// this switch statement can be used for any REQ-specific UI changes
 		switch(startedState) {
-			case MainActivity.REQ_NEW_ALARM:
-			case MainActivity.REQ_NEW_FOLDER:
+			case REQ_NEW_ALARM:
+			case REQ_NEW_FOLDER:
 				break;
-			case MainActivity.REQ_EDIT_ALARM:
-			case MainActivity.REQ_EDIT_FOLDER:
+			case REQ_EDIT_ALARM:
+			case REQ_EDIT_FOLDER:
 				((EditText) findViewById(R.id.nameInput)).setText(workingListable.getListableName());
 				break;
 			default:
@@ -230,9 +243,9 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 		String editString = workingListable.toEditString();
 		Intent result_intent = new Intent();
 
-		result_intent.putExtra(MainActivity.EXTRA_LISTABLE, editString);
+		result_intent.putExtra(EXTRA_LISTABLE, editString);
 		if (isEditing) {
-			result_intent.putExtra(MainActivity.EXTRA_LISTABLE_INDEX, listableIndex);
+			result_intent.putExtra(EXTRA_LISTABLE_INDEX, listableIndex);
 		}
 
 		// exit with result
@@ -341,9 +354,9 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 
 		isEditingAlarm = true;
 		isEditing = true;
-		listableIndex = callingIntent.getIntExtra(MainActivity.EXTRA_LISTABLE_INDEX, -1);
+		listableIndex = callingIntent.getIntExtra(EXTRA_LISTABLE_INDEX, -1);
 
-		workingListable = Alarm.fromEditString(this, callingIntent.getStringExtra(MainActivity.EXTRA_LISTABLE));
+		workingListable = Alarm.fromEditString(this, callingIntent.getStringExtra(EXTRA_LISTABLE));
 		if (workingListable == null) {
 			Log.e(TAG, "fromEditString returned null.");
 			exitActivity();
@@ -361,9 +374,9 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 
 		isEditingAlarm = false;
 		isEditing = true;
-		listableIndex = callingIntent.getIntExtra(MainActivity.EXTRA_LISTABLE_INDEX, -1);
+		listableIndex = callingIntent.getIntExtra(EXTRA_LISTABLE_INDEX, -1);
 
-		workingListable = AlarmGroup.fromEditString(callingIntent.getStringExtra(MainActivity.EXTRA_LISTABLE));
+		workingListable = AlarmGroup.fromEditString(callingIntent.getStringExtra(EXTRA_LISTABLE));
 		if (workingListable == null) {
 			Log.e(TAG, "fromEditString returned null.");
 			exitActivity();

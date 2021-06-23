@@ -22,7 +22,7 @@ public class AlarmRingingActivity extends AppCompatActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_alarm_ringing);
 
-		currAlarm = Alarm.fromEditString(this, getIntent().getStringExtra(MainActivity.EXTRA_LISTABLE));
+		currAlarm = Alarm.fromEditString(this, getIntent().getStringExtra(ListableEditorActivity.EXTRA_LISTABLE));
 		if (currAlarm == null) {
 			Log.e(TAG, "The alarm given was invalid...?");
 			finish();
@@ -104,7 +104,7 @@ public class AlarmRingingActivity extends AppCompatActivity {
 		stopService(serviceIntent);
 
 		RecyclerViewAdapter adapter = new RecyclerViewAdapter(this, RecyclerViewFrag.getAlarmsFromDisk(this));
-		adapter.setListableAbs(getIntent().getIntExtra(MainActivity.EXTRA_LISTABLE_INDEX, -1), currAlarm);
+		adapter.setListableAbs(getIntent().getIntExtra(ListableEditorActivity.EXTRA_LISTABLE_INDEX, -1), currAlarm);
 
 		adapter.setNextAlarmToRing();
 		RecyclerViewFrag.writeAlarmsToDisk(this, adapter);

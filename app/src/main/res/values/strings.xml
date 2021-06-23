@@ -4,6 +4,7 @@
 	<string name="space">" "</string>
 	<string name="separator">", "</string>
 	<string name="final_separator">" and "</string>
+	<string name="root_folder">no folder</string>
 
 	<!-- notification display strings, prefixed by "notif" -->
 	<string name="notif_channel_name">Alarms</string>

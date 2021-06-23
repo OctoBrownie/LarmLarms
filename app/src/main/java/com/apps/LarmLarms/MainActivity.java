@@ -11,17 +11,6 @@ import androidx.fragment.app.FragmentTransaction;
 public class MainActivity extends AppCompatActivity {
 	private final static String TAG = "MainActivity";
 
-	// tag for intents carrying alarms
-	final static String EXTRA_LISTABLE = "com.apps.AlarmsButBetter.ALARM";
-	final static String EXTRA_LISTABLE_INDEX = "com.apps.AlarmsButBetter.ALARM_INDEX";
-	final static String EXTRA_REQ_ID = "com.apps.AlarmsButBetter.REQ_ID";
-
-	// used when calling AlarmCreator, so we know the activity results came back from an AlarmCreator
-	final static int REQ_NEW_ALARM = 0;
-	final static int REQ_EDIT_ALARM = 1;
-	final static int REQ_NEW_FOLDER = 2;
-	final static int REQ_EDIT_FOLDER = 3;
-
 	// some important views
 	private RecyclerViewFrag myRecyclerFrag;
 	private View noAlarmsText;
@@ -63,20 +52,20 @@ public class MainActivity extends AppCompatActivity {
 	public void addNewAlarm(View view) {
 		// start AlarmCreator activity
 		Intent intent = new Intent(this, ListableEditorActivity.class);
-		intent.putExtra(EXTRA_REQ_ID, REQ_NEW_ALARM);
+		intent.putExtra(ListableEditorActivity.EXTRA_REQ_ID, ListableEditorActivity.REQ_NEW_ALARM);
 
 		// noinspection deprecation
-		startActivityForResult(intent, REQ_NEW_ALARM);
+		startActivityForResult(intent, ListableEditorActivity.REQ_NEW_ALARM);
 	}
 
 	// onClick callback for the add new folder button
 	public void addNewFolder(View view) {
 		// start AlarmCreator activity
 		Intent intent = new Intent(this, ListableEditorActivity.class);
-		intent.putExtra(EXTRA_REQ_ID, REQ_NEW_FOLDER);
+		intent.putExtra(ListableEditorActivity.EXTRA_REQ_ID, ListableEditorActivity.REQ_NEW_FOLDER);
 
 		// noinspection deprecation
-		startActivityForResult(intent, REQ_NEW_FOLDER);
+		startActivityForResult(intent, ListableEditorActivity.REQ_NEW_FOLDER);
 	}
 
 	/**
@@ -95,7 +84,8 @@ public class MainActivity extends AppCompatActivity {
 			Log.i(TAG, "Action cancelled.");
 			return;
 		}
-		if (resultCode != RESULT_OK || data == null || data.getStringExtra(EXTRA_LISTABLE) == null) {
+		if (resultCode != RESULT_OK || data == null ||
+				data.getStringExtra(ListableEditorActivity.EXTRA_LISTABLE) == null) {
 			Log.e(TAG, "Data from ListableEditorActivity was invalid.");
 			return;
 		}
@@ -103,10 +93,10 @@ public class MainActivity extends AppCompatActivity {
 		showFrag();
 
 		switch(requestCode) {
-			case REQ_NEW_ALARM:
-			case REQ_EDIT_ALARM:
-			case REQ_NEW_FOLDER:
-			case REQ_EDIT_FOLDER:
+			case ListableEditorActivity.REQ_NEW_ALARM:
+			case ListableEditorActivity.REQ_EDIT_ALARM:
+			case ListableEditorActivity.REQ_NEW_FOLDER:
+			case ListableEditorActivity.REQ_EDIT_FOLDER:
 				myRecyclerFrag.onListableCreatorResult(requestCode, data);
 				break;
 			default:
@@ -127,22 +117,5 @@ public class MainActivity extends AppCompatActivity {
 		fragContainer.setVisibility(View.GONE);
 		noAlarmsText.setVisibility(View.VISIBLE);
 		Log.i("RecyclerViewFragment", "Recycler view hidden.");
-	}
-
-	void editExistingListable(final Listable listable, final int index) {
-		// start new activity (AlarmCreator)
-		Intent intent = new Intent(this, ListableEditorActivity.class);
-
-		// add extras (Listable, index, req id)
-		intent.putExtra(EXTRA_LISTABLE, listable.toEditString());
-		intent.putExtra(EXTRA_LISTABLE_INDEX, index);
-
-		int req;
-		if (listable.isAlarm()) { req = REQ_EDIT_ALARM; }
-		else { req = REQ_EDIT_FOLDER; }
-
-		intent.putExtra(EXTRA_REQ_ID, req);
-
-		startActivityForResult(intent, req);
 	}
 }
