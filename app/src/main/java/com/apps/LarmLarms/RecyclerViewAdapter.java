@@ -229,6 +229,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 	void setListables(ArrayList<Listable> newList) {
 		dataset.setListables(newList);
 		notifyDataSetChanged();
+		setNextAlarmToRing();
 	}
 
 	/**
@@ -240,6 +241,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 		dataset.addListable(item);
 		ArrayList<Integer> lookup = dataset.getLookup();
 		notifyItemRangeInserted(lookup.get(Math.max(lookup.size() - 1, 0)), item.getNumItems());
+		setNextAlarmToRing();
 	}
 
 	/**
@@ -251,6 +253,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 	void setListableAbs(int absIndex, Listable item) {
 		dataset.setListableAbs(absIndex, item);
 		notifyDataSetChanged();
+		setNextAlarmToRing();
 	}
 
 	/**
@@ -260,6 +263,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 	private void deleteListableAbs(int absIndex) {
 		dataset.deleteListableAbs(absIndex);
 		notifyDataSetChanged();
+		setNextAlarmToRing();
 	}
 
 	/* **********************************  Other Methods  ********************************* */
