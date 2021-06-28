@@ -1,9 +1,10 @@
 To do list for general features that need to be implemented or bugs to be fixed
 
-CURRENTLY WORKING ON: moving existing Listables around (ListableEditor) 
+CURRENTLY WORKING ON: implementing AlarmDataService so that we don't have any concurrency issues 
+
+moving existing Listables around (ListableEditor) 
 	could send the entire database in the intent, wouldn't be that fast though
 	could send a reduced version of the database, with only folders (major problem: how do you get the folder to add it to after returning?)
-
 make the UI look prettier
 	some repeat strings don't really look nice (ex: offset strings are always plural + sound funky, exception months are shorthand and don't have an "and" between the last two exception months)
 new ListableEditor features 
@@ -24,6 +25,7 @@ perhaps make setter functions return a ref to the object (allow chain setting)
 remove superfluous methods and unnecessary fields 
 	same with styles or strings or colors or attr or dimens or...
 silent exiting (+ logging) when encountering issues or raising exceptions?
+	could also print stack trace
 could remove the isActive field in edit strings (not REALLY necessary... I think)
 could probably remove a lot of ids (i.e. for the text labels)
 could possibly give user choice for some color presets (like the "sandy blue" theme that it almost feels like we're going for right now)
@@ -34,6 +36,8 @@ could make alarm loading asynchronous, so that layout is more responsive...?
 	however, when it boots up, that means that the alarm list wouldn't be loaded yet
 make local tests instrumented tests instead
 make more tests
+add a callback to swap frags when the Alarm set transitions between being empty and filled 
+could make Alarm and AlarmGroup into Parcelables
 
 BUGS
 sometimes a duplicate alarm (same name and everything) rings right after the first one is dismissed

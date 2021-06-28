@@ -35,149 +35,20 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 	 * Stores all the Listables (Alarms and AlarmGroups) present
 	 */
 	private AlarmGroup dataset;
-
+	/**
+	 * Stores the context that this is being run in.
+	 */
 	private Context context;
-
-	// required view holder class for the RecyclerView
-	public static class RecyclerViewHolder extends RecyclerView.ViewHolder
-		implements View.OnClickListener, View.OnLongClickListener, DialogInterface.OnClickListener {
-		private static String TAG = "RecyclerViewHolder";
-
-		private Listable listable;
-		private Context context;
-		private RecyclerViewAdapter adapter;
-		private Drawable openAnim, closeAnim;
-
-		// handles to views
-		private final View view;
-		private final TextView titleView;
-		private final TextView repeatView;
-		private final TextView timeView;
-		private final Switch switchView;
-		private final ImageView imageView;
-
-		RecyclerViewHolder (View cardView, Context currContext) {
-			super(cardView);
-
-			// saving the current context, needed in onClick callback
-			context = currContext;
-
-			// caching handles to the holder's views
-			view = cardView;
-			titleView = cardView.findViewById(R.id.title_text);
-			repeatView = cardView.findViewById(R.id.repeat_text);
-			timeView = cardView.findViewById(R.id.time_text);
-			switchView = cardView.findViewById(R.id.on_switch);
-			imageView = cardView.findViewById(R.id.folder_icon);
-
-			// cache vector drawables
-			openAnim = context.getResources().getDrawable(R.drawable.folder_open_animation, context.getTheme());
-			closeAnim = context.getResources().getDrawable(R.drawable.folder_close_animation, context.getTheme());
-
-			// create onclick callbacks
-			view.setOnClickListener(this);
-			view.setOnLongClickListener(this);
-			switchView.setOnClickListener(this);
-			imageView.setOnClickListener(this);
-		}
-
-		/* **************************  Getter and Setter Methods  ***************************** */
-
-		View getCardView() { return view; }
-
-		TextView getTitleText() { return titleView; }
-		TextView getRepeatText() { return repeatView; }
-		TextView getTimeText() { return timeView; }
-		Switch getOnSwitch() { return switchView; }
-		ImageView getImageView() { return imageView; }
-
-		void setAdapter(RecyclerViewAdapter newAdapter) { adapter = newAdapter; }
-
-		/* ***********************************  Callbacks  ********************************* */
-
-		// onClick listener for view holders
-		@Override
-		public void onClick(View v) {
-			switch(v.getId()) {
-				case R.id.card_view:
-					adapter.editExistingListable(listable, getLayoutPosition());
-					return;
-				case R.id.on_switch:
-					listable.toggleActive();
-					adapter.setNextAlarmToRing();
-					return;
-				case R.id.folder_icon:
-					((AlarmGroup) listable).toggleOpen();
-					adapter.notifyDataSetChanged();
-					return;
-				default:
-					Log.e(TAG, "Unexpected view using the recycler view holder onClick method.");
-			}
-		}
-
-		// onClick listener for dialog click
-		@Override
-		public void onClick(DialogInterface dialog, int which) {
-			switch (which) {
-				case 0:
-					// delete the current listable
-					adapter.deleteListableAbs(getLayoutPosition());
-					break;
-				default:
-					Log.e(TAG, "There was an invalid choice in the Listable dialog.");
-					break;
-			}
-		}
-
-		@Override
-		public boolean onLongClick(View v) {
-			RecyclerDialogFrag diag = new RecyclerDialogFrag(this, listable.isAlarm());
-			diag.show(((MainActivity) context).getSupportFragmentManager(), DIALOG_FRAG_TAG);
-			return true;
-		}
-
-		/* **********************************  Other Methods  ********************************** */
-
-		// method for binding a new Listable to the current ViewHolder
-		private void changeListable(Listable l) {
-			getTitleText().setText(l.getListableName());
-			getRepeatText().setText(l.getRepeatString());
-			getTimeText().setText(l.getNextRingTime());
-			getOnSwitch().setChecked(l.isActive());
-
-			listable = l;
-			if (l.isAlarm()) {
-				getImageView().setVisibility(View.GONE);
-				getTimeText().setVisibility(View.VISIBLE);
-			}
-			else {
-				// is an AlarmGroup
-				getImageView().setVisibility(View.VISIBLE);
-				getTimeText().setVisibility(View.GONE);
-
-				if (((AlarmGroup) listable).getIsOpen()) {
-					// open it
-					imageView.setImageDrawable(openAnim);
-				}
-				else {
-					// close it
-					imageView.setImageDrawable(closeAnim);
-				}
-				((Animatable) imageView.getDrawable()).start();
-			}
-		}
-	}
 
 	RecyclerViewAdapter (Context currContext, ArrayList<Listable> data) {
 		context = currContext;
-		dataset = new AlarmGroup(context.getResources().getString(R.string.root_folder));
-		dataset.setListables(data);
+		dataset = new AlarmGroup(context.getResources().getString(R.string.root_folder), data);
 
 		createNotificationChannel();
 		setNextAlarmToRing();
 	}
 
-	/* ***************************  RecyclerViewAdapter Methods  ***************************** */
+	/* ***************************  RecyclerView.Adapter Methods  ***************************** */
 
 	@Override
 	public RecyclerViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
@@ -381,4 +252,135 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 
 		((AppCompatActivity)context).startActivityForResult(intent, req);
 	}
+
+	// required view holder class for the RecyclerView
+	public static class RecyclerViewHolder extends RecyclerView.ViewHolder
+			implements View.OnClickListener, View.OnLongClickListener, DialogInterface.OnClickListener {
+		private static String TAG = "RecyclerViewHolder";
+
+		private Listable listable;
+		private Context context;
+		private RecyclerViewAdapter adapter;
+		private Drawable openAnim, closeAnim;
+
+		// handles to views
+		private final View view;
+		private final TextView titleView;
+		private final TextView repeatView;
+		private final TextView timeView;
+		private final Switch switchView;
+		private final ImageView imageView;
+
+		RecyclerViewHolder (View cardView, Context currContext) {
+			super(cardView);
+
+			// saving the current context, needed in onClick callback
+			context = currContext;
+
+			// caching handles to the holder's views
+			view = cardView;
+			titleView = cardView.findViewById(R.id.title_text);
+			repeatView = cardView.findViewById(R.id.repeat_text);
+			timeView = cardView.findViewById(R.id.time_text);
+			switchView = cardView.findViewById(R.id.on_switch);
+			imageView = cardView.findViewById(R.id.folder_icon);
+
+			// cache vector drawables
+			openAnim = context.getResources().getDrawable(R.drawable.folder_open_animation, context.getTheme());
+			closeAnim = context.getResources().getDrawable(R.drawable.folder_close_animation, context.getTheme());
+
+			// create onclick callbacks
+			view.setOnClickListener(this);
+			view.setOnLongClickListener(this);
+			switchView.setOnClickListener(this);
+			imageView.setOnClickListener(this);
+		}
+
+		/* **************************  Getter and Setter Methods  ***************************** */
+
+		View getCardView() { return view; }
+
+		TextView getTitleText() { return titleView; }
+		TextView getRepeatText() { return repeatView; }
+		TextView getTimeText() { return timeView; }
+		Switch getOnSwitch() { return switchView; }
+		ImageView getImageView() { return imageView; }
+
+		void setAdapter(RecyclerViewAdapter newAdapter) { adapter = newAdapter; }
+
+		/* ***********************************  Callbacks  ********************************* */
+
+		// onClick listener for view holders
+		@Override
+		public void onClick(View v) {
+			switch(v.getId()) {
+				case R.id.card_view:
+					adapter.editExistingListable(listable, getLayoutPosition());
+					return;
+				case R.id.on_switch:
+					listable.toggleActive();
+					adapter.setNextAlarmToRing();
+					return;
+				case R.id.folder_icon:
+					((AlarmGroup) listable).toggleOpen();
+					adapter.notifyDataSetChanged();
+					return;
+				default:
+					Log.e(TAG, "Unexpected view using the recycler view holder onClick method.");
+			}
+		}
+
+		// onClick listener for dialog click
+		@Override
+		public void onClick(DialogInterface dialog, int which) {
+			switch (which) {
+				case 0:
+					// delete the current listable
+					adapter.deleteListableAbs(getLayoutPosition());
+					break;
+				default:
+					Log.e(TAG, "There was an invalid choice in the Listable dialog.");
+					break;
+			}
+		}
+
+		@Override
+		public boolean onLongClick(View v) {
+			RecyclerDialogFrag diag = new RecyclerDialogFrag(this, listable.isAlarm());
+			diag.show(((MainActivity) context).getSupportFragmentManager(), DIALOG_FRAG_TAG);
+			return true;
+		}
+
+		/* **********************************  Other Methods  ********************************** */
+
+		// method for binding a new Listable to the current ViewHolder
+		private void changeListable(Listable l) {
+			getTitleText().setText(l.getListableName());
+			getRepeatText().setText(l.getRepeatString());
+			getTimeText().setText(l.getNextRingTime());
+			getOnSwitch().setChecked(l.isActive());
+
+			listable = l;
+			if (l.isAlarm()) {
+				getImageView().setVisibility(View.GONE);
+				getTimeText().setVisibility(View.VISIBLE);
+			}
+			else {
+				// is an AlarmGroup
+				getImageView().setVisibility(View.VISIBLE);
+				getTimeText().setVisibility(View.GONE);
+
+				if (((AlarmGroup) listable).getIsOpen()) {
+					// open it
+					imageView.setImageDrawable(openAnim);
+				}
+				else {
+					// close it
+					imageView.setImageDrawable(closeAnim);
+				}
+				((Animatable) imageView.getDrawable()).start();
+			}
+		}
+	}
+
 }

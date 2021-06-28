@@ -1,8 +1,14 @@
 package com.apps.LarmLarms;
 
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.IBinder;
+import android.os.Message;
+import android.os.Messenger;
+import android.os.RemoteException;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -33,6 +39,9 @@ public class RecyclerViewFrag extends Fragment {
 	
 	private RecyclerViewAdapter myAdapter;
 
+	private boolean boundToService = false;
+	private ServiceConnection dataConn;
+
 	/* **********************************  Lifecycle Methods  ******************************** */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -44,6 +53,11 @@ public class RecyclerViewFrag extends Fragment {
 			myAdapter = new RecyclerViewAdapter(getContext(), getAlarmsFromDisk(getContext()));
 			Log.i(TAG, "Fragment initialized successfully.");
 		}
+
+		// testing to see whether AlarmDataService binding works
+		dataConn = new DataServiceConnection();
+		getContext().bindService(new Intent(getContext(), AlarmDataService.class), dataConn,
+				Context.BIND_AUTO_CREATE);
 	}
 
 	@Override
@@ -71,6 +85,11 @@ public class RecyclerViewFrag extends Fragment {
 	public void onStop() {
 		super.onStop();
 		writeAlarmsToDisk(getContext(), myAdapter);
+
+		if (boundToService) {
+			getContext().unbindService(dataConn);
+			boundToService = false;
+		}
 	}
 
 	/* ************************************  Callbacks  ************************************** */
@@ -222,8 +241,6 @@ public class RecyclerViewFrag extends Fragment {
 			// delete the last '\n'
 			if (builder.length() != 0) builder.deleteCharAt(builder.length() - 1);
 
-			System.out.println("Here is what we wrote to disk: " + builder.toString());
-
 			os.write(builder.toString().getBytes());
 			os.close();
 		}
@@ -237,4 +254,25 @@ public class RecyclerViewFrag extends Fragment {
 	 * doesn't change at all, we just need to rebind the ViewHolders to get the correct date string.
 	 */
 	void refreshAlarms() { myAdapter.notifyDataSetChanged(); }
+
+	private class DataServiceConnection implements ServiceConnection {
+		@Override
+		public void onServiceConnected(ComponentName className, IBinder service) {
+			boundToService = true;
+			Messenger messenger = new Messenger(service);
+			Message msg = Message.obtain(null, AlarmDataService.MSG_GET_LISTABLE, 0, 0);
+			try {
+				messenger.send(msg);
+			}
+			catch (RemoteException e) {
+				e.printStackTrace();
+			}
+		}
+
+		@Override
+		public void onServiceDisconnected(ComponentName className) {
+			// sad, it crashed...
+			boundToService = false;
+		}
+	}
 }

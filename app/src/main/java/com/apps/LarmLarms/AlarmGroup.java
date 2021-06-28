@@ -49,10 +49,17 @@ public final class AlarmGroup implements Listable, Cloneable {
 		totalNumItems = 1;		// for the empty AlarmGroup
 	}
 
-	// gives a name to the group
+	// gives a name to the folder
 	public AlarmGroup(String title) {
 		this();
 		setListableName(title);
+	}
+
+	// sets listables and gives the folder a title
+	public AlarmGroup(String title, ArrayList<Listable> children) {
+		this();
+		setListableName(title);
+		setListables(children);
 	}
 
 	/* *******************************  Methods from Listable  ****************************** */
@@ -609,7 +616,7 @@ public final class AlarmGroup implements Listable, Cloneable {
 	 * @return a String that can be decoded with fromStoreString()
 	 */
 	@NotNull @Contract(pure = true)
-	public String toReducedString() {
+	String toReducedString() {
 		StringBuilder builder = new StringBuilder(getStoreStringSingle());
 		builder.append('\n');
 		for (Listable l : listables) {
