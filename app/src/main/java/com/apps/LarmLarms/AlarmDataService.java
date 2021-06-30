@@ -48,19 +48,20 @@ public class AlarmDataService extends Service {
 	 * Inbound: A client wants to be notified of any data changes. In the replyTo field there should
 	 * be a Messenger to send a MSG_DATA_CHANGED message to when data has changed.
 	 * <br/>
-	 * Outbound: Means that the data has been changed, only sent to registered listeners. Puts a
-	 * ListableInfo describing the entire database in a bundle accessible by getData() using the
-	 * BUNDLE_INFO_KEY for the key.
+	 * Outbound: Means that the data has been changed, only sent to registered listeners. No
+	 * guarantees about the fields within the message. Means that the new data has been written to
+	 * the alarm store and can be queried from the service or read directly from disk.
 	 */
 	static final int MSG_DATA_CHANGED = 0;
 
 	/**
 	 * Inbound: the client is asking for a specific Listable. The specified Listable's absolute
 	 * index should be in the arg1 field, and the Messenger to reply to should be in the replyTo
-	 * field.
+	 * field. Can also take a Handler coming from the getTarget() method, but a Messenger is
+	 * preferred and will be used instead if present.
 	 * <br/>
 	 * Outbound: a response with a ListableInfo from the Service. Puts the absolute index in the arg1
-	 * field and the ListableInfo in a bundle accessible by getData() using the
+	 * field and the ListableInfo in a bundle accessible by getData() or peekData() using the
 	 * BUNDLE_INFO_KEY for the key.
 	 */
 	static final int MSG_GET_LISTABLE = 1;
@@ -83,7 +84,9 @@ public class AlarmDataService extends Service {
 	static final int MSG_SET_LISTABLE = 3;
 	/**
 	 * Inbound: the client wants to add a Listable at the specified index and parent. A ListableInfo
-	 * should be in the obj field, with listable, parentListable, and absIndex filled out.
+	 * should be in the data bundle (using BUNDLE_INFO_KEY for its key), with the new Listable in the
+	 * Listable field, the absolute index of the new parent in absParentIndex, and the new absolute
+	 * index in absIndex.
 	 * TODO: Figure out what information is needed for adding Listables anywhere in a list
 	 * <br/>
 	 * Outbound: N/A
@@ -91,8 +94,9 @@ public class AlarmDataService extends Service {
 	static final int MSG_ADD_LISTABLE = 4;
 	/**
 	 * Inbound: the client wants to move a Listable to a new index. A ListableInfo should be in the
-	 * obj field, with the new parent in parentListable, and the new absolute index in absIndex.
-	 * arg1 should be filled with the old absolute index of the Listable.
+	 * data bundle (using BUNDLE_INFO_KEY for its key), with the absolute index of the new parent in
+	 * absParentIndex and the new absolute index in absIndex. arg1 should be filled with the old
+	 * absolute index of the Listable.
 	 * TODO: Figure out what information is needed for moving Listables anywhere in a list
 	 * <br/>
 	 * Outbound: N/A
@@ -154,6 +158,7 @@ public class AlarmDataService extends Service {
 
 	public AlarmDataService() {
 		dataset = new AlarmGroup(getResources().getString(R.string.root_folder), getAlarmsFromDisk(this));
+		dataChangeListeners = new ArrayList<>();
 	}
 
 	/**
@@ -241,7 +246,7 @@ public class AlarmDataService extends Service {
 	 * @param data The data to write, doesn't include the AlarmGroup itself (uses getListables() to
 	 *             retrieve Listables to write). This value may not be null.
 	 */
-	static void writeAlarmsToDisk(@NotNull Context context, @NotNull AlarmGroup data) {
+	private static void writeAlarmsToDisk(@NotNull Context context, @NotNull AlarmGroup data) {
 		try {
 			File alarmFile = new File(context.getFilesDir(), ALARM_STORE_FILE_NAME);
 			//noinspection ResultOfMethodCallIgnored
@@ -267,9 +272,10 @@ public class AlarmDataService extends Service {
 	/* **********************************  Handler Methods  ************************************* */
 
 	/**
-	 * Handles MSG_GET_LISTABLE messages. Using the replyTo field from the message, sends the
-	 * Listable to that Messenger.
-	 * @param inMsg the MSG_GET_LISTABLE message to reply to
+	 * Responds to an inbound MSG_GET_LISTABLE message. Using the replyTo field from the message,
+	 * sends the requested Listable to that Messenger, or if null sends it to the Handler specified
+	 * by the getTarget() method.
+	 * @param inMsg the inbound MSG_GET_LISTABLE message
 	 */
 	private void handleGetListable(Message inMsg) {
 		// get listable with abs index in arg1
@@ -279,11 +285,36 @@ public class AlarmDataService extends Service {
 		bundle.putParcelable(BUNDLE_INFO_KEY, info);
 		outMsg.setData(bundle);
 
-		try {
-			inMsg.replyTo.send(outMsg);
+		if (inMsg.replyTo == null && inMsg.getTarget() == null) {
+			Log.e(TAG, "Inbound MSG_GET_LISTABLE message had a null reply to field and no target.");
+			return;
 		}
-		catch (RemoteException e) {
-			e.printStackTrace();
+
+		if (inMsg.replyTo != null) {
+			try {
+				inMsg.replyTo.send(outMsg);
+			}
+			catch (RemoteException e) {
+				e.printStackTrace();
+			}
+		}
+		else {
+			inMsg.sendToTarget();
+		}
+	}
+
+	/**
+	 * Responds to an inbound MSG_DATA_CHANGED message. Using the replyTo field from the message,
+	 * stores it as a Messenger to send MSG_DATA_CHANGED messages to in the future.
+	 * @param inMsg the inbound MSG_DATA_CHANGED message
+	 */
+	private void addDataChangedListener(Message inMsg) {
+		if (inMsg.replyTo == null) {
+			// invalid message
+			Log.e(TAG, "Inbound MSG_DATA_CHANGED message didn't have a Messenger to reply to.");
+		}
+		else {
+			dataChangeListeners.add(inMsg.replyTo);
 		}
 	}
 
@@ -303,9 +334,13 @@ public class AlarmDataService extends Service {
 		public void handleMessage(Message msg) {
 			// TODO: implement handleMessage
 			switch(msg.what) {
+				case MSG_DATA_CHANGED:
+					service.addDataChangedListener(msg);
+					Log.i(TAG, "Added new data changed listener.");
+					break;
 				case MSG_GET_LISTABLE:
 					service.handleGetListable(msg);
-					Log.i(TAG, "I handled a get listable call!");
+					Log.i(TAG, "Got a listable for a client.");
 					break;
 				default:
 					Log.e(TAG, "Unknown message type. Sending to Handler's handleMessage().");
