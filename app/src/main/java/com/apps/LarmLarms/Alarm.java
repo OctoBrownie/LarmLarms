@@ -38,6 +38,9 @@ public final class Alarm implements Listable, Cloneable {
 
 	/* ***********************************  Instance Fields  ******************************** */
 
+	/**
+	 * Used for getting string resources (for display strings). Can be null.
+	 */
 	private Context context;
 
 	/**
@@ -51,7 +54,7 @@ public final class Alarm implements Listable, Cloneable {
 	 * Represents the next repeat time for the Alarm. Decided on a Calendar because AlarmManager asks
 	 * for longs (easily convertible) and it helps with fetching different fields. There are certain
 	 * guaranteed Calendar fields which are maintained dependent on repeat type.
-	 * <br>
+	 * <br/>
 	 * Used in all repeatTypes. Check paper pg 2 for a more detailed description.
 	 */
 	private Calendar ringTime;
@@ -288,6 +291,10 @@ public final class Alarm implements Listable, Cloneable {
 	/* *********************  Getter and Setter Methods  *************************** */
 
 	@Contract(pure = true)
+	public Context getContext() { return context; }
+	public void setContext(Context context) { this.context = context; }
+
+	@Contract(pure = true)
 	Calendar getAlarmTimeCalendar() { return ringTime; }
 	long getAlarmTimeMillis() { return ringTime.getTimeInMillis(); }
 	void setAlarmTimeMillis(long time) {
@@ -423,8 +430,10 @@ public final class Alarm implements Listable, Cloneable {
 	 * Returns a new Alarm based on the given string. Current edit string format (separated by tabs):
 	 * [alarm title]	[active]	[repeat info]	[next ring time]	[ringtone uri]	[is snoozed]
 	 * [number of snoozes]
-	 * <br>
+	 * <br/>
 	 * Repeat type info format (separated by spaces): [type] [type-specific data]
+	 * <br/>
+	 * Type-specific data:
 	 * ONCE_ABS and DATE_YEARLY: none
 	 * ONCE_REL and OFFSET: [days] [hours] [mins]
 	 * DAY_WEEKLY: [true/false for every day]
