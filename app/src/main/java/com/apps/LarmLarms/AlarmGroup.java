@@ -369,34 +369,36 @@ public final class AlarmGroup implements Listable, Cloneable {
 										final int srcIndex) {
 		ListableInfo info = new ListableInfo();
 		int index = findOuterListableIndex(lookup, srcIndex, AlarmGroup.getSizeOfList(data));
-		if (index == -1) { return null; }
-
 		int indents = 0;
 
 		// represents the absolute index of the Listable we're looking for in the current folder
 		int absIndex = srcIndex;
+		int currFolderIndex = index;
 		AlarmGroup currFolder = null;
 
 		while (index != -1) {
 			// must be the element itself in the current folder
 			if (lookup.get(index) == absIndex) {
+				info.absIndex = srcIndex;
 				info.relIndex = index;
 				info.numIndents = indents;
+				info.absParentIndex = currFolderIndex;
 				info.listable = data.get(index);
-				info.parentListable = currFolder;
+				info.parent = currFolder;
 
 				return info;
 			}
 
 			// listable is within an AlarmGroup, subtract 1 to take into account the folder itself
 			absIndex = absIndex - 1 - index;
+			currFolderIndex += index + 1;		// take into account the folder itself
 			currFolder = (AlarmGroup) data.get(index);
 			lookup = currFolder.getLookup();
 			data = currFolder.getListables();
 			index = findOuterListableIndex(lookup, absIndex, currFolder.getNumItems() - 1);
 			indents++;
 		}
-		Log.e(TAG, "Could not find the specified Listable's number of indents within the source data/lookup.");
+		Log.e(TAG, "Could not find the specified Listable's info in the source data/lookup.");
 		return null;
 	}
 
@@ -470,7 +472,7 @@ public final class AlarmGroup implements Listable, Cloneable {
 		ListableInfo i = getListableInfo(absIndex);
 		if (i == null) return this;
 
-		return i.parentListable;
+		return i.parent;
 	}
 
 	/**
@@ -573,11 +575,11 @@ public final class AlarmGroup implements Listable, Cloneable {
 			return;
 		}
 
-		if (i.parentListable == null) {
+		if (i.parent == null) {
 			setListable(i.relIndex, item);
 		}
 		else {
-			i.parentListable.setListable(i.relIndex, item);
+			i.parent.setListable(i.relIndex, item);
 		}
 		refreshLookup();
 	}
@@ -589,11 +591,11 @@ public final class AlarmGroup implements Listable, Cloneable {
 			return;
 		}
 
-		if (i.parentListable == null) {
+		if (i.parent == null) {
 			deleteListable(i.relIndex);
 		}
 		else {
-			i.parentListable.deleteListable(i.relIndex);
+			i.parent.deleteListable(i.relIndex);
 		}
 		refreshLookup();
 	}
