@@ -6,9 +6,7 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.os.Message;
 import android.os.Messenger;
-import android.os.RemoteException;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -36,49 +34,44 @@ import androidx.recyclerview.widget.RecyclerView;
 public class RecyclerViewFrag extends Fragment {
 	private static final String TAG = "RecyclerViewFragment";
 	private static final String ALARM_STORE_FILE_NAME = "alarms.txt";
-	
-	private RecyclerViewAdapter myAdapter;
 
-	private boolean boundToService = false;
+	/**
+	 * The adapter for the RecyclerView, recreated every time onCreateView() is called. Can be used
+	 * when not bound to the data service, but not advised without a plan to bind to the service
+	 * soon.
+	 */
+	private RecyclerViewAdapter myAdapter;
+	private RecyclerView recyclerView;
+
+	private boolean boundToDataService = false;
 	private ServiceConnection dataConn;
 
 	/* **********************************  Lifecycle Methods  ******************************** */
-	@Override
-	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-
-		// initialize adapter b/c we need to ensure data is available after initialization (didn't
-		// necessarily call onCreateView yet)
-		if (savedInstanceState == null) {
-			myAdapter = new RecyclerViewAdapter(getContext(), getAlarmsFromDisk(getContext()));
-			Log.i(TAG, "Fragment initialized successfully.");
-		}
-
-		// testing to see whether AlarmDataService binding works
-		dataConn = new DataServiceConnection();
-		getContext().bindService(new Intent(getContext(), AlarmDataService.class), dataConn,
-				Context.BIND_AUTO_CREATE);
-	}
-
-	@Override
-	public void onResume() {
-		super.onResume();
-		myAdapter.setListables(getAlarmsFromDisk(getContext()));
-	}
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+		myAdapter = new RecyclerViewAdapter(getContext(), getAlarmsFromDisk(getContext()));
+
+		// doing things for recycler view
 		// rootView is the LinearLayout in recycler_view_frag.xml
 		View rootView = inflater.inflate(R.layout.recycler_view_frag, container, false);
 
-		RecyclerView myRecyclerView = rootView.findViewById(R.id.recycler_view);
+		recyclerView = rootView.findViewById(R.id.recycler_view);
 
 		LinearLayoutManager myLayoutManager = new LinearLayoutManager(getActivity());
-		myRecyclerView.setLayoutManager(myLayoutManager);
-		myRecyclerView.scrollToPosition(0);
-		myRecyclerView.setAdapter(myAdapter);
+		recyclerView.setLayoutManager(myLayoutManager);
+		recyclerView.scrollToPosition(0);
 
 		return rootView;
+	}
+
+	@Override
+	public void onStart() {
+		super.onStart();
+
+		dataConn = new DataServiceConnection();
+		getContext().bindService(new Intent(getContext(), AlarmDataService.class), dataConn,
+				Context.BIND_AUTO_CREATE);
 	}
 
 	@Override
@@ -86,9 +79,11 @@ public class RecyclerViewFrag extends Fragment {
 		super.onStop();
 		writeAlarmsToDisk(getContext(), myAdapter);
 
-		if (boundToService) {
+		if (boundToDataService) {
+			recyclerView.setAdapter(null);
+			myAdapter.setDataService(null);
 			getContext().unbindService(dataConn);
-			boundToService = false;
+			boundToDataService = false;
 		}
 	}
 
@@ -163,7 +158,6 @@ public class RecyclerViewFrag extends Fragment {
 	}
 
 	/* ************************************  Other Methods  ********************************** */
-	boolean isDataEmpty() { return myAdapter.getItemCount() == 0; }
 
 	/**
 	 * Initializes alarm data from file.
@@ -249,30 +243,24 @@ public class RecyclerViewFrag extends Fragment {
 		}
 	}
 
-	/**
-	 * Refreshes alarms to coordinate with updated settings (mostly for time formatting). The data
-	 * doesn't change at all, we just need to rebind the ViewHolders to get the correct date string.
-	 */
-	void refreshAlarms() { myAdapter.notifyDataSetChanged(); }
-
 	private class DataServiceConnection implements ServiceConnection {
 		@Override
 		public void onServiceConnected(ComponentName className, IBinder service) {
-			boundToService = true;
+			Log.i(TAG, "Connected to the data service.");
+			boundToDataService = true;
+
 			Messenger messenger = new Messenger(service);
-			Message msg = Message.obtain(null, AlarmDataService.MSG_GET_LISTABLE, 0, 0);
-			try {
-				messenger.send(msg);
-			}
-			catch (RemoteException e) {
-				e.printStackTrace();
-			}
+			myAdapter.setDataService(messenger);
+			recyclerView.setAdapter(myAdapter);
 		}
 
 		@Override
 		public void onServiceDisconnected(ComponentName className) {
-			// sad, it crashed...
-			boundToService = false;
+			Log.e(TAG, "The data service crashed.");
+			boundToDataService = false;
+			recyclerView.setAdapter(null);
+			myAdapter.setDataService(null);
+
 		}
 	}
 }

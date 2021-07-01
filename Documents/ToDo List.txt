@@ -38,6 +38,7 @@ make local tests instrumented tests instead
 make more tests
 add a callback to swap frags when the Alarm set transitions between being empty and filled 
 could make Alarm and AlarmGroup into Parcelables
+could use DiffUtil perhaps for differences between versions of lists (minimal animations)
 
 BUGS
 sometimes a duplicate alarm (same name and everything) rings right after the first one is dismissed

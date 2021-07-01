@@ -1,7 +1,16 @@
 package com.apps.LarmLarms;
 
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.IBinder;
+import android.os.Looper;
+import android.os.Message;
+import android.os.Messenger;
+import android.os.RemoteException;
 import android.util.Log;
 import android.view.View;
 
@@ -15,6 +24,10 @@ public class MainActivity extends AppCompatActivity {
 	private RecyclerViewFrag myRecyclerFrag;
 	private View noAlarmsText;
 	private View fragContainer;
+
+	private boolean boundToDataService = false;
+	private EmptyServiceConnection dataConn;
+	private Messenger dataMessenger;
 
 	/* ********************************* Lifecycle Methods ********************************* */
 
@@ -33,17 +46,29 @@ public class MainActivity extends AppCompatActivity {
 
 		myRecyclerFrag = (RecyclerViewFrag) getSupportFragmentManager().findFragmentByTag("recycler_frag");
 
-		if (myRecyclerFrag.isDataEmpty()) { hideFrag(); }
-
 		Log.i(TAG, "Activity created successfully.");
 	}
 
 	@Override
-	protected void onResume() {
-		super.onResume();
+	protected void onStart() {
+		super.onStart();
 
-		// update all alarms in myRecyclerFrag to reflect current settings
-		myRecyclerFrag.refreshAlarms();
+		dataConn = new EmptyServiceConnection(this);
+		bindService(new Intent(this, AlarmDataService.class), dataConn, Context.BIND_AUTO_CREATE);
+	}
+
+	@Override
+	protected void onStop() {
+		super.onStop();
+
+		// unbind from service
+		if (boundToDataService) {
+			dataConn.removeEmptyListener();
+
+			unbindService(dataConn);
+			boundToDataService = false;
+			dataMessenger = null;
+		}
 	}
 
 	/* ************************************  Callbacks  ************************************** */
@@ -54,7 +79,6 @@ public class MainActivity extends AppCompatActivity {
 		Intent intent = new Intent(this, ListableEditorActivity.class);
 		intent.putExtra(ListableEditorActivity.EXTRA_REQ_ID, ListableEditorActivity.REQ_NEW_ALARM);
 
-		// noinspection deprecation
 		startActivityForResult(intent, ListableEditorActivity.REQ_NEW_ALARM);
 	}
 
@@ -64,7 +88,6 @@ public class MainActivity extends AppCompatActivity {
 		Intent intent = new Intent(this, ListableEditorActivity.class);
 		intent.putExtra(ListableEditorActivity.EXTRA_REQ_ID, ListableEditorActivity.REQ_NEW_FOLDER);
 
-		// noinspection deprecation
 		startActivityForResult(intent, ListableEditorActivity.REQ_NEW_FOLDER);
 	}
 
@@ -89,8 +112,6 @@ public class MainActivity extends AppCompatActivity {
 			Log.e(TAG, "Data from ListableEditorActivity was invalid.");
 			return;
 		}
-
-		showFrag();
 
 		switch(requestCode) {
 			case ListableEditorActivity.REQ_NEW_ALARM:
@@ -117,5 +138,79 @@ public class MainActivity extends AppCompatActivity {
 		fragContainer.setVisibility(View.GONE);
 		noAlarmsText.setVisibility(View.VISIBLE);
 		Log.i("RecyclerViewFragment", "Recycler view hidden.");
+	}
+
+	/* ***********************************  Inner Classes  ************************************** */
+
+	private class EmptyServiceConnection implements ServiceConnection {
+		private MainActivity mainActivity;
+		private Messenger emptyMessenger;
+
+		private EmptyServiceConnection(MainActivity act) {
+			mainActivity = act;
+		}
+
+		@Override
+		public void onServiceConnected(ComponentName className, IBinder service) {
+			boundToDataService = true;
+			dataMessenger = new Messenger(service);
+
+			Message msg = Message.obtain(null, AlarmDataService.MSG_DATA_EMPTY_LISTENER, 0, 0);
+			emptyMessenger = new Messenger(new EmptyHandler(mainActivity));
+			msg.replyTo = emptyMessenger;
+			try {
+				dataMessenger.send(msg);
+			}
+			catch (RemoteException e) {
+				// handler doesn't exist, messenger is unusable
+				e.printStackTrace();
+				boundToDataService = false;
+			}
+		}
+
+		@Override
+		public void onServiceDisconnected(ComponentName className) {
+			// sad, it crashed...
+			boundToDataService = false;
+		}
+
+		private void removeEmptyListener() {
+			if (!boundToDataService) return;
+
+			Message msg = Message.obtain(null, AlarmDataService.MSG_DATA_EMPTY_LISTENER);
+			msg.replyTo = emptyMessenger;
+			try {
+				dataMessenger.send(msg);
+			}
+			catch (RemoteException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+	private static class EmptyHandler extends Handler {
+		private MainActivity activity;
+		private EmptyHandler(MainActivity activity) {
+			super(Looper.getMainLooper());
+			this.activity = activity;
+		}
+
+		@Override
+		public void handleMessage(Message msg) {
+			switch(msg.what) {
+				case AlarmDataService.MSG_DATA_EMPTIED:
+					Log.i(TAG, "The dataset is now empty.");
+					activity.hideFrag();
+					break;
+				case AlarmDataService.MSG_DATA_FILLED:
+					Log.i(TAG, "The dataset is now filled.");
+					activity.showFrag();
+					break;
+				default:
+					Log.e(TAG, "Unknown message type. Sending to Handler's handleMessage().");
+					super.handleMessage(msg);
+					break;
+			}
+		}
 	}
 }

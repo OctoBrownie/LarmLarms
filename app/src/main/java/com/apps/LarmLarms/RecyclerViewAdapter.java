@@ -10,6 +10,12 @@ import android.content.Intent;
 import android.graphics.drawable.Animatable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
+import android.os.Messenger;
+import android.os.RemoteException;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,13 +25,14 @@ import android.widget.Switch;
 import android.widget.TextView;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.RecyclerView;
 
 /**
- * Gets data for the RecyclerView holding alarms. It takes a list of Listables (Alarms and AlarmGroups)
- * as its dataset.
+ * Gets data for the RecyclerView holding alarms. It is unusable without the Messenger to the data
+ * service, so be sure to set it before use.
  */
 public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.RecyclerViewHolder> {
 	private static final String TAG = "RecyclerViewAdapter";
@@ -39,10 +46,21 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 	 * Stores the context that this is being run in.
 	 */
 	private Context context;
+	/**
+	 * Messenger to send data requests to. Should connect to the AlarmDataService. Can be null, if
+	 * the service isn't connected.
+	 */
+	private Messenger dataService;
+	private final Messenger dataChangedMessenger;
+
+	private List<Message> unsentMessages;
 
 	RecyclerViewAdapter (Context currContext, ArrayList<Listable> data) {
 		context = currContext;
 		dataset = new AlarmGroup(context.getResources().getString(R.string.root_folder), data);
+		dataService = null;
+		dataChangedMessenger = new Messenger(new MsgHandler(this));
+		unsentMessages = new ArrayList<>();
 
 		createNotificationChannel();
 		setNextAlarmToRing();
@@ -67,31 +85,75 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 	 */
 	@Override
 	public void onBindViewHolder (RecyclerViewHolder view, final int position) {
-		ListableInfo i = dataset.getListableInfo(position);
-		if (i == null) {
-			Log.e(TAG, "Listable at absolute index " + position + " does not exist!");
-			return;
+		BindHolderHandler h = new BindHolderHandler(this, view, position);
+		Message m = Message.obtain(h, AlarmDataService.MSG_GET_LISTABLE, position, 0);
+		try {
+			dataService.send(m);
 		}
-
-		view.changeListable(i.listable);
-
-		// TODO: max indentation based on screen size?
-		float dp = i.numIndents * context.getResources().getDimension(R.dimen.marginIncrement);
-		ViewGroup.MarginLayoutParams params =
-				new ViewGroup.MarginLayoutParams(view.getCardView().getLayoutParams());
-		// context.getResources().getDisplayMetrics().density gets the density scalar
-		params.setMarginStart((int) (context.getResources().getDisplayMetrics().density * dp));
-		view.getCardView().setLayoutParams(params);
-		view.getCardView().requestLayout();
-
-		// TODO: if this layout passing ends up being a bottleneck, can cache the current indent of
-		// a ViewHolder to reduce the # of layout passes necessary (if same indent)
+		catch (NullPointerException | RemoteException e) {
+			Log.e(TAG, "Tried to bind a view holder when the data service is null. Caching message.");
+			unsentMessages.add(m);
+		}
 	}
 
 	@Override
 	public int getItemCount() { return dataset.getNumItems() - 1; }
 
 	/* ******************************  Getter and Setter Methods  ***************************** */
+
+	/**
+	 * Sets the data service messenger to the one passed in and registers dataChangedMessenger as a
+	 * data changed listener. If there are any issues with the new messenger (can't send the
+	 * MSG_DATA_CHANGED message), dataService will be set to null.
+	 * @param messenger the new messenger to set dataService to
+	 */
+	void setDataService(Messenger messenger) {
+		Message outMsg;
+		if (dataService != null) {
+			// unregister data changed listener
+			outMsg = Message.obtain(null, AlarmDataService.MSG_DATA_CHANGED);
+			outMsg.replyTo = dataChangedMessenger;
+			try {
+				dataService.send(outMsg);
+			}
+			catch (RemoteException e) {
+				e.printStackTrace();
+				dataService = null;
+			}
+		}
+		if (messenger != null) {
+			// register data changed listener
+			outMsg = Message.obtain(null, AlarmDataService.MSG_DATA_CHANGED);
+			outMsg.replyTo = dataChangedMessenger;
+			try {
+				messenger.send(outMsg);
+			}
+			catch (RemoteException e) {
+				e.printStackTrace();
+				dataService = null;
+				return;
+			}
+
+			// send all unsent messages in the order put there (unless they still don't get sent...)
+			int numMessages = unsentMessages.size();
+			for (int i = 0; i < numMessages; i++) {
+				try {
+					messenger.send(unsentMessages.get(0));
+					unsentMessages.remove(0);
+				}
+				catch (RemoteException e) {
+					Log.e(TAG, "The new messenger no longer exists. No bind to ");
+					e.printStackTrace();
+					dataService = null;
+					return;
+				}
+			}
+		}
+
+		dataService = messenger;
+	}
+
+	// TODO: could just go to the data service directly (this gets the DATA_CHANGED messages so...)
 
 	ArrayList<Listable> getListables() { return dataset.getListables(); }
 
@@ -109,9 +171,22 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 	 * @param item the Listable to add to the list
 	 */
 	void addListable(Listable item) {
-		dataset.addListable(item);
-		ArrayList<Integer> lookup = dataset.getLookup();
-		notifyItemRangeInserted(lookup.get(Math.max(lookup.size() - 1, 0)), item.getNumItems());
+		Message msg = Message.obtain(null, AlarmDataService.MSG_ADD_LISTABLE);
+
+		ListableInfo info = new ListableInfo();
+		info.listable = item;
+
+		Bundle b = new Bundle();
+		b.putParcelable(AlarmDataService.BUNDLE_INFO_KEY, info);
+		msg.setData(b);
+
+		try {
+			dataService.send(msg);
+		}
+		catch (NullPointerException | RemoteException e) {
+			Log.e(TAG, "Data service is null. Caching the message.");
+			unsentMessages.add(msg);
+		}
 		setNextAlarmToRing();
 	}
 
@@ -253,7 +328,12 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 		((AppCompatActivity)context).startActivityForResult(intent, req);
 	}
 
-	// required view holder class for the RecyclerView
+	/* ***********************************  Inner Classes  ************************************* */
+
+	/**
+	 * A required view holder class for the RecyclerView. Caches its child views so findViewById()
+	 * isn't called as many times.
+	 */
 	public static class RecyclerViewHolder extends RecyclerView.ViewHolder
 			implements View.OnClickListener, View.OnLongClickListener, DialogInterface.OnClickListener {
 		private static String TAG = "RecyclerViewHolder";
@@ -383,4 +463,87 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 		}
 	}
 
+	/**
+	 * A handler passed to messages sent to the data service. Used for handling MSG_DATA_CHANGED
+	 * messages mostly.
+	 */
+	private static class MsgHandler extends Handler {
+		private RecyclerViewAdapter adapter;
+
+		/**
+		 * Creates a new handler in the main Looper.
+		 * @param a the adapter to modify
+		 */
+		private MsgHandler(RecyclerViewAdapter a) {
+			super(Looper.getMainLooper());
+			adapter = a;
+		}
+
+		@Override
+		public void handleMessage(Message msg) {
+			switch (msg.what) {
+				case AlarmDataService.MSG_DATA_CHANGED:
+					Log.i(TAG, "DATA_CHANGED message received from data service!");
+					adapter.notifyDataSetChanged();
+					break;
+				default:
+					Log.e(TAG, "Delivered message was of an unrecognized type. Sending to Handler.");
+					super.handleMessage(msg);
+					break;
+			}
+		}
+	}
+
+	/**
+	 * A handler passed to messages sent to the data service. Used for binding listables (that need
+	 * to be queried from the data service) to view holders.
+	 */
+	private static class BindHolderHandler extends Handler {
+		private RecyclerViewAdapter adapter;
+		private RecyclerViewHolder holder;
+		private int absIndex;
+
+		/**
+		 * Creates a new handler in the main Looper.
+		 * @param a the adapter to modify
+		 * @param h the holder that needs to be bound
+		 * @param pos the position of the holder (becomes absolute index)
+		 */
+		private BindHolderHandler(RecyclerViewAdapter a, RecyclerViewHolder h, final int pos) {
+			super(Looper.getMainLooper());
+			adapter = a;
+			holder = h;
+			absIndex = pos;
+		}
+
+		@Override
+		public void handleMessage(Message msg) {
+			if (msg.what != AlarmDataService.MSG_GET_LISTABLE) {
+				Log.e(TAG, "Delivered message was not a GET_LISTABLE message. Sending to Handler.");
+				super.handleMessage(msg);
+				return;
+			}
+
+			// what used to be onBindViewHolder()
+			ListableInfo i = msg.getData().getParcelable(AlarmDataService.BUNDLE_INFO_KEY);
+			if (i == null) {
+				Log.e(TAG, "Listable at absolute index " + absIndex + " does not exist!");
+				return;
+			}
+
+			holder.changeListable(i.listable);
+
+			// TODO: max indentation based on screen size?
+			float dp = i.numIndents * adapter.context.getResources().getDimension(R.dimen.marginIncrement);
+			ViewGroup.MarginLayoutParams params =
+					new ViewGroup.MarginLayoutParams(holder.getCardView().getLayoutParams());
+			// context.getResources().getDisplayMetrics().density gets the density scalar
+			params.setMarginStart((int) (adapter.context.getResources().getDisplayMetrics().density * dp));
+			holder.getCardView().setLayoutParams(params);
+			holder.getCardView().requestLayout();
+
+			// TODO: if this layout passing ends up being a bottleneck, can cache the current indent of
+			// a ViewHolder to reduce the # of layout passes necessary (if same indent)
+		}
+	}
 }
