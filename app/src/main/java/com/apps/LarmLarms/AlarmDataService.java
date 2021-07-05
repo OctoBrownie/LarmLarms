@@ -1,8 +1,13 @@
 package com.apps.LarmLarms;
 
+import android.app.AlarmManager;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -51,11 +56,12 @@ public class AlarmDataService extends Service {
 	 * preferred and will be used instead if present.
 	 * <br/>
 	 * Outbound: a response with a ListableInfo from the Service. Puts the ListableInfo in a bundle
-	 * accessible by getData() or peekData() using the BUNDLE_INFO_KEY for the key.
+	 * accessible by getData() or peekData() using the BUNDLE_INFO_KEY for the key. Puts the absolute
+	 * index of the listable in field arg1.
 	 */
 	static final int MSG_GET_LISTABLE = 0;
 	/**
-	 * Inbound: the client is asking for the number of Listables in the dataset. No other fields
+	 * Inbound: the client is asking for the number of Listables in the rootFolder. No other fields
 	 * need to be specified.
 	 * <br/>
 	 * Outbound: a response with the number of items from the Service. Puts the item count in the
@@ -63,10 +69,11 @@ public class AlarmDataService extends Service {
 	 */
 	static final int MSG_GET_LISTABLE_COUNT = 1;
 
-	// changing the dataset, triggers MSG_DATA_CHANGED messages
+	// changing the rootFolder, triggers MSG_DATA_CHANGED messages
 	/**
-	 * Inbound: the client wants to set a Listable to a certain idex. The absolute index of the
-	 * Listable should be in the arg1 field and the Listable itself in the obj field.
+	 * Inbound: the client wants to set a Listable to a certain index. The absolute index of the
+	 * Listable should be in the arg1 field and a ListableInfo in the data bundle (with
+	 * BUNDLE_INFO_KEY for its key).
 	 * <br/>
 	 * Outbound: N/A
 	 */
@@ -152,8 +159,8 @@ public class AlarmDataService extends Service {
 	/**
 	 * Inbound: A client wants to change its notification of the data being empty or full. In the
 	 * replyTo field there should be a Messenger to either register or unregister as a listener. Data
-	 * listeners are sent MSG_DATA_EMPTIED messages when there are no more listables in the dataset,
-	 * and MSG_DATA_FILLED when a new listable has been added to an empty dataset. If the Messenger
+	 * listeners are sent MSG_DATA_EMPTIED messages when there are no more listables in the rootFolder,
+	 * and MSG_DATA_FILLED when a new listable has been added to an empty rootFolder. If the Messenger
 	 * is already registered, the service will unregister it. Right when registered, will send the
 	 * listener either MSG_DATA_EMPTIED or MSG_DATA_FILLED.
 	 * <br/>
@@ -163,7 +170,7 @@ public class AlarmDataService extends Service {
 	/**
 	 * Inbound: N/A
 	 * <br/>
-	 * Outbound: Means that data has been deleted and there are no more listables within the dataset
+	 * Outbound: Means that data has been deleted and there are no more listables within the rootFolder
 	 * anymore. No guarantees can be made about message fields. Only sent to registered empty
 	 * listeners.
 	 */
@@ -171,7 +178,7 @@ public class AlarmDataService extends Service {
 	/**
 	 * Inbound: N/A
 	 * <br/>
-	 * Outbound: Means that data has been added and there are now listables within the dataset where
+	 * Outbound: Means that data has been added and there are now listables within the rootFolder where
 	 * it was empty before. No guarantees can be made about message fields. Only sent to registered
 	 * empty listeners.
 	 */
@@ -182,7 +189,7 @@ public class AlarmDataService extends Service {
 	private HandlerThread handlerThread;
 	private List<Messenger> dataChangeListeners, emptyListeners;
 
-	private AlarmGroup dataset;
+	private AlarmGroup rootFolder;
 
 	/* **********************************  Lifecycle Methods  ********************************** */
 
@@ -194,9 +201,11 @@ public class AlarmDataService extends Service {
 	 */
 	@Override
 	public IBinder onBind(Intent intent) {
-		dataset = new AlarmGroup(getResources().getString(R.string.root_folder), getAlarmsFromDisk(this));
+		rootFolder = new AlarmGroup(getResources().getString(R.string.root_folder), getAlarmsFromDisk(this));
 		dataChangeListeners = new ArrayList<>();
 		emptyListeners = new ArrayList<>();
+
+		createNotificationChannel();
 
 		handlerThread = new HandlerThread(HANDLER_THREAD_NAME);
 		handlerThread.start();
@@ -313,11 +322,12 @@ public class AlarmDataService extends Service {
 		}
 
 		// get listable with abs index in arg1
-		ListableInfo info = dataset.getListableInfo(inMsg.arg1);
+		ListableInfo info = rootFolder.getListableInfo(inMsg.arg1);
 		Message outMsg = Message.obtain(null, MSG_GET_LISTABLE);
 		Bundle bundle = new Bundle();
 		bundle.putParcelable(BUNDLE_INFO_KEY, info);
 		outMsg.setData(bundle);
+		outMsg.arg1 = inMsg.arg1;
 
 		if (inMsg.replyTo != null) {
 			try {
@@ -333,8 +343,25 @@ public class AlarmDataService extends Service {
 	}
 
 	/**
+	 * Responds to an inbound MSG_SET_LISTABLE message. Sets the listable with absolute index arg1
+	 * to the new listable in the data bundle.
+	 * @param inMsg the inbound MSG_SET_LISTABLE message
+	 */
+	private void handleSetListable(@NotNull Message inMsg) {
+		if (inMsg.getData() == null) return;
+
+		ListableInfo info = inMsg.getData().getParcelable(BUNDLE_INFO_KEY);
+		if (info == null) return;
+
+		rootFolder.setListableAbs(inMsg.arg1, info.listable);
+		writeAlarmsToDisk(this, rootFolder);
+		setNextAlarmToRing();
+		sendDataChanged();
+	}
+
+	/**
 	 * Responds to an inbound MSG_ADD_LISTABLE message. For now, just adds the listable to the end
-	 * of the dataset.
+	 * of the rootFolder.
 	 * @param inMsg the inbound MSG_ADD_LISTABLE message
 	 */
 	private void handleAddListable(@NotNull Message inMsg) {
@@ -344,12 +371,31 @@ public class AlarmDataService extends Service {
 			return;
 		}
 
-		dataset.addListable(info.listable);
+		rootFolder.addListable(info.listable);
+		writeAlarmsToDisk(this, rootFolder);
+		setNextAlarmToRing();
 		sendDataChanged();
 
 		// just added the first new Listable
-		if (dataset.getNumItems() == 2) {
+		if (rootFolder.size() == 2) {
 			sendDataFilled();
+		}
+	}
+
+	/**
+	 * Responds to an inbound MSG_DELETE_LISTABLE message. Deletes the listable at the absolute index
+	 * specified by inMsg.arg1
+	 * @param inMsg the inbound MSG_DELETE_LISTABLE message
+	 */
+	private void handleDeleteListable(@NotNull Message inMsg) {
+		rootFolder.deleteListableAbs(inMsg.arg1);
+		writeAlarmsToDisk(this, rootFolder);
+		setNextAlarmToRing();
+		sendDataChanged();
+
+		// just deleted the last Listable
+		if (rootFolder.size() == 1) {
+			sendDataEmptied();
 		}
 	}
 
@@ -401,7 +447,7 @@ public class AlarmDataService extends Service {
 
 				// send a DATA_EMPTIED or DATA_FILLED to the new listener
 				Message outMsg = Message.obtain();
-				if (dataset.getNumItems() == 1)
+				if (rootFolder.size() == 1)
 					outMsg.what = MSG_DATA_EMPTIED;
 				else
 					outMsg.what = MSG_DATA_FILLED;
@@ -423,12 +469,16 @@ public class AlarmDataService extends Service {
 	/* ***********************************  Other Methods  *********************************** */
 
 	/**
-	 * Sends MSG_DATA_CHANGED messages to all registered data change listeners.
+	 * Sends MSG_DATA_CHANGED messages to all registered data change listeners. The message should
+	 * have the number of listables in the arg1 field.
 	 */
 	private void sendDataChanged() {
 		Message outMsg;
+		int numListables = rootFolder.size() - 1;
+
 		for (Messenger m : dataChangeListeners) {
 			outMsg = Message.obtain(null, MSG_DATA_CHANGED);
+			outMsg.arg1 = numListables;
 			try {
 				m.send(outMsg);
 			}
@@ -471,6 +521,103 @@ public class AlarmDataService extends Service {
 	}
 
 	/**
+	 * Sets the next alarm to ring. Does not create a new pending intent, rather updates the current
+	 * one. Tells AlarmManager to wake up and call NotificationCreatorService.
+	 */
+	void setNextAlarmToRing() {
+		ListableInfo next = getNextRingingAlarm(rootFolder.getListables());
+		if (next.listable == null) {
+			Log.i(TAG, "No next listable to register to ring.");
+			return;
+		}
+
+		Intent intent = new Intent(this, NotificationCreatorService.class);
+		intent.putExtra(ListableEditorActivity.EXTRA_LISTABLE, next.listable.toEditString());
+		intent.putExtra(ListableEditorActivity.EXTRA_LISTABLE_INDEX, next.absIndex);
+
+		AlarmManager manager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+		PendingIntent pendingIntent = PendingIntent.getService(this, 0, intent,
+				PendingIntent.FLAG_UPDATE_CURRENT);
+
+		if (manager != null && pendingIntent != null) {
+			manager.setExact(AlarmManager.RTC_WAKEUP, ((Alarm) next.listable).getAlarmTimeMillis(), pendingIntent);
+			Log.i(TAG, "Sent an intent to AlarmManager.");
+		}
+	}
+
+	/**
+	 * Searches for the next Alarm that will ring. Returns the listable and absolute index of the
+	 * listable (within the current dataset) within a ListableInfo struct.
+	 * @param data the dataset to look through
+	 * @return a ListableInfo with alarm and absolute index filled correctly
+	 */
+	private static ListableInfo getNextRingingAlarm(ArrayList<Listable> data) {
+		ListableInfo nextAlarm = new ListableInfo();
+		Listable l;
+		int absIndex = 0;
+
+		for (int i = 0; i < data.size(); i++) {
+			l = data.get(i);
+
+			if (!l.isActive()) {
+				absIndex += l.size();
+				continue;
+			}
+
+			if (l.isAlarm()) {
+				((Alarm) l).updateRingTime();
+
+				// check whether it could be the next listable
+				if (nextAlarm.listable == null || ((Alarm) l).getAlarmTimeMillis() <
+						((Alarm) nextAlarm.listable).getAlarmTimeMillis()) {
+					nextAlarm.listable = l;
+					nextAlarm.absIndex = absIndex;
+				}
+				absIndex++;
+			}
+			else {
+				ListableInfo possible = getNextRingingAlarm(((AlarmGroup) l).getListables());
+				// there is no candidate in this folder
+				if (possible.listable == null) {
+					absIndex += l.size();
+					continue;
+				}
+				// we had no candidate before or this candidate is better
+				if (nextAlarm.listable == null || ((Alarm) possible.listable).getAlarmTimeMillis() <
+						((Alarm) nextAlarm.listable).getAlarmTimeMillis()) {
+					nextAlarm.listable = possible.listable;
+					nextAlarm.absIndex = absIndex + possible.absIndex;
+				}
+				absIndex += l.size();
+			}
+		}
+		return nextAlarm;
+	}
+
+	private void createNotificationChannel() {
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+			CharSequence name = getString(R.string.notif_channel_name);
+			int importance = NotificationManager.IMPORTANCE_HIGH;
+			NotificationChannel channel = new NotificationChannel(NotificationCreatorService.CHANNEL_ID, name, importance);
+			channel.setShowBadge(false);
+			channel.setBypassDnd(true);
+			channel.enableLights(true);
+			channel.enableVibration(true);
+			channel.setSound(null, null);
+
+			// Register the channel with the system; can't change the importance or behaviors after this
+			NotificationManager notificationManager = getSystemService(NotificationManager.class);
+			if (notificationManager == null) {
+				Log.e(TAG, "System returned a null notification manager.");
+				return;
+			}
+			notificationManager.createNotificationChannel(channel);
+		}
+	}
+
+	/* ***********************************  Inner Classes  ************************************* */
+
+	/**
 	 * Inner Handler class for handling messages from Messengers.
 	 */
 	private static class MsgHandler extends Handler {
@@ -489,9 +636,17 @@ public class AlarmDataService extends Service {
 					service.handleGetListable(msg);
 					Log.i(TAG, "Got a listable for a client.");
 					break;
+				case MSG_SET_LISTABLE:
+					service.handleSetListable(msg);
+					Log.i(TAG, "Set an absolute index to a new listable.");
+					break;
 				case MSG_ADD_LISTABLE:
 					service.handleAddListable(msg);
-					Log.i(TAG, "Added a listable to the end of the dataset.");
+					Log.i(TAG, "Added a listable to the end of the rootFolder.");
+					break;
+				case MSG_DELETE_LISTABLE:
+					service.handleDeleteListable(msg);
+					Log.i(TAG, "Deleted the listable at the specified absolute index.");
 					break;
 				case MSG_DATA_CHANGED:
 					service.handleDataChanged(msg);

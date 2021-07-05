@@ -156,24 +156,24 @@ public class AlarmGroupUnitTest {
 		assertEquals(true, lookupAnswer.equals(folder.getLookup()));
 
 		folder.addListable(new Alarm(null, "alarm 1"));
-		assertEquals(2, folder.getNumItems());
+		assertEquals(2, folder.size());
 		lookupAnswer.add(0);
 		assertEquals(true, lookupAnswer.equals(folder.getLookup()));
 
 		folder.addListable(new Alarm(null, "alarm 2"));
-		assertEquals(3, folder.getNumItems());
+		assertEquals(3, folder.size());
 		lookupAnswer.add(1);
 		assertEquals(true, lookupAnswer.equals(folder.getLookup()));
 
 		AlarmGroup innerFolder = new AlarmGroup("inner");
 		innerFolder.addListable(new Alarm(null, "alarm 3"));
 		folder.addListable(innerFolder);
-		assertEquals(5, folder.getNumItems());
+		assertEquals(5, folder.size());
 		lookupAnswer.add(2);
 		assertEquals(true, lookupAnswer.equals(folder.getLookup()));
 
 		folder.addListable(new Alarm(null, "alarm 4"));
-		assertEquals(6, folder.getNumItems());
+		assertEquals(6, folder.size());
 		lookupAnswer.add(4);
 		assertEquals(true, lookupAnswer.equals(folder.getLookup()));
 

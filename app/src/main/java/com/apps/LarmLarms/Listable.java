@@ -28,7 +28,7 @@ interface Listable {
 	void toggleActive();
 
 	// returns the number of items within the Listable, including the Listable itself
-	int getNumItems();
+	int size();
 
 	// makes the clone() function required and public
 	Listable clone();

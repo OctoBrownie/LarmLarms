@@ -12,17 +12,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import org.jetbrains.annotations.NotNull;
-
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -33,7 +22,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 public class RecyclerViewFrag extends Fragment {
 	private static final String TAG = "RecyclerViewFragment";
-	private static final String ALARM_STORE_FILE_NAME = "alarms.txt";
 
 	/**
 	 * The adapter for the RecyclerView, recreated every time onCreateView() is called. Can be used
@@ -50,7 +38,7 @@ public class RecyclerViewFrag extends Fragment {
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		myAdapter = new RecyclerViewAdapter(getContext(), getAlarmsFromDisk(getContext()));
+		myAdapter = new RecyclerViewAdapter(getContext());
 
 		// doing things for recycler view
 		// rootView is the LinearLayout in recycler_view_frag.xml
@@ -77,7 +65,6 @@ public class RecyclerViewFrag extends Fragment {
 	@Override
 	public void onStop() {
 		super.onStop();
-		writeAlarmsToDisk(getContext(), myAdapter);
 
 		if (boundToDataService) {
 			recyclerView.setAdapter(null);
@@ -152,96 +139,9 @@ public class RecyclerViewFrag extends Fragment {
 				Log.i(TAG, "Existing folder edited successfully.");
 				break;
 		}
-
-		writeAlarmsToDisk(getContext(), myAdapter);
-		myAdapter.setNextAlarmToRing();
 	}
 
-	/* ************************************  Other Methods  ********************************** */
-
-	/**
-	 * Initializes alarm data from file.
-	 * @return A populated ArrayList of Listables or an empty one in the case of an error
-	 */
-	@NotNull
-	static ArrayList<Listable> getAlarmsFromDisk(Context context) {
-		ArrayList<Listable> data = new ArrayList<>();
-
-		try {
-			FileInputStream is = context.openFileInput(ALARM_STORE_FILE_NAME);
-			InputStreamReader isr = new InputStreamReader(is, StandardCharsets.UTF_8);
-			BufferedReader bReader = new BufferedReader(isr);
-
-			String currLine = bReader.readLine();
-			StringBuilder currFolder = null;
-			Listable currListable;
-
-			while (currLine != null) {
-				if (!currLine.startsWith("\t") && currFolder != null) {
-					// removing the last '\n'
-					if (currFolder.length() != 0) currFolder.deleteCharAt(currFolder.length() - 1);
-					currListable = AlarmGroup.fromStoreString(context, currFolder.toString());
-					if (currListable != null) { data.add(currListable); }
-				}
-
-				if (currLine.startsWith("a")) {
-					currListable = Alarm.fromStoreString(context, currLine);
-					if (currListable != null) { data.add(currListable); }
-				}
-				else if (currLine.startsWith("f")) {
-					currFolder = new StringBuilder(currLine);
-				}
-				else if (currLine.startsWith("\t") && currFolder != null) {
-					currFolder.append(currLine);
-				}
-				else {
-					Log.e(TAG, "Invalid line in alarms.txt: " + currLine);
-					return new ArrayList<>();
-				}
-				currLine = bReader.readLine();
-			}
-			if (currFolder != null) {
-				if (currFolder.length() != 0) currFolder.deleteCharAt(currFolder.length() - 1);
-				currListable = AlarmGroup.fromStoreString(context, currFolder.toString());
-				if (currListable != null) { data.add(currListable); }
-			}
-
-			is.close();
-		}
-		catch (IOException e) {
-			Log.e(TAG, e.getMessage());
-			return new ArrayList<>();
-		}
-
-		Log.i(TAG, "Alarm list retrieved successfully.");
-		return data;
-	}
-
-	/**
-	 * Writes all alarms in myAdapter to app-specific file storage, with file name ALARM_STORE_FILE_NAME
-	 */
-	static void writeAlarmsToDisk(Context context, RecyclerViewAdapter adapter) {
-		try {
-			File alarmFile = new File(context.getFilesDir(), ALARM_STORE_FILE_NAME);
-			//noinspection ResultOfMethodCallIgnored
-			alarmFile.createNewFile();
-
-			FileOutputStream os = context.openFileOutput(ALARM_STORE_FILE_NAME, Context.MODE_PRIVATE);
-
-			StringBuilder builder = new StringBuilder();
-			for (Listable l : adapter.getListables()) {
-				builder.append(l.toStoreString()).append('\n');
-			}
-			// delete the last '\n'
-			if (builder.length() != 0) builder.deleteCharAt(builder.length() - 1);
-
-			os.write(builder.toString().getBytes());
-			os.close();
-		}
-		catch (IOException e) {
-			Log.e(TAG, e.getMessage());
-		}
-	}
+	/* ************************************  Inner Classes  ********************************** */
 
 	private class DataServiceConnection implements ServiceConnection {
 		@Override

@@ -30,8 +30,15 @@ public final class AlarmGroup implements Listable, Cloneable {
 	private boolean isActive;
 	private boolean isOpen;
 
-	// contains the child Alarms and AlarmGroups
+	/**
+	 * Contains the child Alarms and AlarmGroups stored within this folder. Will not be null.
+	 */
 	private ArrayList<Listable> listables;
+	/**
+	 * Should be the same length as field listables. Each entry represents the absolute index within
+	 * this folder layer of each listable (first listable is always absolute index 0). Does not take
+	 * into account outer layers of folders.
+	 */
 	private ArrayList<Integer> lookup;
 
 	private int totalNumItems;
@@ -96,7 +103,7 @@ public final class AlarmGroup implements Listable, Cloneable {
 	public void toggleActive() { isActive = !isActive; }
 
 	@Override @Contract(pure = true)
-	public int getNumItems() {
+	public int size() {
 		if (isOpen) {
 			return totalNumItems;
 		}
@@ -317,7 +324,7 @@ public final class AlarmGroup implements Listable, Cloneable {
 	 */
 	private static int getSizeOfList(ArrayList<Listable> listables) {
 		int len = 0;
-		for (Listable l : listables) { len += l.getNumItems(); }
+		for (Listable l : listables) { len += l.size(); }
 		return len;
 	}
 
@@ -335,7 +342,11 @@ public final class AlarmGroup implements Listable, Cloneable {
 
 		ArrayList<Integer> res = new ArrayList<>();
 		int currIndex = 0;
-		res.add(currIndex);
+
+		if (data.size() == 0)
+			return res;
+
+		res.add(currIndex);		// for first listable
 
 		Listable l;
 
@@ -348,7 +359,7 @@ public final class AlarmGroup implements Listable, Cloneable {
 			}
 			if (!l.isAlarm()) { ((AlarmGroup) l).refreshLookup(); }
 
-			currIndex += l.getNumItems();
+			currIndex += l.size();
 			res.add(currIndex);
 		}
 
@@ -395,7 +406,7 @@ public final class AlarmGroup implements Listable, Cloneable {
 			currFolder = (AlarmGroup) data.get(index);
 			lookup = currFolder.getLookup();
 			data = currFolder.getListables();
-			index = findOuterListableIndex(lookup, absIndex, currFolder.getNumItems() - 1);
+			index = findOuterListableIndex(lookup, absIndex, currFolder.size() - 1);
 			indents++;
 		}
 		Log.e(TAG, "Could not find the specified Listable's info in the source data/lookup.");
@@ -515,7 +526,7 @@ public final class AlarmGroup implements Listable, Cloneable {
 			return;
 		}
 
-		int indexChange = item.getNumItems() - listables.get(relIndex).getNumItems();
+		int indexChange = item.size() - listables.get(relIndex).size();
 		listables.set(relIndex, item);
 
 		// add index change to all lookup indices and totalNumItems
@@ -537,7 +548,7 @@ public final class AlarmGroup implements Listable, Cloneable {
 
 		lookup.add(totalNumItems - 1);
 		listables.add(item);
-		totalNumItems += item.getNumItems();
+		totalNumItems += item.size();
 	}
 
 	void deleteListable(final int relIndex) {
