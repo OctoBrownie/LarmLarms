@@ -144,6 +144,10 @@ public class AlarmRingingActivity extends AppCompatActivity {
 		Intent serviceIntent = new Intent(this, NotificationCreatorService.class);
 		stopService(serviceIntent);
 
+		dataMessenger = null;
+		boundToDataService = false;
+		unbindService(dataConn);
+
 		finish();
 	}
 
