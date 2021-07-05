@@ -60,88 +60,73 @@ public class AlarmDataService extends Service {
 	 * index of the listable in field arg1.
 	 */
 	static final int MSG_GET_LISTABLE = 0;
-	/**
-	 * Inbound: the client is asking for the number of Listables in the rootFolder. No other fields
-	 * need to be specified.
-	 * <br/>
-	 * Outbound: a response with the number of items from the Service. Puts the item count in the
-	 * arg1 field.
-	 */
-	static final int MSG_GET_LISTABLE_COUNT = 1;
 
-	// changing the rootFolder, triggers MSG_DATA_CHANGED messages
 	/**
 	 * Inbound: the client wants to set a Listable to a certain index. The absolute index of the
 	 * Listable should be in the arg1 field and a ListableInfo in the data bundle (with
-	 * BUNDLE_INFO_KEY for its key).
+	 * BUNDLE_INFO_KEY for its key). Triggers MSG_DATA_CHANGED messages to be sent.
 	 * <br/>
 	 * Outbound: N/A
 	 */
-	static final int MSG_SET_LISTABLE = 2;
+	static final int MSG_SET_LISTABLE = 1;
 	/**
 	 * Inbound: the client wants to add a Listable at the specified index and parent. A ListableInfo
 	 * should be in the data bundle (using BUNDLE_INFO_KEY for its key), with the new Listable in the
 	 * Listable field, the absolute index of the new parent in absParentIndex, and the new absolute
-	 * index in absIndex. May trigger MSG_DATA_FILLED messages to be sent.
+	 * index in absIndex. Triggers MSG_DATA_CHANGED messages and may trigger MSG_DATA_FILLED messages
+	 * to be sent.
 	 * TODO: Figure out what information is needed for adding Listables anywhere in a list
 	 * <br/>
 	 * Outbound: N/A
 	 */
-	static final int MSG_ADD_LISTABLE = 3;
+	static final int MSG_ADD_LISTABLE = 2;
 	/**
 	 * Inbound: the client wants to move a Listable to a new index. A ListableInfo should be in the
 	 * data bundle (using BUNDLE_INFO_KEY for its key), with the absolute index of the new parent in
 	 * absParentIndex and the new absolute index in absIndex. arg1 should be filled with the old
-	 * absolute index of the Listable.
+	 * absolute index of the Listable. Triggers MSG_DATA_CHANGED messages to be sent.
 	 * TODO: Figure out what information is needed for moving Listables anywhere in a list
 	 * <br/>
 	 * Outbound: N/A
 	 */
-	static final int MSG_MOVE_LISTABLE = 4;
+	static final int MSG_MOVE_LISTABLE = 3;
 	/**
 	 * Inbound: the client wants to delete a Listable. The absolute index of the Listable should be
-	 * in the arg1 field. May trigger MSG_DATA_EMPTIED messages to be sent.
+	 * in the arg1 field. Triggers MSG_DATA_CHANGED and may trigger MSG_DATA_EMPTIED messages to be
+	 * sent.
 	 * <br/>
 	 * Outbound: N/A
 	 */
-	static final int MSG_DELETE_LISTABLE = 5;
+	static final int MSG_DELETE_LISTABLE = 4;
 
-	// changing the Listables themselves, triggers MSG_DATA_CHANGED messages
-	/**
-	 * Inbound: the client wants to turn a Listable on. The absolute index of the Listable should be
-	 * in the arg1 field.
-	 * <br/>
-	 * Outbound: N/A
-	 */
-	static final int MSG_TURN_ON_LISTABLE = 6;
 	/**
 	 * Inbound: the client wants to toggle isActive on a Listable. The absolute index of the
-	 * Listable should be in the arg1 field.
+	 * Listable should be in the arg1 field. Triggers MSG_DATA_CHANGED messages to be sent.
 	 * <br/>
 	 * Outbound: N/A
 	 */
-	static final int MSG_TOGGLE_ACTIVE_LISTABLE = 7;
+	static final int MSG_TOGGLE_ACTIVE_LISTABLE = 5;
 	/**
 	 * Inbound: the client wants to toggle an AlarmGroup open/closed. The absolute index of the
-	 * AlarmGroup should be in the arg1 field.
+	 * AlarmGroup should be in the arg1 field. Triggers MSG_DATA_CHANGED messages to be sent.
 	 * <br/>
 	 * Outbound: N/A
 	 */
-	static final int MSG_TOGGLE_OPEN_FOLDER = 8;
+	static final int MSG_TOGGLE_OPEN_FOLDER = 6;
 	/**
 	 * Inbound: the client wants to snooze an Alarm. The absolute index of the Alarm should be
-	 * in the arg1 field.
+	 * in the arg1 field. Triggers MSG_DATA_CHANGED messages to be sent.
 	 * <br/>
 	 * Outbound: N/A
 	 */
-	static final int MSG_SNOOZE_ALARM = 9;
+	static final int MSG_SNOOZE_ALARM = 7;
 	/**
 	 * Inbound: the client wants to unsnooze an Alarm. The absolute index of the Alarm should be
-	 * in the arg1 field.
+	 * in the arg1 field. Triggers MSG_DATA_CHANGED messages to be sent.
 	 * <br/>
 	 * Outbound: N/A
 	 */
-	static final int MSG_UNSNOOZE_ALARM = 10;
+	static final int MSG_UNSNOOZE_ALARM = 8;
 
 	/**
 	 * Inbound: A client wants to change its notification of data changes. In the replyTo field
@@ -154,7 +139,7 @@ public class AlarmDataService extends Service {
 	 * count should be in the arg1 field. Means that the new data has been written to the alarm store
 	 * and can be queried from the service or read directly from disk.
 	 */
-	static final int MSG_DATA_CHANGED = 11;
+	static final int MSG_DATA_CHANGED = 9;
 
 	/**
 	 * Inbound: A client wants to change its notification of the data being empty or full. In the
@@ -166,7 +151,7 @@ public class AlarmDataService extends Service {
 	 * <br/>
 	 * Outbound: N/A
 	 */
-	static final int MSG_DATA_EMPTY_LISTENER = 12;
+	static final int MSG_DATA_EMPTY_LISTENER = 10;
 	/**
 	 * Inbound: N/A
 	 * <br/>
@@ -174,7 +159,7 @@ public class AlarmDataService extends Service {
 	 * anymore. No guarantees can be made about message fields. Only sent to registered empty
 	 * listeners.
 	 */
-	static final int MSG_DATA_EMPTIED = 13;
+	static final int MSG_DATA_EMPTIED = 11;
 	/**
 	 * Inbound: N/A
 	 * <br/>
@@ -182,7 +167,7 @@ public class AlarmDataService extends Service {
 	 * it was empty before. No guarantees can be made about message fields. Only sent to registered
 	 * empty listeners.
 	 */
-	static final int MSG_DATA_FILLED = 14;
+	static final int MSG_DATA_FILLED = 12;
 
 	/* *************************************  Instance Fields  ********************************** */
 
@@ -416,6 +401,7 @@ public class AlarmDataService extends Service {
 				dataChangeListeners.add(inMsg.replyTo);
 
 				Message outMsg = Message.obtain(null, MSG_DATA_CHANGED);
+				outMsg.arg1 = rootFolder.size() - 1;
 				try {
 					inMsg.replyTo.send(outMsg);
 				}
