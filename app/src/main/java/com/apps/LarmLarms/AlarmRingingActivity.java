@@ -16,27 +16,57 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.TextView;
 
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.Nullable;
+
 import androidx.appcompat.app.AppCompatActivity;
 
 public class AlarmRingingActivity extends AppCompatActivity {
 	private static final String TAG = "AlarmRingingActivity";
 
-	private Alarm currAlarm;
+	static final String ACTION_SNOOZE = "com.apps.LarmLarms.ACTION_SNOOZE";
+	static final String ACTION_DISMISS = "com.apps.LarmLarms.ACTION_DISMISS";
 
-	private boolean boundToDataService = false;
-	private ServiceConnection dataConn;
-	private Messenger dataMessenger;
+	private boolean boundToRingingService = false;
+	private ServiceConnection ringingConn;
+
+	private Messenger ringingService = null;
+	private Message unsentMessage = null;
+
+	/* ***********************************  Lifecycle Methods  ********************************* */
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+
+		String action = getIntent().getAction();
+		if (ACTION_SNOOZE.equals(action) || ACTION_DISMISS.equals(action)) {
+			ringingConn = new RingingServiceConnection();
+			bindService(new Intent(this, AlarmDataService.class), ringingConn, Context.BIND_AUTO_CREATE);
+
+			// sets unsentMessage so that when the service is bound, it will send the message and exit
+			switch(action) {
+				case ACTION_SNOOZE:
+					unsentMessage = Message.obtain(null, AlarmDataService.MSG_SNOOZE_ALARM);
+					break;
+				case ACTION_DISMISS:
+					unsentMessage = Message.obtain(null, AlarmDataService.MSG_DISMISS_ALARM);
+					break;
+			}
+			return;
+		}
+
+		// open activity normally
+
 		setContentView(R.layout.activity_alarm_ringing);
 
 		// setting fields
-		currAlarm = Alarm.fromEditString(this, getIntent().getStringExtra(ListableEditorActivity.EXTRA_LISTABLE));
+		Alarm currAlarm = Alarm.fromEditString(this,
+				getIntent().getStringExtra(ListableEditorActivity.EXTRA_LISTABLE));
 		if (currAlarm == null) {
 			Log.e(TAG, "The alarm given was invalid...?");
 			finish();
+			return;
 		}
 
 		// show on lock screen
@@ -71,9 +101,24 @@ public class AlarmRingingActivity extends AppCompatActivity {
 		name.setText(currAlarm.getListableName());
 
 		// binding to AlarmDataService
-		dataConn = new DataServiceConnection();
-		bindService(new Intent(this, AlarmDataService.class), dataConn, Context.BIND_AUTO_CREATE);
+		ringingConn = new RingingServiceConnection();
+		bindService(new Intent(this, AlarmRingingService.class), ringingConn, Context.BIND_AUTO_CREATE);
 	}
+
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+		if (boundToRingingService) {
+			ringingService = null;
+			boundToRingingService = false;
+			unbindService(ringingConn);
+		}
+
+		Intent serviceIntent = new Intent(this, AlarmRingingService.class);
+		stopService(serviceIntent);
+	}
+
+	/* **************************************  Callbacks  ************************************** */
 
 	/**
 	 * Snoozes the current alarm and exits teh activity. Also serves as the onclick for the snooze
@@ -81,8 +126,8 @@ public class AlarmRingingActivity extends AppCompatActivity {
 	 * @param v unused view
 	 */
 	public void snooze(View v) {
-		currAlarm.snooze();
-		// TODO: actually snooze the alarm in place instead of setting it
+		Message msg = Message.obtain(null, AlarmDataService.MSG_SNOOZE_ALARM, 0, 0);
+		sendMessage(msg);
 		exitActivity();
 	}
 
@@ -92,80 +137,66 @@ public class AlarmRingingActivity extends AppCompatActivity {
 	 * @param v unused view
 	 */
 	public void dismiss(View v) {
-		currAlarm.unsnooze();
-
-		switch (currAlarm.getRepeatType()) {
-			case Alarm.REPEAT_ONCE_ABS:
-			case Alarm.REPEAT_ONCE_REL:
-				currAlarm.turnOff();
-				break;
-			case Alarm.REPEAT_DAY_WEEKLY:
-			case Alarm.REPEAT_DATE_MONTHLY:
-			case Alarm.REPEAT_DAY_MONTHLY:
-			case Alarm.REPEAT_DATE_YEARLY:
-			case Alarm.REPEAT_OFFSET:
-				currAlarm.updateRingTime();
-				break;
-			default:
-				Log.wtf(TAG, "The repeat type of the alarm was invalid...?");
-				break;
-		}
-		// TODO: actually dismiss the alarm in place instead of setting it
+		Message msg = Message.obtain(null, AlarmDataService.MSG_DISMISS_ALARM, 0, 0);
+		sendMessage(msg);
 		exitActivity();
 	}
 
+	/* *************************************  Other Methods  ************************************ */
+
 	/**
-	 * Sets the next alarm to ring and exits.
+	 * Sends any unsent messages and exits. If the message still isn't sent, doesn't exit.
 	 */
 	public void exitActivity() {
-		if (!boundToDataService) {
-			Log.e(TAG, "Not currently bound to the data service...");
-			// TODO: do something besides log the error
+		if (!sendMessage(unsentMessage)) {
+			// message is not null and didn't get through
 			return;
 		}
 
-		int absIndex = getIntent().getIntExtra(ListableEditorActivity.EXTRA_LISTABLE_INDEX, -1);
-		Message msg = Message.obtain(null, AlarmDataService.MSG_SET_LISTABLE, absIndex, 0);
+		unsentMessage = null;
+		finish();
+	}
 
-		ListableInfo info = new ListableInfo();
-		info.listable = currAlarm;
-
-		Bundle b = new Bundle();
-		b.putParcelable(AlarmDataService.BUNDLE_INFO_KEY, info);
-		msg.setData(b);
+	/**
+	 * Sends a message to the ringing service using the activity's messenger.
+	 * @param msg the message to send, can be null
+	 * @return returns whether the message went through or not, true if message is null
+	 */
+	@Contract("null -> true")
+	private boolean sendMessage(@Nullable Message msg) {
+		if (msg == null) return true;
 
 		try {
-			dataMessenger.send(msg);
+			ringingService.send(msg);
+			return true;
 		}
-		catch (RemoteException e) {
-			e.printStackTrace();
+		catch (NullPointerException | RemoteException e) {
+			Log.e(TAG, "Ringing service is unavailable. Caching message.");
+			unsentMessage = msg;
+			return false;
 		}
-
-		Intent serviceIntent = new Intent(this, NotificationCreatorService.class);
-		stopService(serviceIntent);
-
-		dataMessenger = null;
-		boundToDataService = false;
-		unbindService(dataConn);
-
-		finish();
 	}
 
 	/* ************************************  Inner Classes  ********************************** */
 
-	private class DataServiceConnection implements ServiceConnection {
+	private class RingingServiceConnection implements ServiceConnection {
 		@Override
 		public void onServiceConnected(ComponentName className, IBinder service) {
-			Log.i(TAG, "Connected to the data service.");
-			boundToDataService = true;
-			dataMessenger = new Messenger(service);
+			boundToRingingService = true;
+			ringingService = new Messenger(service);
+
+			if (unsentMessage != null) {
+				sendMessage(unsentMessage);
+				unsentMessage = null;
+				finish();
+			}
 		}
 
 		@Override
 		public void onServiceDisconnected(ComponentName className) {
-			Log.e(TAG, "The data service crashed.");
-			boundToDataService = false;
-			dataMessenger = null;
+			Log.e(TAG, "The ringing service crashed.");
+			boundToRingingService = false;
+			ringingService = null;
 		}
 	}
 }

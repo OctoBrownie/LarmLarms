@@ -41,6 +41,4 @@ could make Alarm and AlarmGroup into Parcelables
 could use DiffUtil perhaps for differences between versions of lists (minimal animations)
 
 BUGS
-when clicking on a switch (that sets isActive on an alarm or folder), will not switch it in the data service
-	always switches from false to true, regardless of what the switch actually switched between
-	alarms.txt never changes during these transitions (is rewritten with the same data)
+if you click on the buttons presented by the heads up notification (when an alarm is ringing), the new activity it calls will flash for a brief moment while it's sending the message and closing

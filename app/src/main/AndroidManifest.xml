@@ -33,7 +33,7 @@
 			android:taskAffinity="" />
 
 		<service
-			android:name=".NotificationCreatorService"
+			android:name=".AlarmRingingService"
 			android:description="@string/notif_service_description"
 			android:enabled="true"
 			android:exported="false" />

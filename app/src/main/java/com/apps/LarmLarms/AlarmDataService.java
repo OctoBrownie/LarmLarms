@@ -127,6 +127,13 @@ public class AlarmDataService extends Service {
 	 * Outbound: N/A
 	 */
 	static final int MSG_UNSNOOZE_ALARM = 8;
+	/**
+	 * Inbound: the client wants to dismiss an Alarm. The absolute index of the Alarm should be
+	 * in the arg1 field. Triggers MSG_DATA_CHANGED messages to be sent.
+	 * <br/>
+	 * Outbound: N/A
+	 */
+	static final int MSG_DISMISS_ALARM = 9;
 
 	/**
 	 * Inbound: A client wants to change its notification of data changes. In the replyTo field
@@ -139,7 +146,7 @@ public class AlarmDataService extends Service {
 	 * count should be in the arg1 field. Means that the new data has been written to the alarm store
 	 * and can be queried from the service or read directly from disk.
 	 */
-	static final int MSG_DATA_CHANGED = 9;
+	static final int MSG_DATA_CHANGED = 10;
 
 	/**
 	 * Inbound: A client wants to change its notification of the data being empty or full. In the
@@ -151,7 +158,7 @@ public class AlarmDataService extends Service {
 	 * <br/>
 	 * Outbound: N/A
 	 */
-	static final int MSG_DATA_EMPTY_LISTENER = 10;
+	static final int MSG_DATA_EMPTY_LISTENER = 11;
 	/**
 	 * Inbound: N/A
 	 * <br/>
@@ -159,7 +166,7 @@ public class AlarmDataService extends Service {
 	 * anymore. No guarantees can be made about message fields. Only sent to registered empty
 	 * listeners.
 	 */
-	static final int MSG_DATA_EMPTIED = 11;
+	static final int MSG_DATA_EMPTIED = 12;
 	/**
 	 * Inbound: N/A
 	 * <br/>
@@ -167,7 +174,7 @@ public class AlarmDataService extends Service {
 	 * it was empty before. No guarantees can be made about message fields. Only sent to registered
 	 * empty listeners.
 	 */
-	static final int MSG_DATA_FILLED = 12;
+	static final int MSG_DATA_FILLED = 13;
 
 	/* *************************************  Instance Fields  ********************************** */
 
@@ -347,6 +354,7 @@ public class AlarmDataService extends Service {
 	/**
 	 * Responds to an inbound MSG_ADD_LISTABLE message. For now, just adds the listable to the end
 	 * of the rootFolder.
+	 * TODO: add the listable anywhere in the dataset
 	 * @param inMsg the inbound MSG_ADD_LISTABLE message
 	 */
 	private void handleAddListable(@NotNull Message inMsg) {
@@ -392,7 +400,7 @@ public class AlarmDataService extends Service {
 	private void handleToggleActive(@NotNull Message inMsg) {
 		Listable l = rootFolder.getListableAbs(inMsg.arg1);
 		if (l == null) {
-			Log.e(TAG, "Listable to toggle active state of was null.");
+			Log.e(TAG, "Index of listable to toggle active was out of bounds.");
 			return;
 		}
 		l.toggleActive();
@@ -409,7 +417,7 @@ public class AlarmDataService extends Service {
 	private void handleToggleOpen(@NotNull Message inMsg) {
 		Listable l = rootFolder.getListableAbs(inMsg.arg1);
 		if (l == null) {
-			Log.e(TAG, "Listable to toggle open state of was null.");
+			Log.e(TAG, "Listable index to toggle open state of was out of bounds.");
 			return;
 		}
 		else if (l.isAlarm()) {
@@ -417,6 +425,87 @@ public class AlarmDataService extends Service {
 			return;
 		}
 		((AlarmGroup) l).toggleOpen();
+
+		writeAlarmsToDisk(this, rootFolder);
+		setNextAlarmToRing();
+	}
+
+	/**
+	 * Responds to an inbound MSG_SNOOZE_ALARM message. Snoozes the alarm specified by the absolute
+	 * index specified by arg1.
+	 * @param inMsg the inbound MSG_SNOOZE_ALARM message
+	 */
+	private void handleSnoozeAlarm(@NotNull Message inMsg) {
+		Listable l = rootFolder.getListableAbs(inMsg.arg1);
+		if (l == null) {
+			Log.e(TAG, "Listable index to snooze was out of bounds.");
+			return;
+		}
+		else if (l.isAlarm()) {
+			Log.e(TAG, "Listable to snooze was a folder.");
+			return;
+		}
+		((Alarm) l).snooze();
+
+		writeAlarmsToDisk(this, rootFolder);
+		setNextAlarmToRing();
+	}
+
+	/**
+	 * Responds to an inbound MSG_UNSNOOZE_ALARM message. Unsnoozes the alarm specified by the
+	 * absolute index specified by arg1.
+	 * @param inMsg the inbound MSG_UNSNOOZE_ALARM message
+	 */
+	private void handleUnsnoozeAlarm(@NotNull Message inMsg) {
+		Listable l = rootFolder.getListableAbs(inMsg.arg1);
+		if (l == null) {
+			Log.e(TAG, "Listable index to unsnooze was out of bounds.");
+			return;
+		}
+		else if (!l.isAlarm()) {
+			Log.e(TAG, "Listable to unsnooze was a folder.");
+			return;
+		}
+		((Alarm) l).unsnooze();
+
+		writeAlarmsToDisk(this, rootFolder);
+		setNextAlarmToRing();
+	}
+
+	/**
+	 * Responds to an inbound MSG_DISMISS_ALARM message. Dismisses the alarm specified by the
+	 * absolute index specified by arg1.
+	 * @param inMsg the inbound MSG_DISMISS_ALARM message
+	 */
+	private void handleDismissAlarm(@NotNull Message inMsg) {
+		Listable l = rootFolder.getListableAbs(inMsg.arg1);
+		if (l == null) {
+			Log.e(TAG, "Listable index to dismiss was out of bounds.");
+			return;
+		}
+		else if (!l.isAlarm()) {
+			Log.e(TAG, "Listable to dismiss was a folder.");
+			return;
+		}
+
+		((Alarm) l).unsnooze();
+
+		switch (((Alarm) l).getRepeatType()) {
+			case Alarm.REPEAT_ONCE_ABS:
+			case Alarm.REPEAT_ONCE_REL:
+				l.turnOff();
+				break;
+			case Alarm.REPEAT_DAY_WEEKLY:
+			case Alarm.REPEAT_DATE_MONTHLY:
+			case Alarm.REPEAT_DAY_MONTHLY:
+			case Alarm.REPEAT_DATE_YEARLY:
+			case Alarm.REPEAT_OFFSET:
+				((Alarm) l).updateRingTime();
+				break;
+			default:
+				Log.wtf(TAG, "The repeat type of the alarm was invalid...?");
+				break;
+		}
 
 		writeAlarmsToDisk(this, rootFolder);
 		setNextAlarmToRing();
@@ -546,7 +635,7 @@ public class AlarmDataService extends Service {
 
 	/**
 	 * Sets the next alarm to ring. Does not create a new pending intent, rather updates the current
-	 * one. Tells AlarmManager to wake up and call NotificationCreatorService.
+	 * one. Tells AlarmManager to wake up and call AlarmRingingService.
 	 */
 	void setNextAlarmToRing() {
 		ListableInfo next = getNextRingingAlarm(rootFolder.getListables());
@@ -555,7 +644,7 @@ public class AlarmDataService extends Service {
 			return;
 		}
 
-		Intent intent = new Intent(this, NotificationCreatorService.class);
+		Intent intent = new Intent(this, AlarmRingingService.class);
 		intent.putExtra(ListableEditorActivity.EXTRA_LISTABLE, next.listable.toEditString());
 		intent.putExtra(ListableEditorActivity.EXTRA_LISTABLE_INDEX, next.absIndex);
 
@@ -622,7 +711,7 @@ public class AlarmDataService extends Service {
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 			CharSequence name = getString(R.string.notif_channel_name);
 			int importance = NotificationManager.IMPORTANCE_HIGH;
-			NotificationChannel channel = new NotificationChannel(NotificationCreatorService.CHANNEL_ID, name, importance);
+			NotificationChannel channel = new NotificationChannel(AlarmRingingService.CHANNEL_ID, name, importance);
 			channel.setShowBadge(false);
 			channel.setBypassDnd(true);
 			channel.enableLights(true);
@@ -679,6 +768,18 @@ public class AlarmDataService extends Service {
 				case MSG_TOGGLE_OPEN_FOLDER:
 					service.handleToggleOpen(msg);
 					Log.i(TAG, "Toggled a folder's open state.");
+					break;
+				case MSG_SNOOZE_ALARM:
+					service.handleSnoozeAlarm(msg);
+					Log.i(TAG, "Snoozed an alarm.");
+					break;
+				case MSG_UNSNOOZE_ALARM:
+					service.handleUnsnoozeAlarm(msg);
+					Log.i(TAG, "Unsnoozed an alarm.");
+					break;
+				case MSG_DISMISS_ALARM:
+					service.handleDismissAlarm(msg);
+					Log.i(TAG, "Dismissed an alarm.");
 					break;
 				case MSG_DATA_CHANGED:
 					service.handleDataChanged(msg);
