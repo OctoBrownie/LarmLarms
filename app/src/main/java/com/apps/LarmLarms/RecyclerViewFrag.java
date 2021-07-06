@@ -96,7 +96,6 @@ public class RecyclerViewFrag extends Fragment {
 				}
 				// TODO: add new alarm where its supposed to be nested
 				myAdapter.addListable(new_listable);
-				Log.i(TAG, "New alarm saved successfully.");
 				break;
 			case ListableEditorActivity.REQ_EDIT_ALARM:
 				new_listable = Alarm.fromEditString(getContext(),
@@ -106,7 +105,6 @@ public class RecyclerViewFrag extends Fragment {
 					return;
 				}
 				myAdapter.setListableAbs(index, new_listable);
-				Log.i(TAG, "Existing alarm edited successfully.");
 				break;
 			case ListableEditorActivity.REQ_NEW_FOLDER:
 				new_listable = AlarmGroup.fromEditString(
@@ -117,7 +115,6 @@ public class RecyclerViewFrag extends Fragment {
 				}
 				// TODO: add new folder where its supposed to be nested
 				myAdapter.addListable(new_listable);
-				Log.i(TAG, "New folder saved successfully.");
 				break;
 			case ListableEditorActivity.REQ_EDIT_FOLDER:
 				// will not delete children Listables of original AlarmGroup
@@ -136,7 +133,6 @@ public class RecyclerViewFrag extends Fragment {
 				((AlarmGroup) new_listable).setListables(((AlarmGroup) old_listable).getListables());
 
 				myAdapter.setListableAbs(index, new_listable);
-				Log.i(TAG, "Existing folder edited successfully.");
 				break;
 		}
 	}
@@ -146,7 +142,6 @@ public class RecyclerViewFrag extends Fragment {
 	private class DataServiceConnection implements ServiceConnection {
 		@Override
 		public void onServiceConnected(ComponentName className, IBinder service) {
-			Log.i(TAG, "Connected to the data service.");
 			boundToDataService = true;
 
 			Messenger messenger = new Messenger(service);
