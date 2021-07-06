@@ -209,7 +209,7 @@ public final class AlarmGroup implements Listable, Cloneable {
 	 * Takes edit strings to rebuild into a new AlarmGroup
 	 * @param src the edit string to create from
 	 */
-	@Nullable
+	@Nullable @Contract(pure = true)
 	static AlarmGroup fromEditString(String src) {
 		if (src == null) {
 			Log.e(TAG, "Edit string is null.");
@@ -236,7 +236,7 @@ public final class AlarmGroup implements Listable, Cloneable {
 	 * @param currContext the current context
 	 * @param src the store string to create from
 	 */
-	@Nullable
+	@Nullable @Contract(pure = true)
 	static AlarmGroup fromStoreString(Context currContext, String src) {
 		if (src == null) {
 			Log.e(TAG, "Store string is null.");
@@ -322,6 +322,7 @@ public final class AlarmGroup implements Listable, Cloneable {
 	 * @param listables the list of Listables to count
 	 * @return number of Listables in the list
 	 */
+	@Contract(pure = true)
 	private static int getSizeOfList(ArrayList<Listable> listables) {
 		int len = 0;
 		for (Listable l : listables) { len += l.size(); }
@@ -334,6 +335,7 @@ public final class AlarmGroup implements Listable, Cloneable {
 	 * @param data the list of Listables to read
 	 * @return the lookup list, can be empty but never null
 	 */
+	@Contract(pure = true)
 	private static ArrayList<Integer> generateLookup(final ArrayList<Listable> data) {
 		if (data == null) {
 			Log.e(TAG, "Input data to generateLookup was null.");
@@ -375,7 +377,7 @@ public final class AlarmGroup implements Listable, Cloneable {
 	 * @return a ListableInfo describing everything it can about the Listable at srcIndex, or null
 	 * if the Listable was not found
 	 */
-	@Nullable
+	@Nullable @Contract(pure = true)
 	private static ListableInfo getListableInfo(ArrayList<Listable> data, ArrayList<Integer> lookup,
 										final int srcIndex) {
 		ListableInfo info = new ListableInfo();
@@ -423,6 +425,7 @@ public final class AlarmGroup implements Listable, Cloneable {
 	 * @return the index of the containing Listable (or the Listable itself), or -1 if it wasn't
 	 * found or datasetLookup is empty.
 	 */
+	@Contract(pure = true)
 	static int findOuterListableIndex(
 			final ArrayList<Integer> lookup, final int index, final int total) {
 		int max = lookup.size();
@@ -455,6 +458,7 @@ public final class AlarmGroup implements Listable, Cloneable {
 	 * @param absIndex absolute index to search for
 	 * @return the Listable or null if not found
 	 */
+	@Contract(pure = true)
 	ListableInfo getListableInfo(final int absIndex) {
 		return getListableInfo(listables, lookup, absIndex);
 	}
@@ -464,6 +468,7 @@ public final class AlarmGroup implements Listable, Cloneable {
 	 * @param absIndex absolute index to search for
 	 * @return the index or -1 if not found
 	 */
+	@Contract(pure = true)
 	int getListableIndexAtAbsIndex(final int absIndex) {
 		ListableInfo i = getListableInfo(absIndex);
 		if (i == null) {
@@ -479,6 +484,7 @@ public final class AlarmGroup implements Listable, Cloneable {
 	 * @param absIndex absolute index to search for
 	 * @return the parent Listable (can be the current Listable)
 	 */
+	@NotNull @Contract(pure = true)
 	AlarmGroup getParentListableAtAbsIndex(final int absIndex) {
 		ListableInfo i = getListableInfo(absIndex);
 		if (i == null) return this;
@@ -491,6 +497,7 @@ public final class AlarmGroup implements Listable, Cloneable {
 	 * @param absIndex absolute index to search for
 	 * @return the number of indents (0 means not nested), or -1 if not found
 	 */
+	@Contract(pure = true)
 	int getNumIndents(final int absIndex) {
 		ListableInfo i = getListableInfo(absIndex);
 		if (i == null) {
@@ -563,6 +570,7 @@ public final class AlarmGroup implements Listable, Cloneable {
 	 * @param absIndex absolute index to search for
 	 * @return the Listable or null if not found
 	 */
+	@Nullable
 	Listable getListableAbs(final int absIndex) {
 		ListableInfo i = getListableInfo(absIndex);
 		if (i == null) {
