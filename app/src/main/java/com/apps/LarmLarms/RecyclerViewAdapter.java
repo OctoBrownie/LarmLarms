@@ -155,7 +155,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 					unsentMessages.remove(0);
 				}
 				catch (RemoteException e) {
-					Log.e(TAG, "The new messenger no longer exists. No bind to ");
+					Log.e(TAG, "The new messenger no longer exists.");
 					e.printStackTrace();
 					dataService = null;
 					return;
