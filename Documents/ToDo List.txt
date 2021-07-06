@@ -42,3 +42,7 @@ could use DiffUtil perhaps for differences between versions of lists (minimal an
 
 BUGS
 if you click on the buttons presented by the heads up notification (when an alarm is ringing), the new activity it calls will flash for a brief moment while it's sending the message and closing
+schedules multiples of the same alarm one after another, got to like 7 or 8
+	there's always a quiet one at the end, after which it says there was a null pointer exception on the media player and dies 
+	apparently it's dismissing a different alarm (is editing the first alarm instead of the second, though the second one is what triggers it...?)
+silent alarms don't trigger, we get "Something went wrong while initializing the alarm sounds." from AlarmRingingService 
