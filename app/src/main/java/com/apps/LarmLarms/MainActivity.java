@@ -199,11 +199,9 @@ public class MainActivity extends AppCompatActivity {
 		public void handleMessage(Message msg) {
 			switch(msg.what) {
 				case AlarmDataService.MSG_DATA_EMPTIED:
-					Log.i(TAG, "The dataset is now empty.");
 					activity.hideFrag();
 					break;
 				case AlarmDataService.MSG_DATA_FILLED:
-					Log.i(TAG, "The dataset is now filled.");
 					activity.showFrag();
 					break;
 				default:
