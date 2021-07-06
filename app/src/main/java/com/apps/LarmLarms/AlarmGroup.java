@@ -164,12 +164,9 @@ public final class AlarmGroup implements Listable, Cloneable {
 
 	@Contract(pure = true)
 	boolean getIsOpen() { return isOpen; }
-	void toggleOpen() {
-		isOpen = !isOpen;
-		refreshLookup();
-	}
+	void toggleOpen() { isOpen = !isOpen; }
 
-	// no setter for listableLookups
+	// no setter for lookups
 	@Contract(pure = true) @NotNull
 	ArrayList<Integer> getLookup() {
 		if (isOpen) {
@@ -653,14 +650,7 @@ public final class AlarmGroup implements Listable, Cloneable {
 	 * Updates the lookup list and the total number of items in the AlarmGroup.
 	 */
 	private void refreshLookup() {
-		if (isOpen) {
-			lookup = generateLookup(listables);
-			totalNumItems = getSizeOfList(listables) + 1;
-		}
-		else {
-			lookup = new ArrayList<>();
-			lookup.add(0);
-			totalNumItems = 1;
-		}
+		lookup = generateLookup(listables);
+		totalNumItems = getSizeOfList(listables) + 1;
 	}
 }
