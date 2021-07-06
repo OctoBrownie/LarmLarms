@@ -29,7 +29,7 @@ silent exiting (+ logging) when encountering issues or raising exceptions?
 could remove the isActive field in edit strings (not REALLY necessary... I think)
 could probably remove a lot of ids (i.e. for the text labels)
 could possibly give user choice for some color presets (like the "sandy blue" theme that it almost feels like we're going for right now)
-can maybe use FlexboxLayout for alarm editor
+can maybe use FlexboxLayout for alarm editor (similar to FlowLayout in Java Swing)
 	Google blog post: https://android-developers.googleblog.com/2017/02/build-flexible-layouts-with.html
 	GitHub: https://github.com/google/flexbox-layout
 could make alarm loading asynchronous, so that layout is more responsive...?
@@ -41,6 +41,6 @@ could make Alarm and AlarmGroup into Parcelables
 could use DiffUtil perhaps for differences between versions of lists (minimal animations)
 
 BUGS
-sometimes a duplicate alarm (same name and everything) rings right after the first one is dismissed
-	seems to only happen while the main app is open 
-if we make a new folder then a new alarm, another folder will automatically be added for some reason (and when subsequent alarms ring, more folders will be added...)
+when clicking on a switch (that sets isActive on an alarm or folder), will not switch it in the data service
+	always switches from false to true, regardless of what the switch actually switched between
+	alarms.txt never changes during these transitions (is rewritten with the same data)

@@ -92,8 +92,6 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 	 */
 	@Override
 	public void onBindViewHolder (RecyclerViewHolder holder, final int position) {
-		Log.i(TAG, "onBindViewHolder called for this position: " + position);
-
 		ListableInfo i = data.get(position);
 
 		holder.changeListable(i.listable);
@@ -168,7 +166,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 		dataService = messenger;
 	}
 
-	// TODO: could just go to the data service directly (this gets the DATA_CHANGED messages so...)
+	// used mostly because it's synchronous and (should be) up to date
 
 	Listable getListableAbs(int absIndex) { return data.get(absIndex).listable; }
 
@@ -186,13 +184,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 		b.putParcelable(AlarmDataService.BUNDLE_INFO_KEY, info);
 		msg.setData(b);
 
-		try {
-			dataService.send(msg);
-		}
-		catch (NullPointerException | RemoteException e) {
-			Log.e(TAG, "Data service is unavailable. Caching the message.");
-			unsentMessages.add(msg);
-		}
+		sendMessage(msg);
 	}
 
 	/**
@@ -211,14 +203,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 		msg.setData(b);
 
 		msg.arg1 = absIndex;
-
-		try {
-			dataService.send(msg);
-		}
-		catch (NullPointerException | RemoteException e) {
-			Log.e(TAG, "Data service is unavailable. Caching the message.");
-			unsentMessages.add(msg);
-		}
+		sendMessage(msg);
 	}
 
 	/**
@@ -226,16 +211,9 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 	 * @param absIndex the absolute index of the Listable to set
 	 */
 	private void deleteListableAbs(int absIndex) {
-		Message msg = Message.obtain(null, AlarmDataService.MSG_SET_LISTABLE);
+		Message msg = Message.obtain(null, AlarmDataService.MSG_DELETE_LISTABLE);
 		msg.arg1 = absIndex;
-
-		try {
-			dataService.send(msg);
-		}
-		catch (NullPointerException | RemoteException e) {
-			Log.e(TAG, "Data service is unavailable. Caching the message.");
-			unsentMessages.add(msg);
-		}
+		sendMessage(msg);
 	}
 
 	/* **********************************  Other Methods  ********************************* */
@@ -296,6 +274,20 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 		}
 	}
 
+	/**
+	 * Sends a message to the data service using the adapter's messenger.
+	 * @param msg the message to send
+	 */
+	private void sendMessage(Message msg) {
+		try {
+			dataService.send(msg);
+		}
+		catch (NullPointerException | RemoteException e) {
+			Log.e(TAG, "Data service is unavailable. Caching the message.");
+			unsentMessages.add(msg);
+		}
+	}
+
 	/* ***********************************  Inner Classes  ************************************* */
 
 	/**
@@ -306,6 +298,10 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 			implements View.OnClickListener, View.OnLongClickListener, DialogInterface.OnClickListener {
 		private static String TAG = "RecyclerViewHolder";
 
+		/**
+		 * Is the listable it currently represents. Don't modify it, since it's actually a pointer
+		 * to the data service listable itself.
+		 */
 		private Listable listable;
 		private Context context;
 		private RecyclerViewAdapter adapter;
@@ -361,17 +357,20 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 		// onClick listener for view holders
 		@Override
 		public void onClick(View v) {
+			Message msg;
 			switch(v.getId()) {
 				case R.id.card_view:
 					adapter.editExistingListable(listable, getLayoutPosition());
 					return;
 				case R.id.on_switch:
-					listable.toggleActive();
-					// TODO: also toggle active in AlarmDataService
+					msg = Message.obtain(null, AlarmDataService.MSG_TOGGLE_ACTIVE,
+							getLayoutPosition(), 0);
+					adapter.sendMessage(msg);
 					return;
 				case R.id.folder_icon:
-					((AlarmGroup) listable).toggleOpen();
-					// TODO: also toggle open in AlarmDataService
+					msg = Message.obtain(null, AlarmDataService.MSG_TOGGLE_OPEN_FOLDER,
+							getLayoutPosition(), 0);
+					adapter.sendMessage(msg);
 					return;
 				default:
 					Log.e(TAG, "Unexpected view using the recycler view holder onClick method.");
@@ -451,11 +450,9 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 		public void handleMessage(Message msg) {
 			switch (msg.what) {
 				case AlarmDataService.MSG_GET_LISTABLE:
-					Log.i(TAG, "GET_LISTABLE message received from data service!");
 					handleGetListable(msg);
 					break;
 				case AlarmDataService.MSG_DATA_CHANGED:
-					Log.i(TAG, "DATA_CHANGED message received from data service!");
 					adapter.dataSize = msg.arg1;
 					adapter.refreshListables();
 					break;

@@ -101,14 +101,14 @@ public class AlarmDataService extends Service {
 
 	/**
 	 * Inbound: the client wants to toggle isActive on a Listable. The absolute index of the
-	 * Listable should be in the arg1 field. Triggers MSG_DATA_CHANGED messages to be sent.
+	 * Listable should be in the arg1 field. Does NOT trigger MSG_DATA_CHANGED messages to be sent.
 	 * <br/>
 	 * Outbound: N/A
 	 */
-	static final int MSG_TOGGLE_ACTIVE_LISTABLE = 5;
+	static final int MSG_TOGGLE_ACTIVE = 5;
 	/**
 	 * Inbound: the client wants to toggle an AlarmGroup open/closed. The absolute index of the
-	 * AlarmGroup should be in the arg1 field. Triggers MSG_DATA_CHANGED messages to be sent.
+	 * AlarmGroup should be in the arg1 field. Does NOT trigger MSG_DATA_CHANGED messages to be sent.
 	 * <br/>
 	 * Outbound: N/A
 	 */
@@ -385,6 +385,44 @@ public class AlarmDataService extends Service {
 	}
 
 	/**
+	 * Responds to an inbound MSG_TOGGLE_ACTIVE message. Toggles the active state of the listable at
+	 * the absolute index specified by arg1.
+	 * @param inMsg the inbound MSG_TOGGLE_ACTIVE message
+	 */
+	private void handleToggleActive(@NotNull Message inMsg) {
+		Listable l = rootFolder.getListableAbs(inMsg.arg1);
+		if (l == null) {
+			Log.e(TAG, "Listable to toggle active state of was null.");
+			return;
+		}
+		l.toggleActive();
+
+		writeAlarmsToDisk(this, rootFolder);
+		setNextAlarmToRing();
+	}
+
+	/**
+	 * Responds to an inbound MSG_TOGGLE_OPEN_FOLDER message. Toggles the open state of the folder at
+	 * the absolute index specified by arg1.
+	 * @param inMsg the inbound MSG_TOGGLE_OPEN_FOLDER message
+	 */
+	private void handleToggleOpen(@NotNull Message inMsg) {
+		Listable l = rootFolder.getListableAbs(inMsg.arg1);
+		if (l == null) {
+			Log.e(TAG, "Listable to toggle open state of was null.");
+			return;
+		}
+		else if (l.isAlarm()) {
+			Log.e(TAG, "Listable to toggle open state of was an alarm.");
+			return;
+		}
+		((AlarmGroup) l).toggleOpen();
+
+		writeAlarmsToDisk(this, rootFolder);
+		setNextAlarmToRing();
+	}
+
+	/**
 	 * Responds to an inbound MSG_DATA_CHANGED message. Using the replyTo field from the message,
 	 * either registers it (if not registered) as a data listener or unregisters it (if already
 	 * registered).
@@ -537,7 +575,7 @@ public class AlarmDataService extends Service {
 	 * @param data the dataset to look through
 	 * @return a ListableInfo with alarm and absolute index filled correctly
 	 */
-	private static ListableInfo getNextRingingAlarm(ArrayList<Listable> data) {
+	private static ListableInfo getNextRingingAlarm(@NotNull ArrayList<Listable> data) {
 		ListableInfo nextAlarm = new ListableInfo();
 		Listable l;
 		int absIndex = 0;
@@ -633,6 +671,14 @@ public class AlarmDataService extends Service {
 				case MSG_DELETE_LISTABLE:
 					service.handleDeleteListable(msg);
 					Log.i(TAG, "Deleted the listable at the specified absolute index.");
+					break;
+				case MSG_TOGGLE_ACTIVE:
+					service.handleToggleActive(msg);
+					Log.i(TAG, "Toggled a listable's active state.");
+					break;
+				case MSG_TOGGLE_OPEN_FOLDER:
+					service.handleToggleOpen(msg);
+					Log.i(TAG, "Toggled a folder's open state.");
 					break;
 				case MSG_DATA_CHANGED:
 					service.handleDataChanged(msg);
