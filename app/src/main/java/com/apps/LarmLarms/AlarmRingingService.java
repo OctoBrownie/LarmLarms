@@ -200,11 +200,13 @@ public class AlarmRingingService extends Service implements MediaPlayer.OnPrepar
 			switch(msg.what) {
 				case AlarmDataService.MSG_SNOOZE_ALARM:
 					service.stopForeground(true);
+					service.mediaPlayer.stop();
 					outMsg = Message.obtain(null, AlarmDataService.MSG_SNOOZE_ALARM, service.alarmAbsIndex);
 					service.sendMessage(outMsg);
 					break;
 				case AlarmDataService.MSG_DISMISS_ALARM:
 					service.stopForeground(true);
+					service.mediaPlayer.stop();
 					outMsg = Message.obtain(null, AlarmDataService.MSG_DISMISS_ALARM, service.alarmAbsIndex);
 					service.sendMessage(outMsg);
 					break;
@@ -234,6 +236,8 @@ public class AlarmRingingService extends Service implements MediaPlayer.OnPrepar
 			boundToDataService = false;
 			dataService = null;
 
+			stopForeground(true);
+			mediaPlayer.stop();
 		}
 	}
 }
