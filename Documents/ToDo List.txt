@@ -1,6 +1,6 @@
 To do list for new features or bugs to be fixed
 
-CURRENTLY WORKING ON: 
+CURRENTLY WORKING ON: documentation for existing code 
 
 moving existing Listables around (ListableEditor) 
 	could send the entire database in the intent, wouldn't be that fast though
