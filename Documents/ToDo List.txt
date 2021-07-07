@@ -1,4 +1,4 @@
-To do list for general features that need to be implemented or bugs to be fixed
+To do list for new features or bugs to be fixed
 
 CURRENTLY WORKING ON: 
 
@@ -42,4 +42,4 @@ could use DiffUtil perhaps for differences between versions of lists (minimal an
 
 BUGS
 if you click on the buttons presented by the heads up notification (when an alarm is ringing), the new activity it calls will flash for a brief moment while it's sending the message and closing
-silent alarms don't trigger, we get "Something went wrong while initializing the alarm sounds." from AlarmRingingService 
+vibration only occurs right when the alarm starts ringing (doesn't loop)

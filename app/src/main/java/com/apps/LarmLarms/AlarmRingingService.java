@@ -34,6 +34,9 @@ public class AlarmRingingService extends Service implements MediaPlayer.OnPrepar
 	static final String CHANNEL_ID = "RingingAlarms";
 	static final int NOTIFICATION_ID = 42;
 
+	/**
+	 * Plays the ringtone of the alarm. Can be null if the alarm is silent.
+	 */
 	private MediaPlayer mediaPlayer;
 
 	private int alarmAbsIndex;
@@ -99,25 +102,27 @@ public class AlarmRingingService extends Service implements MediaPlayer.OnPrepar
 				.setCustomBigContentView(notifView)
 				.setCustomHeadsUpContentView(notifView);
 
-		// media player setup
-		mediaPlayer = new MediaPlayer();
-		mediaPlayer.setAudioAttributes(new AudioAttributes.Builder()
-				.setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-				.setUsage(AudioAttributes.USAGE_ALARM)
-				.build()
-		);
-		mediaPlayer.setLooping(true);
-		mediaPlayer.setWakeMode(this, PowerManager.PARTIAL_WAKE_LOCK);
+		if (currAlarm.getRingtoneUri() != null) {
+			// media player setup
+			mediaPlayer = new MediaPlayer();
+			mediaPlayer.setAudioAttributes(new AudioAttributes.Builder()
+					.setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+					.setUsage(AudioAttributes.USAGE_ALARM)
+					.build()
+			);
+			mediaPlayer.setLooping(true);
+			mediaPlayer.setWakeMode(this, PowerManager.PARTIAL_WAKE_LOCK);
 
-		try {
-			mediaPlayer.setDataSource(this, currAlarm.getRingtoneUri());
-			mediaPlayer.setOnPreparedListener(this);
-			mediaPlayer.prepareAsync();
-		}
-		catch (Exception e) {
-			Log.e(TAG, "Something went wrong while initializing the alarm sounds.");
-			stopSelf();
-			return Service.START_NOT_STICKY;
+			try {
+				mediaPlayer.setDataSource(this, currAlarm.getRingtoneUri());
+				mediaPlayer.setOnPreparedListener(this);
+				mediaPlayer.prepareAsync();
+			}
+			catch (Exception e) {
+				Log.e(TAG, "Something went wrong while initializing the alarm sounds.");
+				stopSelf();
+				return Service.START_NOT_STICKY;
+			}
 		}
 
 		startForeground(NOTIFICATION_ID, builder.build());
@@ -141,8 +146,8 @@ public class AlarmRingingService extends Service implements MediaPlayer.OnPrepar
 			dataService = null;
 			unbindService(dataConn);
 		}
-		mediaPlayer.stop();
-		mediaPlayer.release();
+		if (mediaPlayer != null)
+			mediaPlayer.release();
 	}
 
 	/* ********************************  MediaPlayer Callbacks  ******************************** */
@@ -159,7 +164,8 @@ public class AlarmRingingService extends Service implements MediaPlayer.OnPrepar
 	@Override
 	public boolean onError(MediaPlayer mp, int what, int extra) {
 		Log.e(TAG, "Something went wrong while playing the alarm sounds.");
-		mediaPlayer.release();
+		if (mediaPlayer != null)
+			mediaPlayer.release();
 		stopSelf();
 		return false;
 	}
