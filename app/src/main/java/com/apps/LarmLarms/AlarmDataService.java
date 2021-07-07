@@ -198,6 +198,7 @@ public class AlarmDataService extends Service {
 		emptyListeners = new ArrayList<>();
 
 		createNotificationChannel();
+		setNextAlarmToRing();
 
 		handlerThread = new HandlerThread(HANDLER_THREAD_NAME);
 		handlerThread.start();
@@ -449,6 +450,7 @@ public class AlarmDataService extends Service {
 
 		writeAlarmsToDisk(this, rootFolder);
 		setNextAlarmToRing();
+		sendDataChanged();
 	}
 
 	/**
@@ -470,6 +472,7 @@ public class AlarmDataService extends Service {
 
 		writeAlarmsToDisk(this, rootFolder);
 		setNextAlarmToRing();
+		sendDataChanged();
 	}
 
 	/**
@@ -509,6 +512,7 @@ public class AlarmDataService extends Service {
 
 		writeAlarmsToDisk(this, rootFolder);
 		setNextAlarmToRing();
+		sendDataChanged();
 	}
 
 	/**
@@ -639,20 +643,24 @@ public class AlarmDataService extends Service {
 	 */
 	void setNextAlarmToRing() {
 		ListableInfo next = getNextRingingAlarm(rootFolder.getListables());
-		if (next.listable == null) {
-			Log.i(TAG, "No next listable to register to ring.");
-			return;
-		}
 
 		Intent intent = new Intent(this, AlarmRingingService.class);
-		intent.putExtra(ListableEditorActivity.EXTRA_LISTABLE, next.listable.toEditString());
-		intent.putExtra(ListableEditorActivity.EXTRA_LISTABLE_INDEX, next.absIndex);
+		if (next.listable != null) {
+			intent.putExtra(ListableEditorActivity.EXTRA_LISTABLE, next.listable.toEditString());
+			intent.putExtra(ListableEditorActivity.EXTRA_LISTABLE_INDEX, next.absIndex);
+		}
 
 		AlarmManager manager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
 		PendingIntent pendingIntent = PendingIntent.getService(this, 0, intent,
 				PendingIntent.FLAG_UPDATE_CURRENT);
 
 		if (manager != null && pendingIntent != null) {
+			if (next.listable == null) {
+				Log.i(TAG, "No next listable to register to ring.");
+				manager.cancel(pendingIntent);
+				return;
+			}
+
 			manager.setExact(AlarmManager.RTC_WAKEUP, ((Alarm) next.listable).getAlarmTimeMillis(), pendingIntent);
 			Log.i(TAG, "Sent an intent to AlarmManager.");
 		}
@@ -662,11 +670,14 @@ public class AlarmDataService extends Service {
 	 * Searches for the next Alarm that will ring. Returns the listable and absolute index of the
 	 * listable (within the current dataset) within a ListableInfo struct.
 	 * @param data the dataset to look through
-	 * @return a ListableInfo with alarm and absolute index filled correctly
+	 * @return a ListableInfo with alarm and absolute index filled correctly, alarm can be null if
+	 * there is no active alarm within the data given
 	 */
 	private static ListableInfo getNextRingingAlarm(@NotNull ArrayList<Listable> data) {
 		ListableInfo nextAlarm = new ListableInfo();
+		// represents the current listable being searched
 		Listable l;
+		// represents the absolute index currently being searched
 		int absIndex = 0;
 
 		for (int i = 0; i < data.size(); i++) {
@@ -743,7 +754,6 @@ public class AlarmDataService extends Service {
 
 		@Override
 		public void handleMessage(Message msg) {
-			// TODO: implement handleMessage
 			switch(msg.what) {
 				case MSG_GET_LISTABLE:
 					service.handleGetListable(msg);

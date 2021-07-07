@@ -29,7 +29,7 @@ import androidx.core.app.NotificationCompat;
  */
 public class AlarmRingingService extends Service implements MediaPlayer.OnPreparedListener,
 		MediaPlayer.OnErrorListener {
-	private static final String TAG = "NotificationCreator";
+	private static final String TAG = "AlarmRingingService";
 
 	static final String CHANNEL_ID = "RingingAlarms";
 	static final int NOTIFICATION_ID = 42;
@@ -141,6 +141,7 @@ public class AlarmRingingService extends Service implements MediaPlayer.OnPrepar
 			dataService = null;
 			unbindService(dataConn);
 		}
+		mediaPlayer.stop();
 		mediaPlayer.release();
 	}
 
@@ -200,14 +201,16 @@ public class AlarmRingingService extends Service implements MediaPlayer.OnPrepar
 			switch(msg.what) {
 				case AlarmDataService.MSG_SNOOZE_ALARM:
 					service.stopForeground(true);
-					service.mediaPlayer.stop();
-					outMsg = Message.obtain(null, AlarmDataService.MSG_SNOOZE_ALARM, service.alarmAbsIndex);
+					if (service.mediaPlayer != null)
+						service.mediaPlayer.stop();
+					outMsg = Message.obtain(null, AlarmDataService.MSG_SNOOZE_ALARM, service.alarmAbsIndex, 0);
 					service.sendMessage(outMsg);
 					break;
 				case AlarmDataService.MSG_DISMISS_ALARM:
 					service.stopForeground(true);
-					service.mediaPlayer.stop();
-					outMsg = Message.obtain(null, AlarmDataService.MSG_DISMISS_ALARM, service.alarmAbsIndex);
+					if (service.mediaPlayer != null)
+						service.mediaPlayer.stop();
+					outMsg = Message.obtain(null, AlarmDataService.MSG_DISMISS_ALARM, service.alarmAbsIndex, 0);
 					service.sendMessage(outMsg);
 					break;
 				default:
