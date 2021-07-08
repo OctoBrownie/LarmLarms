@@ -323,7 +323,7 @@ public final class Alarm implements Listable, Cloneable {
 	}
 
 	/**
-	 * Returns whether it the alarm is active or not (so whether it will ring at some point or not).
+	 * Returns whether it the alarm is active or not. Doesn't take into account parent folders.
 	 * @return the active state of the alarm 
 	 */
 	@Override @Contract(pure = true)

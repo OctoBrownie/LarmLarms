@@ -38,7 +38,6 @@ import java.util.List;
  * refer to messages going out to clients, sent by the service.
  */
 public class AlarmDataService extends Service {
-
 	/**
 	 * Tag of the class for logging purposes.
 	 */
