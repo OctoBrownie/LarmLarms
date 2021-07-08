@@ -238,8 +238,8 @@ public class AlarmDataService extends Service {
 	 * @param intent intent delivered from the first call to Context.bindService()
 	 * @return an IBinder for a Messenger
 	 */
-	@Override
-	public IBinder onBind(Intent intent) {
+	@Override @NotNull
+	public IBinder onBind(@NotNull Intent intent) {
 		handlerThread.start();
 		Messenger messenger = new Messenger(new MsgHandler(this, handlerThread));
 		return messenger.getBinder();
@@ -685,7 +685,7 @@ public class AlarmDataService extends Service {
 	 * Sets the next alarm to ring. Does not create a new pending intent, rather updates the current
 	 * one. Tells AlarmManager to wake up and call AlarmRingingService.
 	 */
-	void setNextAlarmToRing() {
+	private void setNextAlarmToRing() {
 		ListableInfo next = getNextRingingAlarm(rootFolder.getListables());
 
 		Intent intent = new Intent(this, AlarmRingingService.class);
@@ -796,6 +796,7 @@ public class AlarmDataService extends Service {
 		/**
 		 * The service that created the handler. Gives access to the handle methods in the service.
 		 */
+		@NotNull
 		AlarmDataService service;
 
 		/**
@@ -803,7 +804,7 @@ public class AlarmDataService extends Service {
 		 * @param service the service that created the handler
 		 * @param thread the handler thread to run on
 		 */
-		private MsgHandler(AlarmDataService service, HandlerThread thread) {
+		private MsgHandler(@NotNull AlarmDataService service, @NotNull HandlerThread thread) {
 			super(thread.getLooper());
 			this.service = service;
 		}
@@ -814,7 +815,7 @@ public class AlarmDataService extends Service {
 		 * @param msg the incoming Message to handle
 		 */
 		@Override
-		public void handleMessage(Message msg) {
+		public void handleMessage(@NotNull Message msg) {
 			switch(msg.what) {
 				case MSG_GET_LISTABLE:
 					service.handleGetListable(msg);
