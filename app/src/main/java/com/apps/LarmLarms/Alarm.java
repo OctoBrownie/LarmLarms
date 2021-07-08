@@ -342,7 +342,7 @@ public final class Alarm implements Listable, Cloneable {
 	public void turnOff() { alarmIsActive = false; }
 
 	/**
-	 * Toggles the active state of the alarm (if it's on, turn it off; of it's off, turn it on)
+	 * Toggles the active state of the alarm (if it's on, turn it off; of it's off, turn it on).
 	 */
 	@Override
 	public void toggleActive() { alarmIsActive = !alarmIsActive; }
@@ -372,10 +372,10 @@ public final class Alarm implements Listable, Cloneable {
 	public int size() { return 1; }
 
 	/**
-	 * Clones an Alarm and returns the new alarm. 
+	 * Clones the Alarm and returns the new alarm.
 	 * @return a new Alarm that is a deep copy of the first 
 	 */
-	@Nullable @Override
+	@Nullable @Override @Contract(pure = true)
 	public Listable clone() {
 		Alarm that = null;
 		try {
@@ -389,8 +389,23 @@ public final class Alarm implements Listable, Cloneable {
 	}
 
 	/**
-	 * Creates an edit string from the current alarm. For edit string format, see fromEditString(Context,
-	 * String). Often used to pass an Alarm between Activities or threads.
+	 * Creates an edit string from the current alarm. Often used to pass an Alarm between Activities
+	 * or threads.
+	 * <br/>
+	 * Current edit string format (separated by tabs):
+	 * [alarm title]	[active]	[repeat info]	[next ring time]	[ringtone uri]	[is snoozed]
+	 * [number of snoozes]
+	 * <br/>
+	 * Repeat type info format (separated by spaces): [type] [type-specific data]
+	 * <br/>
+	 * Type-specific data:
+	 * ONCE_ABS and DATE_YEARLY: none
+	 * ONCE_REL and OFFSET: [days] [hours] [mins]
+	 * DAY_WEEKLY: [true/false for every day]
+	 * DAY_MONTHLY: [week to repeat] [true/false for every month]
+	 * DATE_MONTHLY: [true/false for every month]
+	 * <br/>
+	 * Note: for ringtone URI, if it is null (silent), it will be stored as "null"
 	 */
 	@NotNull @Override
 	public String toEditString() {
@@ -450,8 +465,10 @@ public final class Alarm implements Listable, Cloneable {
 	}
 
 	/**
-	 * Creates a store string from the current alarm. For string string format, see
-	 * fromStringString(Context, String). Often used to store the Alarm in memory.
+	 * Creates a store string from the current alarm. Often used to store the Alarm on disk.
+	 * <br/>
+	 * Current store string format (separated by tabs):
+	 * a	[edit string]
 	 */
 	@NotNull @Override
 	public String toStoreString() { return "a\t" + toEditString(); }
@@ -523,11 +540,10 @@ public final class Alarm implements Listable, Cloneable {
 	/**
 	 * Gets whether the alarm repeats on the day given.
 	 * @param index the day to check repeat data for, corresponding to the Calendar day constant - 1
-	 * @return whether the alarm repeats on that day or not
+	 * @return whether the alarm repeats on that day or not, or false if the index is out of bounds
 	 */
 	boolean getRepeatDays(int index) {
 		if (index < 0 || index >= 7) {
-			// TODO: better way to handle?
 			Log.e(TAG, "Index given to setRepeatDays is invalid.");
 			return false;
 		}
@@ -559,11 +575,11 @@ public final class Alarm implements Listable, Cloneable {
 	/**
 	 * Gets whether the alarm is going to ring on the specified month.
 	 * @param index the month to check, equal to the corresponding Calendar month constant
-	 * @return whether the alarm is set to ring on that month or not
+	 * @return whether the alarm is set to ring on that month or not, or false if the index is out
+	 * of bounds
 	 */
 	boolean getRepeatMonths(int index) {
 		if (index < 0 || index >= 12) {
-			// TODO: better way to handle?
 			Log.e(TAG, "Index given to setRepeatMonths is invalid.");
 			return false;
 		}
@@ -732,27 +748,14 @@ public final class Alarm implements Listable, Cloneable {
 	/* ************************************  Static Methods  ********************************** */
 
 	/**
-	 * Returns a new Alarm based on the given string. Current edit string format (separated by tabs):
-	 * [alarm title]	[active]	[repeat info]	[next ring time]	[ringtone uri]	[is snoozed]
-	 * [number of snoozes]
-	 * <br/>
-	 * Repeat type info format (separated by spaces): [type] [type-specific data]
-	 * <br/>
-	 * Type-specific data:
-	 * ONCE_ABS and DATE_YEARLY: none
-	 * ONCE_REL and OFFSET: [days] [hours] [mins]
-	 * DAY_WEEKLY: [true/false for every day]
-	 * DAY_MONTHLY: [week to repeat] [true/false for every month]
-	 * DATE_MONTHLY: [true/false for every month]
-	 * <br/>
-	 * Note: for ringtone URI, if it is null (silent), it will be stored as "null"
+	 * Returns a new Alarm based on the given string. For edit string format, see toEditString().
 	 *
 	 * @param context current operating context, can be null
 	 * @param src edit string to build an Alarm out of, can be null
 	 * @return new Alarm based on the edit string, or null if the source string is null, empty, or
 	 * formatted incorrectly
 	 */
-	@Nullable
+	@Nullable @Contract(pure = true)
 	static Alarm fromEditString(@Nullable Context context, @Nullable String src) {
 		if (src == null) {
 			Log.e(TAG, "Edit string is null.");
@@ -857,15 +860,14 @@ public final class Alarm implements Listable, Cloneable {
 
 	/**
 	 * Creates a new alarm from a stored Alarm string. Edit strings and store strings are pretty
-	 * much the same for Alarms. Current store string format (separated by tabs):
-	 * a	[edit string]
+	 * much the same for Alarms. For store string format, see toStoreString().
 	 *
 	 * @param currContext current operating context, can be null
 	 * @param src store string to build an Alarm out of, can be null
 	 * @return A new Alarm based on the store string, or null if the source string is null, empty, or
 	 * formatted incorrectly
 	 */
-	@Nullable
+	@Nullable @Contract(pure = true)
 	static Alarm fromStoreString(@Nullable Context currContext, @Nullable String src) {
 		if (src == null) {
 			Log.e(TAG, "Store string is null.");
