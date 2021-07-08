@@ -22,19 +22,49 @@ import org.jetbrains.annotations.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 public class AlarmRingingActivity extends AppCompatActivity {
+	/**
+	 * Tag of the class for logging purposes.
+	 */
 	private static final String TAG = "AlarmRingingActivity";
 
+	/**
+	 * Action used in intents, used for snoozing alarms. Does not assume anything about the contents
+	 * of the intent.
+	 */
 	static final String ACTION_SNOOZE = "com.apps.LarmLarms.ACTION_SNOOZE";
+	/**
+	 * Action used in intents, used for dismissing alarms. Does not assume anything about the
+	 * contents of the intent.
+	 */
 	static final String ACTION_DISMISS = "com.apps.LarmLarms.ACTION_DISMISS";
 
+	/**
+	 * Stores whether the activity is currently bound to AlarmRingingService.
+	 */
 	private boolean boundToRingingService = false;
+	/**
+	 * Service connection to AlarmRingingService.
+	 */
 	private ServiceConnection ringingConn;
 
+	/**
+	 * The messenger of AlarmRingingService, used to send snooze or dismiss messages to.
+	 */
 	private Messenger ringingService = null;
+	/**
+	 * An unsent message, if the ringing service was unreachable when the activity wanted to send
+	 * the message. Only one because this activity should only send one message.
+	 */
 	private Message unsentMessage = null;
 
 	/* ***********************************  Lifecycle Methods  ********************************* */
 
+	/**
+	 * Called when the Activity is being created. Checks the calling intent for snooze/dismiss
+	 * messages and binds to AlarmRingingService. Also dismisses keyguard manager so the activity
+	 * can show on the lock screen.
+	 * @param savedInstanceState the previous instance state
+	 */
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -105,6 +135,10 @@ public class AlarmRingingActivity extends AppCompatActivity {
 		bindService(new Intent(this, AlarmRingingService.class), ringingConn, Context.BIND_AUTO_CREATE);
 	}
 
+	/**
+	 * Called when the activity is being destroyed. Unbinds from the ringing service if bound and
+	 * stops the ringing activity.
+	 */
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
@@ -121,7 +155,7 @@ public class AlarmRingingActivity extends AppCompatActivity {
 	/* **************************************  Callbacks  ************************************** */
 
 	/**
-	 * Snoozes the current alarm and exits teh activity. Also serves as the onclick for the snooze
+	 * Snoozes the current alarm and exits the activity. Also serves as the onclick for the snooze
 	 * button.
 	 * @param v unused view
 	 */
@@ -132,8 +166,8 @@ public class AlarmRingingActivity extends AppCompatActivity {
 	}
 
 	/**
-	 * Dismisses the current alarm, sets the next alarm to ring, and exits the activity. Also serves
-	 * as the onclick for the dismiss button.
+	 * Dismisses the current alarm and exits the activity. Also serves as the onclick for the
+	 * dismiss button.
 	 * @param v unused view
 	 */
 	public void dismiss(View v) {
@@ -179,7 +213,16 @@ public class AlarmRingingActivity extends AppCompatActivity {
 
 	/* ************************************  Inner Classes  ********************************** */
 
+	/**
+	 * Inner class serving as the service connection to AlarmRingingService.
+	 */
 	private class RingingServiceConnection implements ServiceConnection {
+		/**
+		 * When the service is connected, this is called. Sets service-related fields in the outer
+		 * class.
+		 * @param className unused class name of the service that was bound to this connection
+		 * @param service the binder to use
+		 */
 		@Override
 		public void onServiceConnected(ComponentName className, IBinder service) {
 			boundToRingingService = true;
@@ -192,6 +235,10 @@ public class AlarmRingingActivity extends AppCompatActivity {
 			}
 		}
 
+		/**
+		 * When the service crashes, this is called. Sets service-related fields in the outer class.
+		 * @param className unused class name of the service that was bound to this connection
+		 */
 		@Override
 		public void onServiceDisconnected(ComponentName className) {
 			Log.e(TAG, "The ringing service crashed.");
