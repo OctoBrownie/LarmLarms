@@ -12,8 +12,10 @@ import java.util.ArrayList;
 /**
  * Holds a list of Alarms and can mask Alarms.
  */
-
 public final class AlarmGroup implements Listable, Cloneable {
+	/**
+	 * Tag of the class for logging purposes.
+	 */
 	private static final String TAG = "AlarmGroup";
 
 	/**
@@ -26,58 +28,84 @@ public final class AlarmGroup implements Listable, Cloneable {
 	 * Stores the name of the folder. Only restricted character: tabs. If tabs are present, the
 	 * class will log errors.
 	 */
+	@NotNull
 	private String name;
+	/**
+	 * Stores the active state of the folder. Represents whether the alarms within it will ring or
+	 * not, and takes precedence over a child alarm's active state.
+	 */
 	private boolean isActive;
+	/**
+	 * Stores whether the folder looks open or closed right now. Affects what size() and getLookup()
+	 * return. Does NOT affect what getListables() returns.
+	 */
 	private boolean isOpen;
 
 	/**
 	 * Contains the child Alarms and AlarmGroups stored within this folder. Will not be null.
 	 */
+	@NotNull
 	private ArrayList<Listable> listables;
 	/**
 	 * Should be the same length as field listables. Each entry represents the absolute index within
 	 * this folder layer of each listable (first listable is always absolute index 0). Does not take
 	 * into account outer layers of folders.
 	 */
+	@NotNull
 	private ArrayList<Integer> lookup;
 
 	private int totalNumItems;
 
 	/* ***********************************  Constructors  *********************************** */
 
-	// default constructor
-	public AlarmGroup() {
+	/**
+	 * Initializes a new AlarmGroup with all dummy data.
+	 */
+	public AlarmGroup() { this("default name", new ArrayList<Listable>()); }
+
+	/**
+	 * Initializes a new AlarmGroup with a name.
+	 * @param title the new name of the folder
+	 */
+	public AlarmGroup(@NotNull String title) { this(title, new ArrayList<Listable>()); }
+
+	/**
+	 * Initializes a new AlarmGroup with a name and contents.
+	 * @param title the new name of the folder
+	 * @param children the new Listables within the folder
+	 */
+	public AlarmGroup(@NotNull String title, @NotNull ArrayList<Listable> children) {
 		// TODO: init dummy data for AlarmGroup
-		name = "default name";
+		name = title;
 		isActive = true;
 		isOpen = true;
-		listables = new ArrayList<>();
-		lookup = new ArrayList<>();
+		listables = children;
+		lookup = generateLookup(children);
 		totalNumItems = 1;		// for the empty AlarmGroup
 	}
 
-	// gives a name to the folder
-	public AlarmGroup(String title) {
-		this();
-		setListableName(title);
-	}
-
-	// sets listables and gives the folder a title
-	public AlarmGroup(String title, ArrayList<Listable> children) {
-		this();
-		setListableName(title);
-		setListables(children);
-	}
-
 	/* *******************************  Methods from Listable  ****************************** */
-	@Override
+
+	/**
+	 * Returns whether this is an alarm or not.
+	 * @return always returns false
+	 */
+	@Override @Contract(pure = true)
 	public boolean isAlarm() { return false; }
 
-	@Override @Contract(pure = true)
+	/**
+	 * Gets the name of the listable.
+	 * @return the name, will not be null
+	 */
+	@Override @Contract(pure = true) @NotNull
 	public String getListableName() { return name; }
 
+	/**
+	 * Sets the name of the folder. If the new name is invalid, will no do anything.
+	 * @param newName the new name, can be null
+	 */
 	@Override
-	public void setListableName(String newName) {
+	public void setListableName(@Nullable String newName) {
 		if (newName == null || newName.length() == 0 || newName.indexOf('\t') != -1) {
 			Log.e(TAG, "New name is invalid.");
 			return;
@@ -85,23 +113,56 @@ public final class AlarmGroup implements Listable, Cloneable {
 		name = newName;
 	}
 
-	@Override
+	/**
+	 * Gets the repeat string of the folder.
+	 * @return always returns an empty string
+	 */
+	@Override @NotNull @Contract(pure = true)
 	public String getRepeatString() { return ""; }
 
-	@Override
+	/**
+	 * Gets the next ring time of the folder.
+	 * @return always returns an empty string
+	 */
+	@Override @NotNull @Contract(pure = true)
 	public String getNextRingTime() { return ""; }
 
+	/**
+	 * Returns whether the folder is active or not. Doesn't take into account parent folders.
+	 */
 	@Override @Contract(pure = true)
 	public boolean isActive() { return isActive; }
+
+	/**
+	 * Sets whether this folder is active or not.
+	 * @param isOn the new active state of the folder
+	 */
 	@Override
 	public void setActive(boolean isOn) { isActive = isOn; }
+
+	/**
+	 * Changes the active state of the folder to on (active).
+	 */
 	@Override
 	public void turnOn() { isActive = true; }
+
+	/**
+	 * Changes the active state of the folder to off (inactive).
+	 */
 	@Override
 	public void turnOff() { isActive = false; }
+
+	/**
+	 * Toggles the active state of the folder (if it's on, turn it off; of it's off, turn it on).
+	 */
 	@Override
 	public void toggleActive() { isActive = !isActive; }
 
+	/**
+	 * Gets the size of the folder. If the folder is open, will count its children in the size. If
+	 * the folder is closed, it will count only itself (returns 1).
+	 * @return the size of the folder, must be at least 1
+	 */
 	@Override @Contract(pure = true)
 	public int size() {
 		if (isOpen) {
@@ -110,7 +171,11 @@ public final class AlarmGroup implements Listable, Cloneable {
 		return 1;
 	}
 
-	@Override @Contract(pure = true)
+	/**
+	 * Clones the folder and returns the new folder.
+	 * @return the new folder, a deep copy of the first
+	 */
+	@Nullable @Override @Contract(pure = true)
 	public Listable clone() {
 		AlarmGroup that = null;
 		try {
@@ -129,8 +194,10 @@ public final class AlarmGroup implements Listable, Cloneable {
 	}
 
 	/**
-	 * Creates an edit string for the current folder. Only stores the folder itself and doesn't have a
-	 * type identifier
+	 * Creates an edit string for the current folder.
+	 * <br/>
+	 * Current edit string format (separated by tabs):
+	 * [name]	[isActive]
 	 */
 	@NotNull @Override @Contract(pure = true)
 	public String toEditString() {
@@ -143,7 +210,11 @@ public final class AlarmGroup implements Listable, Cloneable {
 
 	/**
 	 * Creates a string for storing the current folder. Stores folder with type identifier and
-	 * recursively stores all its children as well
+	 * recursively stores all its children as well.
+	 * <br/>
+	 * Current store string format (separated by tabs):
+	 * [store identity string]
+	 * 		[children store strings, separated by new lines]
 	 */
 	@NotNull @Override @Contract(pure = true)
 	public String toStoreString() {
@@ -162,27 +233,45 @@ public final class AlarmGroup implements Listable, Cloneable {
 
 	/* ***************************  Getter and Setter Methods  ****************************** */
 
+	/**
+	 * Gets whether the folder is open or closed.
+	 */
 	@Contract(pure = true)
 	boolean getIsOpen() { return isOpen; }
+
+	/**
+	 * Toggles the folder open state (if it was open, close it; if it was closed, open it).
+	 */
 	void toggleOpen() { isOpen = !isOpen; }
 
-	// no setter for lookups
+	/**
+	 * Gets the lookup of the folder. If the folder is open, will return the real lookup, but if it's
+	 * closed, will return an empty lookup.
+	 * @return the lookup of the folder, will not be null but can be empty
+	 */
 	@Contract(pure = true) @NotNull
 	ArrayList<Integer> getLookup() {
 		if (isOpen) {
 			return lookup;
 		}
 		else {
-			ArrayList<Integer> res = new ArrayList<>();
-			res.add(0);
-			return res;
+			return new ArrayList<>();
 		}
 	}
 
-	// a shallow copy of listables within the folder
+	/**
+	 * Gets the listables within the folder.
+	 * @return the listables, will not be null
+	 */
 	@Contract(pure = true) @NotNull
 	ArrayList<Listable> getListables() { return listables; }
-	void setListables(ArrayList<Listable> listables) {
+
+	/**
+	 * Sets the listables within the folder. If the new list is invalid (the list or any listables
+	 * within it are null), will not do anything.
+	 * @param listables a new list of listables to use, can be null
+	 */
+	void setListables(@Nullable ArrayList<Listable> listables) {
 		if (listables == null) {
 			Log.e(TAG, "New list of Listables is null.");
 			return;
@@ -521,7 +610,12 @@ public final class AlarmGroup implements Listable, Cloneable {
 		return listables.get(relIndex);
 	}
 
-	void setListable(final int relIndex, final Listable item) {
+	/**
+	 * Sets a listable in the dataset using its relative index.
+	 * @param relIndex the relative index to set with
+	 * @param item the new Listable to set relIndex to
+	 */
+	private void setListable(final int relIndex, final Listable item) {
 		if (relIndex < 0 || relIndex >= listables.size()) {
 			Log.e(TAG, "Couldn't set Listable. Index is out of bounds.");
 			return;
@@ -555,7 +649,15 @@ public final class AlarmGroup implements Listable, Cloneable {
 		totalNumItems += item.size();
 	}
 
-	void deleteListable(final int relIndex) {
+	/**
+	 * Deletes a listable at the specified relative index.
+	 * @param relIndex the relative index of the Listable to delete
+	 */
+	private void deleteListable(final int relIndex) {
+		if (relIndex < 0 || relIndex >= listables.size()) {
+			Log.e(TAG, "Couldn't delete Listable. Index is out of bounds.");
+			return;
+		}
 		listables.remove(relIndex);
 		refreshLookup();
 	}
@@ -563,7 +665,7 @@ public final class AlarmGroup implements Listable, Cloneable {
 	/* **************************  Manipulating Listables (Absolute)  *************************** */
 
 	/**
-	 * Gets the listable at the specified index
+	 * Gets the listable at the specified absolute index
 	 * @param absIndex absolute index to search for
 	 * @return the Listable or null if not found
 	 */
@@ -600,6 +702,10 @@ public final class AlarmGroup implements Listable, Cloneable {
 		refreshLookup();
 	}
 
+	/**
+	 * Deletes the listable at the specified absolute index.
+	 * @param absIndex the absolute index of the Listable to delete
+	 */
 	void deleteListableAbs(final int absIndex) {
 		ListableInfo i = getListableInfo(absIndex);
 		if (i == null) {
@@ -618,11 +724,18 @@ public final class AlarmGroup implements Listable, Cloneable {
 
 	/* ***********************************  Other Methods  ************************************** */
 
+	/**
+	 * Makes a new string that describes this folder. Use edit or store strings if a full
+	 * representation is necessary. Returns simply tne name of the folder.
+	 */
 	@NotNull @Override @Contract(pure = true)
 	public String toString() { return name; }
 
 	/**
 	 * Builds the line of the store string that represents the AlarmGroup itself.
+	 * <br/>
+	 * Current store identity string format (separated by tabs):
+	 * f	[edit string]
 	 */
 	@NotNull @Contract(pure = true)
 	private String getStoreStringSingle() {
