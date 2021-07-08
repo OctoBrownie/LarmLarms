@@ -211,16 +211,16 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 						newCalendar.add(Calendar.HOUR_OF_DAY, hours);
 						newCalendar.add(Calendar.MINUTE, mins);
 					}
-					else {
-						hours = hours + mins/60;
-						mins = mins % 60;
-						days = days + hours/24;
-						hours = hours % 24;
 
-						((Alarm) workingListable).setOffsetDays(days);
-						((Alarm) workingListable).setOffsetHours(hours);
-						((Alarm) workingListable).setOffsetMins(mins);
-					}
+					hours = hours + mins/60;
+					mins = mins % 60;
+					days = days + hours/24;
+					hours = hours % 24;
+
+					((Alarm) workingListable).setOffsetDays(days);
+					((Alarm) workingListable).setOffsetHours(hours);
+					((Alarm) workingListable).setOffsetMins(mins);
+
 					((Alarm) workingListable).setAlarmTimeMillis(newCalendar.getTimeInMillis());
 					break;
 				case Alarm.REPEAT_DATE_MONTHLY:
