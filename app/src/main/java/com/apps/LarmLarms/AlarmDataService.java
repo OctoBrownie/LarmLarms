@@ -38,8 +38,18 @@ import java.util.List;
  * refer to messages going out to clients, sent by the service.
  */
 public class AlarmDataService extends Service {
+
+	/**
+	 * Tag of the class for logging purposes.
+	 */
 	private static final String TAG = "AlarmDataService";
+	/**
+	 * Name of the handler thread.
+	 */
 	private static final String HANDLER_THREAD_NAME = "AlarmDataHandler";
+	/**
+	 * The name of the file that stores the alarms. Found within private storage for the app.
+	 */
 	private static final String ALARM_STORE_FILE_NAME = "alarms.txt";
 
 	/**
@@ -108,7 +118,7 @@ public class AlarmDataService extends Service {
 	static final int MSG_TOGGLE_ACTIVE = 5;
 	/**
 	 * Inbound: the client wants to toggle an AlarmGroup open/closed. The absolute index of the
-	 * AlarmGroup should be in the arg1 field. Does NOT trigger MSG_DATA_CHANGED messages to be sent.
+	 * AlarmGroup should be in the arg1 field. Triggers MSG_DATA_CHANGED messages to be sent.
 	 * <br/>
 	 * Outbound: N/A
 	 */
@@ -178,12 +188,49 @@ public class AlarmDataService extends Service {
 
 	/* *************************************  Instance Fields  ********************************** */
 
+	/**
+	 * The thread that the data handler lives in, cannot be null.
+	 */
+	@NotNull
 	private HandlerThread handlerThread;
-	private List<Messenger> dataChangeListeners, emptyListeners;
 
+	/**
+	 * List of registered listeners for data change events. Data change events include adding,
+	 * changing, moving, or removing alarms from the list. It also includes some method calls on
+	 * listables, such as toggling open/closed a folder or snoozing alarms. Cannot be null.
+	 */
+	@NotNull
+	private List<Messenger> dataChangeListeners;
+
+	/**
+	 * List of registered empty listeners. Listeners are sent MSG_DATA_FILLED and MSG_DATA_EMPTIED
+	 * messages when the data has either completely emptied or has just filled up from being empty.
+	 * Cannot be null.
+	 */
+	@NotNull
+	private List<Messenger> emptyListeners;
+
+	/**
+	 * The folder holding the entire dataset. Cannot be null.
+	 */
+	@NotNull
 	private AlarmGroup rootFolder;
 
 	/* **********************************  Lifecycle Methods  ********************************** */
+
+	/**
+	 * Initializes AlarmDataService. If not already created, makes a new notification channel to post
+	 * alarms to and sets the next alarm to ring.
+	 */
+	private AlarmDataService() {
+		rootFolder = new AlarmGroup(getResources().getString(R.string.root_folder), getAlarmsFromDisk(this));
+		dataChangeListeners = new ArrayList<>();
+		emptyListeners = new ArrayList<>();
+		handlerThread = new HandlerThread(HANDLER_THREAD_NAME);
+
+		createNotificationChannel();
+		setNextAlarmToRing();
+	}
 
 	/**
 	 * Creates a new handler thread and registers a new messenger to handle messages within that
@@ -193,19 +240,15 @@ public class AlarmDataService extends Service {
 	 */
 	@Override
 	public IBinder onBind(Intent intent) {
-		rootFolder = new AlarmGroup(getResources().getString(R.string.root_folder), getAlarmsFromDisk(this));
-		dataChangeListeners = new ArrayList<>();
-		emptyListeners = new ArrayList<>();
-
-		createNotificationChannel();
-		setNextAlarmToRing();
-
-		handlerThread = new HandlerThread(HANDLER_THREAD_NAME);
 		handlerThread.start();
 		Messenger messenger = new Messenger(new MsgHandler(this, handlerThread));
 		return messenger.getBinder();
 	}
 
+	/**
+	 * Called when the service is no longer needed. Kills handlerThread after it has dealt with all
+	 * incoming Messages.
+	 */
 	@Override
 	public void onDestroy() {
 		handlerThread.quitSafely();
@@ -429,6 +472,7 @@ public class AlarmDataService extends Service {
 
 		writeAlarmsToDisk(this, rootFolder);
 		setNextAlarmToRing();
+		sendDataChanged();
 	}
 
 	/**
@@ -669,10 +713,11 @@ public class AlarmDataService extends Service {
 	/**
 	 * Searches for the next Alarm that will ring. Returns the listable and absolute index of the
 	 * listable (within the current dataset) within a ListableInfo struct.
-	 * @param data the dataset to look through
+	 * @param data the dataset to look through, cannot be null
 	 * @return a ListableInfo with alarm and absolute index filled correctly, alarm can be null if
 	 * there is no active alarm within the data given
 	 */
+	@NotNull
 	private static ListableInfo getNextRingingAlarm(@NotNull ArrayList<Listable> data) {
 		ListableInfo nextAlarm = new ListableInfo();
 		// represents the current listable being searched
@@ -718,6 +763,9 @@ public class AlarmDataService extends Service {
 		return nextAlarm;
 	}
 
+	/**
+	 * Creates a notification channel if the API level requires it. Otherwise, does nothing.
+	 */
 	private void createNotificationChannel() {
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 			CharSequence name = getString(R.string.notif_channel_name);
@@ -745,59 +793,72 @@ public class AlarmDataService extends Service {
 	 * Inner Handler class for handling messages from Messengers.
 	 */
 	private static class MsgHandler extends Handler {
+		/**
+		 * The service that created the handler. Gives access to the handle methods in the service.
+		 */
 		AlarmDataService service;
 
+		/**
+		 * Creates a new handler with a specified service and thread.
+		 * @param service the service that created the handler
+		 * @param thread the handler thread to run on
+		 */
 		private MsgHandler(AlarmDataService service, HandlerThread thread) {
 			super(thread.getLooper());
 			this.service = service;
 		}
 
+		/**
+		 * Handles messages based on their field what. Sends it off to the service's appropriate
+		 * handling method and logs the event.
+		 * @param msg the incoming Message to handle
+		 */
 		@Override
 		public void handleMessage(Message msg) {
 			switch(msg.what) {
 				case MSG_GET_LISTABLE:
 					service.handleGetListable(msg);
-					Log.i(TAG, "Got a listable for a client.");
+					Log.d(TAG, "Got a listable for a client.");
 					break;
 				case MSG_SET_LISTABLE:
 					service.handleSetListable(msg);
-					Log.i(TAG, "Set an absolute index to a new listable.");
+					Log.d(TAG, "Set an absolute index to a new listable.");
 					break;
 				case MSG_ADD_LISTABLE:
 					service.handleAddListable(msg);
-					Log.i(TAG, "Added a listable to the end of the rootFolder.");
+					Log.d(TAG, "Added a listable to the end of the rootFolder.");
 					break;
 				case MSG_DELETE_LISTABLE:
 					service.handleDeleteListable(msg);
-					Log.i(TAG, "Deleted the listable at the specified absolute index.");
+					Log.d(TAG, "Deleted the listable at the specified absolute index.");
 					break;
 				case MSG_TOGGLE_ACTIVE:
 					service.handleToggleActive(msg);
-					Log.i(TAG, "Toggled a listable's active state.");
+					Log.d(TAG, "Toggled a listable's active state.");
 					break;
 				case MSG_TOGGLE_OPEN_FOLDER:
 					service.handleToggleOpen(msg);
-					Log.i(TAG, "Toggled a folder's open state.");
+					Log.d(TAG, "Toggled a folder's open state.");
 					break;
 				case MSG_SNOOZE_ALARM:
 					service.handleSnoozeAlarm(msg);
-					Log.i(TAG, "Snoozed an alarm.");
+					Log.d(TAG, "Snoozed an alarm.");
 					break;
 				case MSG_UNSNOOZE_ALARM:
 					service.handleUnsnoozeAlarm(msg);
-					Log.i(TAG, "Unsnoozed an alarm.");
+					Log.d(TAG, "Unsnoozed an alarm.");
 					break;
 				case MSG_DISMISS_ALARM:
 					service.handleDismissAlarm(msg);
-					Log.i(TAG, "Dismissed an alarm.");
+					Log.d(TAG, "Dismissed an alarm.");
 					break;
 				case MSG_DATA_CHANGED:
 					service.handleDataChanged(msg);
-					Log.i(TAG, "Added or removed a data changed listener.");
+					Log.d(TAG, "Added or removed a data changed listener.");
 					break;
 				case MSG_DATA_EMPTY_LISTENER:
 					service.handleDataEmpty(msg);
-					Log.i(TAG, "Added or removed a data empty listener.");
+					Log.d(TAG, "Added or removed a data empty listener.");
 					break;
 				default:
 					Log.e(TAG, "Unknown message type. Sending to Handler's handleMessage().");
