@@ -34,27 +34,23 @@ public final class Alarm implements Listable, Cloneable {
 	 * Only uses field ringTime.
 	 */
 	static final int REPEAT_ONCE_ABS = 0;
-
 	/**
 	 * Represents an alarm that doesn't repeat (rings once) and is specified by an offset from the
 	 * current time (relative date/time). Uses field ringTime for storing date/time, and offset
 	 * variables for storing the offset from creation/modification time.
 	 */
 	static final int REPEAT_ONCE_REL = 1;
-
 	/**
 	 * Represents an alarm that repeats at a given time on specific days every week. Uses field
 	 * ringTime to specify the time to ring and repeatDays for the days of the week to ring.
 	 */
 	static final int REPEAT_DAY_WEEKLY = 2;
-
 	/**
 	 * Represents an alarm that repeats on a specific date (a number) every month. Uses field
 	 * ringTime for the date (not month) and time of the alarm, repeatMonths for the months to ring
 	 * on (can skip months).
 	 */
 	static final int REPEAT_DATE_MONTHLY = 3;
-
 	/**
 	 * Represents an alarm that repeats on a specific day (day of a week) every month. Uses field
 	 * ringTime for the time of the alarm and the day of the week, repeatMonths for the months to
@@ -62,12 +58,10 @@ public final class Alarm implements Listable, Cloneable {
 	 * last week, etc).
 	 */
 	static final int REPEAT_DAY_MONTHLY = 4;
-
 	/**
 	 * Represents an alarm that rings at a certain date/time every year. Only uses field ringTime.
 	 */
 	static final int REPEAT_DATE_YEARLY = 5;
-
 	/**
 	 * Represents an alarm that repeats every offset from the previous time. Uses field ringTime to
 	 * store date/time of the next ring time, and offset variables to store the offset to generate
@@ -136,13 +130,11 @@ public final class Alarm implements Listable, Cloneable {
 	 * Used for REPEAT_ONCE_REL and REPEAT_OFFSET. Stores the days to offset by, always 0 or above.
 	 */
 	private int offsetDays;
-
 	/**
 	 * Used for REPEAT_ONCE_REL and REPEAT_OFFSET. Stores the hours to offset by, always between 0
 	 * and 23.
 	 */
 	private int offsetHours;
-
 	/**
 	 * Used for REPEAT_ONCE_REL and REPEAT_OFFSET. Stores the minutes to offset by, always between 0
 	 * and 59.
@@ -159,7 +151,6 @@ public final class Alarm implements Listable, Cloneable {
 	 * snoozes in numSnoozes. Otherwise, numSnoozes should be 0.
 	 */
 	private boolean alarmSnoozed;
-
 	/**
 	 * The number of times this alarm has been snoozed. Only should be nonzero when alarmSnoozed is
 	 * true.
@@ -175,7 +166,6 @@ public final class Alarm implements Listable, Cloneable {
 	 * Represents whether sound should be on when the alarm rings.
 	 */
 	private boolean alarmSoundIsOn;
-
 	/**
 	 * The URI of the ringtone of the alarm.
 	 */

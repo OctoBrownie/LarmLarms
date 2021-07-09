@@ -157,7 +157,7 @@ public class AlarmRingingActivity extends AppCompatActivity {
 	/**
 	 * Snoozes the current alarm and exits the activity. Also serves as the onclick for the snooze
 	 * button.
-	 * @param v unused view
+	 * @param v view that was clicked (unused)
 	 */
 	public void snooze(View v) {
 		Message msg = Message.obtain(null, AlarmDataService.MSG_SNOOZE_ALARM, 0, 0);
@@ -168,7 +168,7 @@ public class AlarmRingingActivity extends AppCompatActivity {
 	/**
 	 * Dismisses the current alarm and exits the activity. Also serves as the onclick for the
 	 * dismiss button.
-	 * @param v unused view
+	 * @param v view that was clicked (unused)
 	 */
 	public void dismiss(View v) {
 		Message msg = Message.obtain(null, AlarmDataService.MSG_DISMISS_ALARM, 0, 0);
@@ -220,7 +220,7 @@ public class AlarmRingingActivity extends AppCompatActivity {
 		/**
 		 * When the service is connected, this is called. Sets service-related fields in the outer
 		 * class.
-		 * @param className unused class name of the service that was bound to this connection
+		 * @param className class name of the service that was bound to this connection (unused)
 		 * @param service the binder to use
 		 */
 		@Override
@@ -237,7 +237,7 @@ public class AlarmRingingActivity extends AppCompatActivity {
 
 		/**
 		 * When the service crashes, this is called. Sets service-related fields in the outer class.
-		 * @param className unused class name of the service that was bound to this connection
+		 * @param className class name of the service that was bound to this connection  (unused)
 		 */
 		@Override
 		public void onServiceDisconnected(ComponentName className) {
