@@ -14,6 +14,8 @@ import android.os.RemoteException;
 import android.util.Log;
 import android.view.View;
 
+import org.jetbrains.annotations.NotNull;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentTransaction;
 
@@ -146,12 +148,12 @@ public class MainActivity extends AppCompatActivity {
 		private MainActivity mainActivity;
 		private Messenger emptyMessenger;
 
-		private EmptyServiceConnection(MainActivity act) {
+		private EmptyServiceConnection(@NotNull MainActivity act) {
 			mainActivity = act;
 		}
 
 		@Override
-		public void onServiceConnected(ComponentName className, IBinder service) {
+		public void onServiceConnected(@NotNull ComponentName className, @NotNull IBinder service) {
 			boundToDataService = true;
 			dataMessenger = new Messenger(service);
 
@@ -169,7 +171,7 @@ public class MainActivity extends AppCompatActivity {
 		}
 
 		@Override
-		public void onServiceDisconnected(ComponentName className) {
+		public void onServiceDisconnected(@NotNull ComponentName className) {
 			// sad, it crashed...
 			boundToDataService = false;
 		}

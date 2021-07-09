@@ -17,6 +17,7 @@ import android.view.WindowManager;
 import android.widget.TextView;
 
 import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -45,16 +46,19 @@ public class AlarmRingingActivity extends AppCompatActivity {
 	/**
 	 * Service connection to AlarmRingingService.
 	 */
+	@Nullable
 	private ServiceConnection ringingConn;
 
 	/**
 	 * The messenger of AlarmRingingService, used to send snooze or dismiss messages to.
 	 */
+	@Nullable
 	private Messenger ringingService = null;
 	/**
 	 * An unsent message, if the ringing service was unreachable when the activity wanted to send
 	 * the message. Only one because this activity should only send one message.
 	 */
+	@Nullable
 	private Message unsentMessage = null;
 
 	/* ***********************************  Lifecycle Methods  ********************************* */
@@ -66,7 +70,7 @@ public class AlarmRingingActivity extends AppCompatActivity {
 	 * @param savedInstanceState the previous instance state
 	 */
 	@Override
-	protected void onCreate(Bundle savedInstanceState) {
+	protected void onCreate(@Nullable Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
 		String action = getIntent().getAction();
@@ -159,7 +163,7 @@ public class AlarmRingingActivity extends AppCompatActivity {
 	 * button.
 	 * @param v view that was clicked (unused)
 	 */
-	public void snooze(View v) {
+	public void snooze(@NotNull View v) {
 		Message msg = Message.obtain(null, AlarmDataService.MSG_SNOOZE_ALARM, 0, 0);
 		sendMessage(msg);
 		exitActivity();
@@ -170,7 +174,7 @@ public class AlarmRingingActivity extends AppCompatActivity {
 	 * dismiss button.
 	 * @param v view that was clicked (unused)
 	 */
-	public void dismiss(View v) {
+	public void dismiss(@NotNull View v) {
 		Message msg = Message.obtain(null, AlarmDataService.MSG_DISMISS_ALARM, 0, 0);
 		sendMessage(msg);
 		exitActivity();
@@ -224,7 +228,7 @@ public class AlarmRingingActivity extends AppCompatActivity {
 		 * @param service the binder to use
 		 */
 		@Override
-		public void onServiceConnected(ComponentName className, IBinder service) {
+		public void onServiceConnected(@NotNull ComponentName className, @NotNull IBinder service) {
 			boundToRingingService = true;
 			ringingService = new Messenger(service);
 
@@ -240,7 +244,7 @@ public class AlarmRingingActivity extends AppCompatActivity {
 		 * @param className class name of the service that was bound to this connection  (unused)
 		 */
 		@Override
-		public void onServiceDisconnected(ComponentName className) {
+		public void onServiceDisconnected(@NotNull ComponentName className) {
 			Log.e(TAG, "The ringing service crashed.");
 			boundToRingingService = false;
 			ringingService = null;

@@ -258,6 +258,7 @@ public class AlarmRingingService extends Service implements MediaPlayer.OnPrepar
 		/**
 		 * The service that owns this handler.
 		 */
+		@NotNull
 		AlarmRingingService service;
 
 		/**
@@ -316,7 +317,7 @@ public class AlarmRingingService extends Service implements MediaPlayer.OnPrepar
 		 * @param service the binder that the service returned
 		 */
 		@Override
-		public void onServiceConnected(ComponentName className, IBinder service) {
+		public void onServiceConnected(@NotNull ComponentName className, @NotNull IBinder service) {
 			boundToDataService = true;
 			dataService = new Messenger(service);
 
@@ -332,7 +333,7 @@ public class AlarmRingingService extends Service implements MediaPlayer.OnPrepar
 		 * @param className the name of the class that was bound to (unused)
 		 */
 		@Override
-		public void onServiceDisconnected(ComponentName className) {
+		public void onServiceDisconnected(@NotNull ComponentName className) {
 			Log.e(TAG, "The data service crashed.");
 			boundToDataService = false;
 			dataService = null;

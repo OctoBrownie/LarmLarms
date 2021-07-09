@@ -12,6 +12,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import org.jetbrains.annotations.NotNull;
+
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -141,7 +143,7 @@ public class RecyclerViewFrag extends Fragment {
 
 	private class DataServiceConnection implements ServiceConnection {
 		@Override
-		public void onServiceConnected(ComponentName className, IBinder service) {
+		public void onServiceConnected(@NotNull ComponentName className, @NotNull IBinder service) {
 			boundToDataService = true;
 
 			Messenger messenger = new Messenger(service);
@@ -150,7 +152,7 @@ public class RecyclerViewFrag extends Fragment {
 		}
 
 		@Override
-		public void onServiceDisconnected(ComponentName className) {
+		public void onServiceDisconnected(@NotNull ComponentName className) {
 			Log.e(TAG, "The data service crashed.");
 			boundToDataService = false;
 			recyclerView.setAdapter(null);
