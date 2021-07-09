@@ -19,6 +19,7 @@ import android.os.RemoteException;
 import android.util.Log;
 import android.widget.RemoteViews;
 
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import androidx.core.app.NotificationCompat;
@@ -29,28 +30,70 @@ import androidx.core.app.NotificationCompat;
  */
 public class AlarmRingingService extends Service implements MediaPlayer.OnPreparedListener,
 		MediaPlayer.OnErrorListener {
+	/**
+	 * Tag of the class for logging purposes.
+	 */
 	private static final String TAG = "AlarmRingingService";
 
+	/**
+	 * String ID for the notification channel the foreground notifications are posted in.
+	 */
 	static final String CHANNEL_ID = "RingingAlarms";
+	/**
+	 * The int ID for the foreground notification itself. There should only be one at any given time,
+	 * so using the same ID should be fine.
+	 */
 	static final int NOTIFICATION_ID = 42;
 
 	/**
 	 * Plays the ringtone of the alarm. Can be null if the alarm is silent.
 	 */
+	@Nullable
 	private MediaPlayer mediaPlayer;
 
+	/**
+	 * The absolute index of the alarm that's currently ringing.
+	 */
 	private int alarmAbsIndex;
 
+	/**
+	 * Shows whether it is bound to the data service or not.
+	 */
 	private boolean boundToDataService = false;
+	/**
+	 * The service connection to the data service.
+	 */
+	@NotNull
 	private ServiceConnection dataConn;
 
+	/**
+	 * The messenger of the data service. Used for sending snooze/dismiss messages to it.
+	 */
+	@Nullable
 	private Messenger dataService;
+	/**
+	 * An unsent message. Only one because this should only need to send one message per alarm.
+	 */
+	@Nullable
 	private Message unsentMessage;
 
-	public AlarmRingingService() {}
+	/**
+	 * Creates a new AlarmRingingService and initializes a connection to the data service.
+	 */
+	public AlarmRingingService() {
+		dataConn = new DataServiceConnection();
+		bindService(new Intent(this, AlarmDataService.class), dataConn, Context.BIND_AUTO_CREATE);
+	}
 
+	/**
+	 * Called when the service is started in the background.
+	 * @param inIntent the intent used to start the service
+	 * @param flags any flags given to the service
+	 * @param startId a unique id from this particular start code
+	 * @return how the system should handle the service, always returns Service.START_NOT_STICKY
+	 */
 	@Override
-	public int onStartCommand(Intent inIntent, int flags, int startId) {
+	public int onStartCommand(@NotNull Intent inIntent, int flags, int startId) {
 		Alarm currAlarm = Alarm.fromEditString(this,
 				inIntent.getStringExtra(ListableEditorActivity.EXTRA_LISTABLE));
 		if (currAlarm == null) {
@@ -130,15 +173,22 @@ public class AlarmRingingService extends Service implements MediaPlayer.OnPrepar
 		return Service.START_NOT_STICKY;
 	}
 
+	/**
+	 * Called the first time a component wants to bind to this service. Creates a new messenger to
+	 * communicate with clients.
+	 * @param intent the intent used to bind to the service, unused in this implementation
+	 * @return a messenger to AlarmRingingService
+	 */
 	@Override
-	public IBinder onBind(Intent intent) {
-		dataConn = new DataServiceConnection();
-		bindService(new Intent(this, AlarmDataService.class), dataConn, Context.BIND_AUTO_CREATE);
-
+	public IBinder onBind(@NotNull Intent intent) {
 		Messenger messenger = new Messenger(new ActivityHandler(this));
 		return messenger.getBinder();
 	}
 
+	/**
+	 * Called when the service is being destroyed. Unbinds from the data service if it is bound and
+	 * releases the media player if it's not null.
+	 */
 	@Override
 	public void onDestroy() {
 		if (boundToDataService) {
@@ -154,15 +204,20 @@ public class AlarmRingingService extends Service implements MediaPlayer.OnPrepar
 
 	/**
 	 * Callback for MediaPlayer.OnPreparedListener.
+	 * @param mp the media player that was just prepared.
 	 */
 	@Override
-	public void onPrepared(MediaPlayer mp) { mediaPlayer.start(); }
+	public void onPrepared(@NotNull MediaPlayer mp) { mp.start(); }
 
 	/**
 	 * Callback for MediaPlayer.OnErrorListener.
+	 * @param mp the media player with an error
+	 * @param what the type of error that occurred
+	 * @param extra extra code specific to the error
+	 * @return whether the error was handled or not, always returns false
 	 */
 	@Override
-	public boolean onError(MediaPlayer mp, int what, int extra) {
+	public boolean onError(@NotNull MediaPlayer mp, int what, int extra) {
 		Log.e(TAG, "Something went wrong while playing the alarm sounds.");
 		if (mediaPlayer != null)
 			mediaPlayer.release();
@@ -177,10 +232,16 @@ public class AlarmRingingService extends Service implements MediaPlayer.OnPrepar
 	 * @param msg the message to send, can be null
 	 */
 	private void sendMessage(@Nullable Message msg) {
+		if (dataService == null) {
+			Log.e(TAG, "Data service is null. Caching message.");
+			unsentMessage = msg;
+			return;
+		}
+
 		try {
 			dataService.send(msg);
 		}
-		catch (NullPointerException | RemoteException e) {
+		catch (RemoteException e) {
 			Log.e(TAG, "Data service is unavailable. Caching message.");
 			unsentMessage = msg;
 		}
@@ -194,15 +255,27 @@ public class AlarmRingingService extends Service implements MediaPlayer.OnPrepar
 	 * check any of the fields.
 	 */
 	private static class ActivityHandler extends Handler {
+		/**
+		 * The service that owns this handler.
+		 */
 		AlarmRingingService service;
 
-		private ActivityHandler(AlarmRingingService service) {
+		/**
+		 * Creates a new handler and stores the service that called it.
+		 * @param service the service that created the handler
+		 */
+		private ActivityHandler(@NotNull AlarmRingingService service) {
 			super(Looper.getMainLooper());
 			this.service = service;
 		}
 
+		/**
+		 * Handles messages from AlarmRingingActivity. Handles either AlarmDataService.MSG_SNOOZE_ALARM
+		 * or AlarmDataService.MSG_DISMISS_ALARM.
+		 * @param msg the incoming message from the activity
+		 */
 		@Override
-		public void handleMessage(Message msg) {
+		public void handleMessage(@NotNull Message msg) {
 			Message outMsg;
 			switch(msg.what) {
 				case AlarmDataService.MSG_SNOOZE_ALARM:
@@ -227,7 +300,16 @@ public class AlarmRingingService extends Service implements MediaPlayer.OnPrepar
 		}
 	}
 
+	/**
+	 * Service connection to the data service.
+	 */
 	private class DataServiceConnection implements ServiceConnection {
+		/**
+		 * Called when the data service connects to this service. Sets some fields in the service
+		 * and sends any unsent messages. If an unsent message is sent, then the service is killed.
+		 * @param className the name of the class that was bound to (unused)
+		 * @param service the binder that the service returned
+		 */
 		@Override
 		public void onServiceConnected(ComponentName className, IBinder service) {
 			boundToDataService = true;
@@ -239,14 +321,18 @@ public class AlarmRingingService extends Service implements MediaPlayer.OnPrepar
 			}
 		}
 
+		/**
+		 * Called when the data service crashes. Unsets some fields in the outer service and stops
+		 * the entire service.
+		 * @param className the name of the class that was bound to (unused)
+		 */
 		@Override
 		public void onServiceDisconnected(ComponentName className) {
 			Log.e(TAG, "The data service crashed.");
 			boundToDataService = false;
 			dataService = null;
 
-			stopForeground(true);
-			mediaPlayer.stop();
+			stopSelf();
 		}
 	}
 }
