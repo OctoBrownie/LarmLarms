@@ -18,6 +18,7 @@ import android.os.RemoteException;
 import android.util.Log;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -814,7 +815,12 @@ public class AlarmDataService extends Service {
 		 * @param msg the incoming Message to handle
 		 */
 		@Override
-		public void handleMessage(@NotNull Message msg) {
+		public void handleMessage(@Nullable Message msg) {
+			if (msg == null) {
+				Log.e(TAG, "Message sent to the data service was null. Ignoring...");
+				return;
+			}
+
 			switch(msg.what) {
 				case MSG_GET_LISTABLE:
 					service.handleGetListable(msg);

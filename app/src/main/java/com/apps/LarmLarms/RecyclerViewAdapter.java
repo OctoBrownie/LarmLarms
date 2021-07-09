@@ -448,6 +448,11 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 
 		@Override
 		public void handleMessage(Message msg) {
+			if (msg == null) {
+				Log.e(TAG, "Message sent to the recycler view adapter was null. Ignoring...");
+				return;
+			}
+
 			switch (msg.what) {
 				case AlarmDataService.MSG_GET_LISTABLE:
 					handleGetListable(msg);

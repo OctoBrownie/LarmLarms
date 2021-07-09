@@ -197,6 +197,11 @@ public class MainActivity extends AppCompatActivity {
 
 		@Override
 		public void handleMessage(Message msg) {
+			if (msg == null) {
+				Log.e(TAG, "Message sent to the main activity was null. Ignoring...");
+				return;
+			}
+
 			switch(msg.what) {
 				case AlarmDataService.MSG_DATA_EMPTIED:
 					activity.hideFrag();

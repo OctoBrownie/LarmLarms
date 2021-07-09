@@ -275,7 +275,12 @@ public class AlarmRingingService extends Service implements MediaPlayer.OnPrepar
 		 * @param msg the incoming message from the activity
 		 */
 		@Override
-		public void handleMessage(@NotNull Message msg) {
+		public void handleMessage(@Nullable Message msg) {
+			if (msg == null) {
+				Log.e(TAG, "Message sent to the ringing service was null. Ignoring...");
+				return;
+			}
+
 			Message outMsg;
 			switch(msg.what) {
 				case AlarmDataService.MSG_SNOOZE_ALARM:
