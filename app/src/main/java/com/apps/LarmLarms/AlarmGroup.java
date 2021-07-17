@@ -766,8 +766,11 @@ public final class AlarmGroup implements Listable, Cloneable {
 		builder.append('\n');
 		for (Listable l : listables) {
 			if (!l.isAlarm()) {
-				// recursive call
-				builder.append('\t').append( ((AlarmGroup)l).toReducedString()).append('\n');
+				String[] reducedList = ((AlarmGroup)l).toReducedString().split("\n");
+				for (int i = 0; i < reducedList.length; i++) {
+					reducedList[i] = "\t" + reducedList[i];
+				}
+				builder.append(reducedList).append('\n');
 			}
 		}
 		return builder.toString();
