@@ -273,7 +273,7 @@ public final class AlarmGroup implements Listable, Cloneable {
 	 */
 	void setListables(@Nullable ArrayList<Listable> listables) {
 		if (listables == null) {
-			Log.e(TAG, "New list of Listables is null.");
+			Log.v(TAG, "New list of Listables is null.");
 			return;
 		}
 		for (Listable l : listables) {
@@ -296,12 +296,12 @@ public final class AlarmGroup implements Listable, Cloneable {
 	 * @param src the edit string to create from
 	 */
 	@Nullable @Contract(pure = true)
-	static AlarmGroup fromEditString(String src) {
+	static AlarmGroup fromEditString(@Nullable String src) {
 		if (src == null) {
-			Log.e(TAG, "Edit string is null.");
+			Log.v(TAG, "Edit string is null.");
 			return null;
 		} else if (src.length() == 0) {
-			Log.e(TAG, "Edit string is empty.");
+			Log.v(TAG, "Edit string is empty.");
 			return null;
 		}
 
@@ -323,12 +323,12 @@ public final class AlarmGroup implements Listable, Cloneable {
 	 * @param src the store string to create from
 	 */
 	@Nullable @Contract(pure = true)
-	static AlarmGroup fromStoreString(Context currContext, String src) {
+	static AlarmGroup fromStoreString(@Nullable Context currContext, @Nullable String src) {
 		if (src == null) {
-			Log.e(TAG, "Store string is null.");
+			Log.v(TAG, "Store string is null.");
 			return null;
 		} else if (src.length() == 0) {
-			Log.e(TAG, "Store string is empty.");
+			Log.v(TAG, "Store string is empty.");
 			return null;
 		}
 
@@ -405,11 +405,16 @@ public final class AlarmGroup implements Listable, Cloneable {
 
 	/**
 	 * Counts the number of Listables in the list. Does not include the parent object in the count.
-	 * @param listables the list of Listables to count
-	 * @return number of Listables in the list
+	 * @param listables the list of Listables to count, can be null
+	 * @return number of Listables in the list, or zero if list is null
 	 */
 	@Contract(pure = true)
-	private static int getSizeOfList(ArrayList<Listable> listables) {
+	private static int getSizeOfList(@Nullable ArrayList<Listable> listables) {
+		if (listables == null) {
+			Log.v(TAG, "List of listables to get size of was null.");
+			return 0;
+		}
+
 		int len = 0;
 		for (Listable l : listables) { len += l.size(); }
 		return len;
@@ -418,13 +423,13 @@ public final class AlarmGroup implements Listable, Cloneable {
 	/**
 	 * Generates a lookup list for a given set of Listables. Lookup list contains the first absolute
 	 * index for each Listable in the list.
-	 * @param data the list of Listables to read
+	 * @param data the list of Listables to read, can be null
 	 * @return the lookup list, can be empty but never null
 	 */
 	@Contract(pure = true)
-	private static ArrayList<Integer> generateLookup(final ArrayList<Listable> data) {
+	private static ArrayList<Integer> generateLookup(@Nullable final ArrayList<Listable> data) {
 		if (data == null) {
-			Log.e(TAG, "Input data to generateLookup was null.");
+			Log.v(TAG, "Input data to generateLookup was null.");
 			return new ArrayList<>();
 		}
 
@@ -464,8 +469,13 @@ public final class AlarmGroup implements Listable, Cloneable {
 	 * if the Listable was not found
 	 */
 	@Nullable @Contract(pure = true)
-	private static ListableInfo getListableInfo(ArrayList<Listable> data, ArrayList<Integer> lookup,
-										final int srcIndex) {
+	private static ListableInfo getListableInfo(@Nullable ArrayList<Listable> data,
+										@Nullable ArrayList<Integer> lookup, final int srcIndex) {
+		if (data == null || lookup == null) {
+			Log.v(TAG, "Listable data or lookup was null.");
+			return null;
+		}
+
 		ListableInfo info = new ListableInfo();
 		int index = findOuterListableIndex(lookup, srcIndex, AlarmGroup.getSizeOfList(data));
 		int indents = 0;
@@ -512,13 +522,17 @@ public final class AlarmGroup implements Listable, Cloneable {
 	 * found or datasetLookup is empty.
 	 */
 	@Contract(pure = true)
-	static int findOuterListableIndex(
-			final ArrayList<Integer> lookup, final int index, final int total) {
+	static int findOuterListableIndex(@Nullable final ArrayList<Integer> lookup, final int index,
+									  final int total) {
+		if (lookup == null) {
+			Log.v(TAG, "Listable lookup was null.");
+			return -1;
+		}
+
 		int max = lookup.size();
 
 		if (max == 0 || index >= total || index < 0) {
 			Log.e(TAG, "Listable index is out of bounds!");
-			Log.e(TAG, "max = " + max + ", index = " + index + ", total = " + total);
 			return -1;
 		}
 		else if (max == 1) { return 0; }
