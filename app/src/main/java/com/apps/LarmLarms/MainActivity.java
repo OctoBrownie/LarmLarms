@@ -152,7 +152,7 @@ public class MainActivity extends AppCompatActivity {
 	 * @param data the intent returned by the closed Activity
 	 */
 	@Override
-	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+	protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
 		// TODO: if this isn't true for some other activity we come back from, change
 		if (resultCode == RESULT_CANCELED) {
 			Log.i(TAG, "Action cancelled.");
