@@ -5,25 +5,50 @@ import android.os.Parcelable;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * A struct containing information about a listable within a nested list of Listables
  */
-
 class ListableInfo implements Parcelable {
-	int absIndex, relIndex, numIndents, absParentIndex;
+	/**
+	 * The absolute index of a Listable.
+	 */
+	int absIndex;
+
+	/**
+	 * The relative index of a Listable.
+	 */
+	int relIndex;
+
+	/**
+	 * The number of indents for a Listable.
+	 */
+	int numIndents;
+
+	/**
+	 * The absolute index of a Listable's parent.
+	 */
+	int absParentIndex;
+
 	/**
 	 * Represents a Listable, and implies the other fields are describing this listable. Not
 	 * guaranteed to be a handle to the original Listable (if, for example, it was recreated from a
 	 * Parcel).
 	 */
+	@Nullable
 	Listable listable;
+
 	/**
 	 * Represents the parent folder to the field listable. Not guaranteed to be a handle to the
 	 * original AlarmGroup (if, for example, it was recreated from a Parcel).
 	 */
+	@Nullable
 	AlarmGroup parent;
 
+	/**
+	 * Initializes dummy data in the struct variables.
+	 */
 	ListableInfo() {
 		relIndex = 0;
 		absIndex = 0;
@@ -33,7 +58,11 @@ class ListableInfo implements Parcelable {
 		parent = null;
 	}
 
-	private ListableInfo(Parcel in) {
+	/**
+	 * Creates a new ListableInfo from a parcel.
+	 * @param in the parcel to initialize from, cannot be null
+	 */
+	private ListableInfo(@NotNull Parcel in) {
 		absIndex = in.readInt();
 		relIndex = in.readInt();
 		numIndents = in.readInt();
@@ -56,6 +85,9 @@ class ListableInfo implements Parcelable {
 
 	/* *******************************  Parcelable Things  ********************************** */
 
+	/**
+	 * Creator that creates parcels of ListableInfo objects.
+	 */
 	public static final Parcelable.Creator<ListableInfo> CREATOR =
 		new Parcelable.Creator<ListableInfo>() {
 			@NotNull
@@ -68,13 +100,22 @@ class ListableInfo implements Parcelable {
 			}
 		};
 
+	/**
+	 * Describes the contents of the object.
+	 * @return always returns 0 (no file descriptors in the object)
+	 */
 	@Override
 	public int describeContents() {
 		return 0;
 	}
 
+	/**
+	 * Write the object to the given parcel
+	 * @param dest the parcel to write to, shouldn't be null
+	 * @param flags any flags to use
+	 */
 	@Override
-	public void writeToParcel(Parcel dest, int flags) {
+	public void writeToParcel(@NotNull Parcel dest, int flags) {
 		dest.writeInt(absIndex);
 		dest.writeInt(relIndex);
 		dest.writeInt(numIndents);
