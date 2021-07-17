@@ -115,10 +115,33 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 	 */
 	private DatePicker alarmDatePicker;
 	/**
-	 * Layouts for different alarm repeat types.
+	 * Layout for the clickable weekdays TextViews.
 	 */
-	private ViewGroup alarmDaysLayout, alarmOffsetDaysLayout, alarmOffsetHoursLayout,
-			alarmOffsetMinsLayout, alarmDayMonthlyLayout, alarmMonthsLayout, alarmDateOfMonthLayout;
+	private ViewGroup alarmDaysLayout;
+	/**
+	 * Layout for the offset days label and text field.
+	 */
+	private ViewGroup alarmOffsetDaysLayout;
+	/**
+	 * Layout for the offset hours label and text field.
+	 */
+	private ViewGroup alarmOffsetHoursLayout;
+	/**
+	 * Layout for the offset minutes label and text field.
+	 */
+	private ViewGroup alarmOffsetMinsLayout;
+	/**
+	 * Layout for the day and week to ring on (label and two spinners for which week and which day).
+	 */
+	private ViewGroup alarmDayMonthlyLayout;
+	/**
+	 * Layout for the clickable months TextViews.
+	 */
+	private ViewGroup alarmMonthsLayout;
+	/**
+	 * Layout for the day of the month to ring on.
+	 */
+	private ViewGroup alarmDateOfMonthLayout;
 
 	/* *********************************  Lifecycle Methods  ******************************* */
 
@@ -579,6 +602,10 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 	 */
 	private void folderUISetup() { setContentView(R.layout.activity_folder_editor); }
 
+	/**
+	 * Changes repeat type to the new specified type.
+	 * @param type new type to set it to, should be one of the Alarm constants
+	 */
 	private void changeRepeatType(int type) {
 		switch (type) {
 			case Alarm.REPEAT_DATE_YEARLY:
