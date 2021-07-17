@@ -19,6 +19,9 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.TimePicker;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import java.text.DateFormatSymbols;
 import java.text.NumberFormat;
 import java.text.ParseException;
@@ -29,30 +32,69 @@ import java.util.GregorianCalendar;
 import androidx.appcompat.app.AppCompatActivity;
 
 /**
- * Activity used for creating new alarms or editing existing ones.
+ * Activity used for creating new Listables or editing existing ones.
  */
-
 public class ListableEditorActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
+	/**
+	 * Tag of the class for logging purposes.
+	 */
 	private final static String TAG = "ListableEditor";
 
-	// tags for intents carrying alarms
+	// extras for intents carrying alarms
+	/**
+	 * An extra used for carrying a Listable in edit string form. 
+	 */
 	final static String EXTRA_LISTABLE = "com.apps.AlarmsButBetter.ALARM";
+	/**
+	 * An extra used for carrying a Listable's absolute index within the data. 
+	 */
 	final static String EXTRA_LISTABLE_INDEX = "com.apps.AlarmsButBetter.ALARM_INDEX";
+	/**
+	 * An extra with the request ID. 
+	 */
 	final static String EXTRA_REQ_ID = "com.apps.AlarmsButBetter.REQ_ID";
+	/**
+	 * An extra with a reduced folder string of the entire folder structure.
+	 * TODO: implement logic
+	 */
 	final static String EXTRA_FOLDERS = "com.apps.AlarmsButBetter.FOLDERS";
 
 	// for inbound intents
+	/**
+	 * Request code to create a new alarm. 
+	 * TODO: could possibly make into an intent action instead 
+	 */
 	final static int REQ_NEW_ALARM = 0;
+	/**
+	 * Request code to edit an existing Alarm. Assumes that EXTRA_LISTABLE, EXTRA_LISTABLE_INDEX, 
+	 * and EXTRA_FOLDERS are filled out. 
+	 */
 	final static int REQ_EDIT_ALARM = 1;
+	/**
+	 * Request code to create a new folder.
+	 */
 	final static int REQ_NEW_FOLDER = 2;
+	/**
+	 * Request code to edit an existing AlarmGroup. Assumes that EXTRA_LISTABLE, EXTRA_LISTABLE_INDEX, 
+	 * and EXTRA_FOLDERS are filled out. 
+	 */
 	final static int REQ_EDIT_FOLDER = 3;
 
 	// for outbound intents
+	/**
+	 * Request code to get a ringtone for the app. 
+	 */
 	private final static int REQ_GET_RINGTONE = 4;
 
+	/**
+	 * The current Listable being edited/created in this activity. 
+	 */
 	private Listable workingListable;
 
 	// information about Listable being edited
+	/**
+	 * The absolute index of the Listable being edited.
+	 */
 	private int listableIndex;
 	/**
 	 * Shows whether the current activity is editing an Alarm (true) or AlarmGroup (false).
@@ -64,15 +106,29 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 	private boolean isEditing;
 
 	// handles to views
+	/**
+	 * The time picker (alarms only).
+	 */
 	private TimePicker alarmTimePicker;
+	/**
+	 * The date picker (alarms only).
+	 */
 	private DatePicker alarmDatePicker;
+	/**
+	 * Layouts for different alarm repeat types.
+	 */
 	private ViewGroup alarmDaysLayout, alarmOffsetDaysLayout, alarmOffsetHoursLayout,
 			alarmOffsetMinsLayout, alarmDayMonthlyLayout, alarmMonthsLayout, alarmDateOfMonthLayout;
 
 	/* *********************************  Lifecycle Methods  ******************************* */
 
+	/**
+	 * Called when the activity is first being created. Initializes fields and UI based on the type
+	 * of Listable being edited.
+	 * @param savedInstanceState the previously saved instance state from previous activity creation
+	 */
 	@Override
-	protected void onCreate(Bundle savedInstanceState) {
+	protected void onCreate(@Nullable Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
 		int startedState = getIntent().getIntExtra(EXTRA_REQ_ID, -1);
@@ -123,6 +179,10 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 		}
 	}
 
+	/**
+	 * Called when the app is resuming from a paused state (or starting). Checks for 24 hour view
+	 * and sets the time picker settings accordingly.
+	 */
 	@Override
 	protected void onResume() {
 		super.onResume();
@@ -138,8 +198,9 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 	/**
 	 * An onclick callback for the back button. Closes the AlarmCreator and return
 	 * RESULT_CANCELLED and no intent.
+	 * @param view the back button (view that triggered the callback)
 	*/
-	public void backButtonClicked(View view) {
+	public void backButtonClicked(@NotNull View view) {
 		Log.i(TAG, "Back button pressed. No changes made to any alarms. Exiting.");
 
 		// TODO: ask user if they REALLY want to exit?
@@ -149,8 +210,9 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 	/**
 	 * An onclick callback for the save button. Closes the AlarmCreator, returns RESULT_OK and
 	 * the Listable (in string form) in the intent.
+	 * @param view the save button (view that triggered the callback)
 	*/
-	public void saveListable(View view) {
+	public void saveListable(@NotNull View view) {
 		// TODO: validate any field inputs?
 		Log.i(TAG, "Sending new listable back to the caller.");
 
@@ -255,9 +317,9 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 
 	/**
 	 * An onclick callback if a TextView representing a day of the week is clicked.
-	 * @param view the TextView that was clicked
+	 * @param view the day of week TextView that was clicked
 	 */
-	public void dayOfWeekClicked(View view) {
+	public void dayOfWeekClicked(@NotNull View view) {
 		int index = Integer.parseInt(view.getTag().toString());
 		boolean newState = !((Alarm) workingListable).getRepeatDays(index);
 
@@ -267,9 +329,9 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 
 	/**
 	 * An onclick callback if a TextView representing a month of the year is clicked.
-	 * @param view the TextView that was clicked
+	 * @param view the month TextView that was clicked
 	 */
-	public void monthClicked(View view) {
+	public void monthClicked(@NotNull View view) {
 		int index = Integer.parseInt(view.getTag().toString());
 		boolean newState = !((Alarm) workingListable).getRepeatMonths(index);
 
@@ -280,8 +342,9 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 	/**
 	 * Callback for the set ringtone button. Opens another app to choose the audio file.
 	 * TODO: Perhaps make my own sound picker...?
+	 * @param view the pick ringtone button (view that triggered the callback)
 	 */
-	public void chooseSound(View view) {
+	public void chooseSound(@NotNull View view) {
 		Intent getSound = new Intent(RingtoneManager.ACTION_RINGTONE_PICKER);
 		getSound.putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI,
 				((Alarm) workingListable).getRingtoneUri());
@@ -289,10 +352,19 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 		startActivityForResult(getSound, REQ_GET_RINGTONE);
 	}
 
+	/**
+	 * Callback called after a ringtone is chosen.
+	 * @param requestCode the code we sent when creating the activity
+	 * @param resultCode the code the activity sent back after finishing
+	 * @param data the data sent back by the activity
+	 */
 	@Override
-	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+	protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
 		if (requestCode == REQ_GET_RINGTONE && resultCode == RESULT_OK) {
-			Uri uri = data.getParcelableExtra(RingtoneManager.EXTRA_RINGTONE_PICKED_URI);
+			Uri uri = null;
+			if (data != null)
+				uri = data.getParcelableExtra(RingtoneManager.EXTRA_RINGTONE_PICKED_URI);
+
 			((Alarm) workingListable).setRingtoneUri(uri);
 
 			TextView t = findViewById(R.id.soundText);
@@ -312,7 +384,7 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 	 * @param id row ID of the item selected
 	 */
 	@Override
-	public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
+	public void onItemSelected(@NotNull AdapterView<?> parent, View view, int pos, long id) {
 		switch (parent.getId()) {
 			case R.id.alarmRepeatTypeInput:
 				((Alarm) workingListable).setRepeatType(pos);
@@ -330,8 +402,12 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 		}
 	}
 
+	/**
+	 * Doesn't do anything when nothing has been selected from the repeat type dropdown.
+	 * @param parent Spinner (AdapterView) that just closed
+	 */
 	@Override
-	public void onNothingSelected(AdapterView<?> parent) {}
+	public void onNothingSelected(@NotNull AdapterView<?> parent) {}
 
 	/* ************************************  Other Methods  ********************************* */
 
@@ -344,11 +420,17 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 		finish();
 	}
 
+	/**
+	 * Sets up class fields if editing a new alarm.
+	 */
 	private void newAlarmFieldSetup() {
 		isEditingAlarm = true;
 		isEditing = false;
 		workingListable = new Alarm(this);
 	}
+	/**
+	 * Sets up class fields if editing an existing alarm.
+	 */
 	private void editAlarmFieldSetup() {
 		Intent callingIntent = getIntent();
 
@@ -364,11 +446,18 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 
 		((Alarm)workingListable).unsnooze();
 	}
+
+	/**
+	 * Sets up class fields if editing a new folder.
+	 */
 	private void newFolderFieldSetup() {
 		isEditingAlarm = false;
 		isEditing = false;
 		workingListable = new AlarmGroup();
 	}
+	/**
+	 * Sets up class fields if editing an existing folder.
+	 */
 	private void editFolderFieldSetup() {
 		Intent callingIntent = getIntent();
 
@@ -383,6 +472,9 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 		}
 	}
 
+	/**
+	 * Sets up the UI for editing (or creating) an alarm.
+	 */
 	@SuppressLint("DefaultLocale")
 	private void alarmUISetup() {
 		// TODO: to speed this specific method up, could do some of this setup when swapping alarm types?
@@ -482,6 +574,9 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 		TextView alarmSoundLabel = findViewById(R.id.soundText);
 		alarmSoundLabel.setText(alarm.getRingtoneName());
 	}
+	/**
+	 * Sets up the UI for editing (or creating) a folder.
+	 */
 	private void folderUISetup() { setContentView(R.layout.activity_folder_editor); }
 
 	private void changeRepeatType(int type) {
@@ -556,13 +651,17 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 
 	/**
 	 * Gets all children in the selected view hierarchy, except for ViewGroups.
-	 * @param view the View or ViewGroup to generate a list for
-	 * @return the list of children, in a 1D ArrayList and not including view groups
+	 * @param view the View or ViewGroup to generate a list for, can be null
+	 * @return the list of children, in a 1D ArrayList and not including view groups, cannot be null
 	 */
-	private static ArrayList<View> getAllChildren(View view) {
+	@NotNull
+	private static ArrayList<View> getAllChildren(@Nullable View view) {
 		ArrayList<View> children = new ArrayList<>();
 
-		if (!(view instanceof ViewGroup)) {
+		if (view == null) {
+			return children;
+		}
+		else if (!(view instanceof ViewGroup)) {
 			children.add(view);
 			return children;
 		}
@@ -577,10 +676,10 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 	/**
 	 * Changes the colors of the children specified according to the mask. Changes up to the length
 	 * of the mask or all of the views in group, whichever comes first.
-	 * @param children the children change the colors of views for
+	 * @param children the children to change the colors of views for (TextViews), shouldn't be null
 	 * @param mask the boolean mask to use, where true is highlighted, false is not
 	 */
-	private void changeColors(ArrayList<View> children, boolean[] mask) {
+	private void changeColors(@NotNull ArrayList<View> children, boolean[] mask) {
 		int max = Math.min(children.size(), mask.length);
 		TextView t;
 
@@ -590,6 +689,8 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 		for (int i = 0; i < max; i++) {
 			// change colors of each child
 			t = (TextView) children.get(i);
+			if (t == null) continue;
+
 			if (mask[i]) { t.setTextColor(textColors.getColor(0, 0)); }
 			else { t.setTextColor(textColors.getColor(1, 0)); }
 		}
@@ -597,7 +698,13 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 		textColors.recycle();
 	}
 
-	private void changeColors(TextView view, boolean mask) {
+	/**
+	 * Changes the colors of a single text view.
+	 * TODO: could possibly use a color selector for these views instead
+	 * @param view the TextView to change the color of view for, shouldn't be null
+	 * @param mask the boolean mask to use, where true is highlighted, false is not
+	 */
+	private void changeColors(@NotNull TextView view, boolean mask) {
 		TypedArray textColors = getTheme().obtainStyledAttributes(
 				new int[] {R.attr.activeTextColor, R.attr.inactiveTextColor});
 
@@ -607,6 +714,9 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 		textColors.recycle();
 	}
 
+	/**
+	 * Sets up the clickable week days text views with text and enabled/disabled colors.
+	 */
 	private void setupWeekDays() {
 		Alarm alarm = (Alarm) workingListable;
 		ArrayList<View> children = getAllChildren(alarmDaysLayout);
@@ -620,6 +730,9 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 		}
 	}
 
+	/**
+	 * Sets up the clickable months text views with text and enabled/disabled colors.
+	 */
 	private void setupMonths() {
 		Alarm alarm = (Alarm) workingListable;
 		ArrayList<View> children = getAllChildren(alarmMonthsLayout);
