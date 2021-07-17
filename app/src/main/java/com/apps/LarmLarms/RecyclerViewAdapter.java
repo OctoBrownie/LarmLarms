@@ -19,6 +19,9 @@ import android.widget.ImageView;
 import android.widget.Switch;
 import android.widget.TextView;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,12 +33,19 @@ import androidx.recyclerview.widget.RecyclerView;
  * service, so be sure to set it before use.
  */
 public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.RecyclerViewHolder> {
+	/**
+	 * Tag of the class for logging purposes.
+	 */
 	private static final String TAG = "RecyclerViewAdapter";
+	/**
+	 * Tag string for the dialogs made by an alarm/folder item.
+	 */
 	private static final String DIALOG_FRAG_TAG = "RecyclerView dialog";
 
 	/**
 	 * Stores all the Listables (Alarms and AlarmGroups) present, using only absolute indices.
 	 */
+	@NotNull
 	private ArrayList<ListableInfo> data;
 	/**
 	 * Stores the number of listables in the dataset. Updated by AlarmDataService when MSG_DATA_CHANGED
@@ -44,25 +54,33 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 	private int dataSize;
 
 	/**
-	 * Stores the context that this is being run in.
+	 * Stores the context that this is being run in. Shouldn't be null.
 	 */
+	@NotNull
 	private Context context;
 	/**
 	 * Messenger to send data requests to. Should connect to the AlarmDataService. Can be null, if
 	 * the service isn't connected.
 	 */
+	@Nullable
 	private Messenger dataService;
 	/**
 	 * Messenger sent to the data service, registered for data changed events.
 	 */
+	@NotNull
 	private final Messenger dataChangedMessenger;
 	/**
 	 * Any messages that failed to send but need to be sent. Read in the order they were added.
 	 * TODO: could implement as a Queue (LinkedList as a specific implementation?) instead
 	 */
-	private List<Message> unsentMessages;
+	@NotNull
+	private final List<Message> unsentMessages;
 
-	RecyclerViewAdapter (Context currContext) {
+	/**
+	 * Creates a new RecyclerViewAdapter with a specific context. Data starts out empty.
+	 * @param currContext the current context, cannot be null
+	 */
+	RecyclerViewAdapter (@NotNull Context currContext) {
 		context = currContext;
 
 		data = new ArrayList<>();
@@ -75,14 +93,17 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 
 	/* ***************************  RecyclerView.Adapter Methods  ***************************** */
 
+	/**
+	 * Called when the recycler view wants to create a view holder
+	 * @param parent the parent view group to attach it to
+	 * @param viewType the type of view
+	 * @return a new RecyclerViewHolder in the recycler view
+	 */
 	@Override
-	public RecyclerViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+	public RecyclerViewHolder onCreateViewHolder(@NotNull ViewGroup parent, int viewType) {
 		// v is the cardView that was just inflated
 		View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.recycler_view_item, parent, false);
-		RecyclerViewHolder r = new RecyclerViewHolder(v, context);
-		r.setAdapter(this);
-
-		return r;
+		return new RecyclerViewHolder(v, context, this);
 	}
 
 	/**
@@ -91,7 +112,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 	 * @param position the absolute position of the Listable to bind to the ViewHolder
 	 */
 	@Override
-	public void onBindViewHolder (RecyclerViewHolder holder, final int position) {
+	public void onBindViewHolder (@NotNull RecyclerViewHolder holder, final int position) {
 		ListableInfo i = data.get(position);
 
 		holder.changeListable(i.listable);
@@ -109,6 +130,10 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 		// a ViewHolder to reduce the # of layout passes necessary (if same indent)
 	}
 
+	/**
+	 * Gets the number of items within the recycler view
+	 * @return number of items
+	 */
 	@Override
 	public int getItemCount() { return dataSize; }
 
@@ -120,7 +145,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 	 * MSG_DATA_CHANGED message), dataService will be set to null.
 	 * @param messenger the new messenger to set dataService to
 	 */
-	void setDataService(Messenger messenger) {
+	void setDataService(@Nullable Messenger messenger) {
 		Message outMsg;
 		if (dataService != null) {
 			// unregister data changed listener
@@ -168,13 +193,26 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 
 	// used mostly because it's synchronous and (should be) up to date
 
-	Listable getListableAbs(int absIndex) { return data.get(absIndex).listable; }
+	/**
+	 * Gets the listable at the specified absolute index
+	 * @param absIndex absolute index of the Listable
+	 * @return the Listable that you asked for, or null if the index is out of bounds
+	 */
+	@Nullable
+	Listable getListableAbs(int absIndex) {
+		if (absIndex < 0 || absIndex >= data.size()) {
+			Log.v(TAG, "Absolute index to get listable for is out of bounds.");
+			return null;
+		}
+
+		return data.get(absIndex).listable;
+	}
 
 	/**
 	 * Sends a message to AlarmDataService to add a new listable to the end of the list, not nested.
 	 * @param item the Listable to add to the list
 	 */
-	void addListable(Listable item) {
+	void addListable(@Nullable Listable item) {
 		Message msg = Message.obtain(null, AlarmDataService.MSG_ADD_LISTABLE);
 
 		ListableInfo info = new ListableInfo();
@@ -192,7 +230,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 	 * @param absIndex the absolute index of the Listable to set
 	 * @param item the new Listable to set it to
 	 */
-	void setListableAbs(int absIndex, Listable item) {
+	void setListableAbs(int absIndex, @Nullable Listable item) {
 		Message msg = Message.obtain(null, AlarmDataService.MSG_SET_LISTABLE);
 
 		ListableInfo info = new ListableInfo();
@@ -219,11 +257,16 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 	/* **********************************  Other Methods  ********************************* */
 
 	/**
-	 * Sends the specified listable off to ListableEditor for editing
-	 * @param listable the listable to edit
+	 * Sends the specified listable off to ListableEditor for editing. If the listable is null,
+	 * doesn't do anything.
+	 * @param listable the listable to edit, can be null
 	 * @param index the absolute index of the listable
 	 */
-	void editExistingListable(final Listable listable, final int index) {
+	void editExistingListable(@Nullable final Listable listable, final int index) {
+		if (listable == null) {
+			Log.v(TAG, "Listable to edit was null.");
+			return;
+		}
 		// start new activity (AlarmCreator)
 		Intent intent = new Intent(context, ListableEditorActivity.class);
 
@@ -263,14 +306,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 		for (int pos = 0; pos < dataSize; pos++) {
 			m = Message.obtain(null, AlarmDataService.MSG_GET_LISTABLE, pos, 0);
 			m.replyTo = dataChangedMessenger;
-
-			try {
-				dataService.send(m);
-			}
-			catch (NullPointerException | RemoteException e) {
-				Log.e(TAG, "Tried to bind a view holder when the data service is unavailable. Caching message.");
-				unsentMessages.add(m);
-			}
+			sendMessage(m);
 		}
 	}
 
@@ -278,11 +314,17 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 	 * Sends a message to the data service using the adapter's messenger.
 	 * @param msg the message to send
 	 */
-	private void sendMessage(Message msg) {
+	private void sendMessage(@Nullable Message msg) {
+		if (dataService == null) {
+			Log.e(TAG, "Data service is unavailable. Caching the message.");
+			unsentMessages.add(msg);
+			return;
+		}
+
 		try {
 			dataService.send(msg);
 		}
-		catch (NullPointerException | RemoteException e) {
+		catch (RemoteException e) {
 			Log.e(TAG, "Data service is unavailable. Caching the message.");
 			unsentMessages.add(msg);
 		}
@@ -296,32 +338,81 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 	 */
 	public static class RecyclerViewHolder extends RecyclerView.ViewHolder
 			implements View.OnClickListener, View.OnLongClickListener, DialogInterface.OnClickListener {
+		/**
+		 * Tag of the class for logging purposes.
+		 */
 		private static String TAG = "RecyclerViewHolder";
 
 		/**
 		 * Is the listable it currently represents. Don't modify it, since it's actually a pointer
 		 * to the data service listable itself.
 		 */
+		@Nullable
 		private Listable listable;
+		/**
+		 * The context of the holder. Shouldn't be null. Is required in an onClick callback.
+		 */
+		@NotNull
 		private Context context;
+		/**
+		 * The adapter this holder is tied to.
+		 */
+		@NotNull
 		private RecyclerViewAdapter adapter;
-		private Drawable openAnim, closeAnim;
+
+		/**
+		 * Vector drawable for the open folder animation. Ends in the open state.
+		 */
+		@NotNull
+		private Drawable openAnim;
+		/**
+		 * Vector drawable for the close folder animation. Ends in the closed state.
+		 */
+		@NotNull
+		private Drawable closeAnim;
 
 		// handles to views
+		/**
+		 * Main CardView view.
+		 */
 		private final View view;
+		/**
+		 * The title view. Shows the name of the listable.
+		 */
 		private final TextView titleView;
+		/**
+		 * The view that shows the repeat text of the Listable.
+		 */
 		private final TextView repeatView;
+		/**
+		 * The view that shows the time of the alarm. Is replaced by the image view when displaying
+		 * a folder.
+		 */
 		private final TextView timeView;
+		/**
+		 * The active state switch. Turns the Listable on/off.
+		 */
 		private final Switch switchView;
+		/**
+		 * The image view for the folder, showing the open/closing animation.
+		 */
 		private final ImageView imageView;
 
-		RecyclerViewHolder (View cardView, Context currContext) {
+		/**
+		 * Creates a new RecyclerViewHolder. Caches views to fields and creates onclick callbacks.
+		 * @param cardView the main card view of the holder
+		 * @param currContext the current context
+		 * @param currAdapter the adapter that owns this holder
+		 */
+		RecyclerViewHolder (@NotNull View cardView, @NotNull Context currContext,
+							@NotNull RecyclerViewAdapter currAdapter) {
 			super(cardView);
 
-			// saving the current context, needed in onClick callback
+			// saving stuff from the parameters
+			adapter = currAdapter;
 			context = currContext;
 
-			// caching handles to the holder's views
+			// caching views
 			view = cardView;
 			titleView = cardView.findViewById(R.id.title_text);
 			repeatView = cardView.findViewById(R.id.repeat_text);
@@ -342,21 +433,42 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 
 		/* **************************  Getter and Setter Methods  ***************************** */
 
+		/**
+		 * Gets the main card view of the holder.
+		 */
 		View getCardView() { return view; }
 
+		/**
+		 * Gets the title text view of the holder.
+		 */
 		TextView getTitleText() { return titleView; }
+		/**
+		 * Gets the repeat string text view of the holder.
+		 */
 		TextView getRepeatText() { return repeatView; }
+		/**
+		 * Gets the time text view of the holder.
+		 */
 		TextView getTimeText() { return timeView; }
+		/**
+		 * Gets the active state switch of the holder.
+		 */
 		Switch getOnSwitch() { return switchView; }
+		/**
+		 * Gets the folder image view of the holder.
+		 */
 		ImageView getImageView() { return imageView; }
-
-		void setAdapter(RecyclerViewAdapter newAdapter) { adapter = newAdapter; }
 
 		/* ***********************************  Callbacks  ********************************* */
 
-		// onClick listener for view holders
+		/**
+		 * The onclick listener for views within the view holder. If the card itself is clicked,
+		 * will edit the listable. If the switch is clicked, toggles the switch. If the folder icon
+		 * is clicked (meaning it's a folder), it will toggle the open/closed state.
+		 * @param v the view that was clicked
+		 */
 		@Override
-		public void onClick(View v) {
+		public void onClick(@NotNull View v) {
 			Message msg;
 			switch(v.getId()) {
 				case R.id.card_view:
@@ -377,9 +489,13 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 			}
 		}
 
-		// onClick listener for dialog click
+		/**
+		 * The onclick listener for a dialog (accessible by long clicking the listable).
+		 * @param dialog dialog that was clicked
+		 * @param which the item within the dialog that was clicked
+		 */
 		@Override
-		public void onClick(DialogInterface dialog, int which) {
+		public void onClick(@NotNull DialogInterface dialog, int which) {
 			switch (which) {
 				case 0:
 					// delete the current listable
@@ -391,8 +507,20 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 			}
 		}
 
+		/**
+		 * Long click for the entire card view (doesn't care where the user clicks, as long as it's
+		 * on the card). Creates a recycler view dialog for the currently bound listable and returns
+		 * true. If there is no listable bound, will not do anything and returns false.
+		 * @param v the view that was clicked
+		 * @return whether the long click was handled or not
+		 */
 		@Override
-		public boolean onLongClick(View v) {
+		public boolean onLongClick(@NotNull View v) {
+			if (listable == null) {
+				Log.v(TAG, "Long clicked Listable is null.");
+				return false;
+			}
+
 			RecyclerDialogFrag diag = new RecyclerDialogFrag(this, listable.isAlarm());
 			diag.show(((MainActivity) context).getSupportFragmentManager(), DIALOG_FRAG_TAG);
 			return true;
@@ -400,7 +528,10 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 
 		/* **********************************  Other Methods  ********************************** */
 
-		// method for binding a new Listable to the current ViewHolder
+		/**
+		 * Binds a new Listable to the current ViewHolder.
+		 * @param l the new Listable to bind
+		 */
 		private void changeListable(Listable l) {
 			getTitleText().setText(l.getListableName());
 			getRepeatText().setText(l.getRepeatString());
@@ -435,19 +566,27 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 	 * MSG_GET_LISTABLE messages.
 	 */
 	private static class MsgHandler extends Handler {
+		/**
+		 * The adapter that owns this handler.
+		 */
+		@NotNull
 		private RecyclerViewAdapter adapter;
 
 		/**
 		 * Creates a new handler in the main Looper.
 		 * @param a the adapter to modify
 		 */
-		private MsgHandler(RecyclerViewAdapter a) {
+		private MsgHandler(@NotNull RecyclerViewAdapter a) {
 			super(Looper.getMainLooper());
 			adapter = a;
 		}
 
+		/**
+		 * Handles message from the data service. Only handles GET_LISTABLE and DATA_CHANGED messages.
+		 * @param msg the inbound message
+		 */
 		@Override
-		public void handleMessage(Message msg) {
+		public void handleMessage(@Nullable Message msg) {
 			if (msg == null) {
 				Log.e(TAG, "Message sent to the recycler view adapter was null. Ignoring...");
 				return;
@@ -468,7 +607,11 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 			}
 		}
 
-		private void handleGetListable(Message msg) {
+		/**
+		 * Handles a GET_LISTABLE message.
+		 * @param msg the inbound MSG_GET_LISTABLE message, shouldn't be null
+		 */
+		private void handleGetListable(@NotNull Message msg) {
 			if (msg.what != AlarmDataService.MSG_GET_LISTABLE) {
 				Log.e(TAG, "Delivered message was not a GET_LISTABLE message. Sending to Handler.");
 				super.handleMessage(msg);
@@ -479,7 +622,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 
 			// what used to be onBindViewHolder()
 			ListableInfo i = msg.getData().getParcelable(AlarmDataService.BUNDLE_INFO_KEY);
-			if (i == null) {
+			if (i == null || i.listable == null) {
 				Log.e(TAG, "Listable at absolute index " + absIndex + " does not exist!");
 				return;
 			}
