@@ -13,6 +13,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -21,8 +22,10 @@ import androidx.recyclerview.widget.RecyclerView;
 /**
  * Manages the Recycler View fragment.
  */
-
 public class RecyclerViewFrag extends Fragment {
+	/**
+	 * Tag of the class for logging purposes.
+	 */
 	private static final String TAG = "RecyclerViewFragment";
 
 	/**
@@ -31,16 +34,35 @@ public class RecyclerViewFrag extends Fragment {
 	 * soon.
 	 */
 	private RecyclerViewAdapter myAdapter;
+	/**
+	 * The recycler view that this fragment manages.
+	 */
 	private RecyclerView recyclerView;
 
+	/**
+	 * Shows whether it is bound to the data service or not.
+	 */
 	private boolean boundToDataService = false;
-	private ServiceConnection dataConn;
+	/**
+	 * The service connection to the data service.
+	 */
+	private DataServiceConnection dataConn;
 
 	/* **********************************  Lifecycle Methods  ******************************** */
 
+	/**
+	 * Called when the fragment is being created. Creates a new adapter and sets up the recycler view.
+	 * Does not give the recycler view the adapter yet.
+	 * @param inflater the layout inflater to use
+	 * @param container the container to inflate in
+	 * @param savedInstanceState a previous instance state
+	 * @return the new root view
+	 */
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+	public View onCreateView(@NotNull LayoutInflater inflater, @NotNull ViewGroup container,
+							 @Nullable Bundle savedInstanceState) {
 		myAdapter = new RecyclerViewAdapter(getContext());
+		dataConn = new DataServiceConnection();
 
 		// doing things for recycler view
 		// rootView is the LinearLayout in recycler_view_frag.xml
@@ -55,15 +77,20 @@ public class RecyclerViewFrag extends Fragment {
 		return rootView;
 	}
 
+	/**
+	 * Called when the fragment is being started. Binds to the data service.
+	 */
 	@Override
 	public void onStart() {
 		super.onStart();
 
-		dataConn = new DataServiceConnection();
 		getContext().bindService(new Intent(getContext(), AlarmDataService.class), dataConn,
 				Context.BIND_AUTO_CREATE);
 	}
 
+	/**
+	 * Called when the fragment is stopping. Unbinds from the data service.
+	 */
 	@Override
 	public void onStop() {
 		super.onStop();
@@ -82,9 +109,9 @@ public class RecyclerViewFrag extends Fragment {
 	 * Should be called when ListableEditor returns with a Listable. Deals with the listables based
 	 * on request code.
 	 * @param requestCode the code that we requested with
-	 * @param data the intent containing the returned Listable
+	 * @param data the intent containing the returned Listable, shouldn't be null
 	 */
-	void onListableCreatorResult(int requestCode, Intent data) {
+	void onListableCreatorResult(int requestCode, @NotNull Intent data) {
 		Listable new_listable;
 		int index = data.getIntExtra(ListableEditorActivity.EXTRA_LISTABLE_INDEX, -1);
 
@@ -141,7 +168,16 @@ public class RecyclerViewFrag extends Fragment {
 
 	/* ************************************  Inner Classes  ********************************** */
 
+	/**
+	 * The service connection used for connecting to the data service. Used for passing the messenger
+	 * on to the recycler adapter.
+	 */
 	private class DataServiceConnection implements ServiceConnection {
+		/**
+		 * Called when the service is connected. Sends the messenger to the adapter.
+		 * @param className the name of the class that was bound to (unused)
+		 * @param service the binder that the service returned
+		 */
 		@Override
 		public void onServiceConnected(@NotNull ComponentName className, @NotNull IBinder service) {
 			boundToDataService = true;
@@ -151,6 +187,10 @@ public class RecyclerViewFrag extends Fragment {
 			recyclerView.setAdapter(myAdapter);
 		}
 
+		/**
+		 * Called when the data service crashes.
+		 * @param className the name of the class that was bound to (unused)
+		 */
 		@Override
 		public void onServiceDisconnected(@NotNull ComponentName className) {
 			Log.e(TAG, "The data service crashed.");
