@@ -53,9 +53,13 @@ public class AlarmDataService extends Service {
 	private static final String ALARM_STORE_FILE_NAME = "alarms.txt";
 
 	/**
-	 * In a bundle, this is the key used to store a ListableInfo
+	 * In a bundle, this is the key used to store a ListableInfo.
 	 */
 	static final String BUNDLE_INFO_KEY = "listableInfoKey";
+	/**
+	 * In a bundle, this is the key used to store a reduced folder structure (a String ArrayList).
+	 */
+	static final String BUNDLE_LIST_KEY = "reducedFolderKey";
 
 	/* *****************************  Message what field constants  **************************** */
 
@@ -66,10 +70,18 @@ public class AlarmDataService extends Service {
 	 * preferred and will be used instead if present.
 	 * <br/>
 	 * Outbound: a response with a ListableInfo from the Service. Puts the ListableInfo in a bundle
-	 * accessible by getData() or peekData() using the BUNDLE_INFO_KEY for the key. Puts the absolute
+	 * accessible by getData() or peekData() using BUNDLE_INFO_KEY for the key. Puts the absolute
 	 * index of the listable in field arg1.
 	 */
 	static final int MSG_GET_LISTABLE = 0;
+	/**
+	 * Inbound: the client is asking for the entire reduced string list for the dataset. The replyTo
+	 * field should be filled with a messenger.
+	 * <br/>
+	 * Outbound: a response with the reduced string array list from the Service. Puts the list in a
+	 * bundle accessible by getData() or peekData() using BUNDLE_LIST_KEY for the key.
+	 */
+	static final int MSG_GET_FOLDERS = 1;
 
 	/**
 	 * Inbound: the client wants to set a Listable to a certain index. The absolute index of the
@@ -78,7 +90,7 @@ public class AlarmDataService extends Service {
 	 * <br/>
 	 * Outbound: N/A
 	 */
-	static final int MSG_SET_LISTABLE = 1;
+	static final int MSG_SET_LISTABLE = 2;
 	/**
 	 * Inbound: the client wants to add a Listable at the specified index and parent. A ListableInfo
 	 * should be in the data bundle (using BUNDLE_INFO_KEY for its key), with the new Listable in the
@@ -89,7 +101,7 @@ public class AlarmDataService extends Service {
 	 * <br/>
 	 * Outbound: N/A
 	 */
-	static final int MSG_ADD_LISTABLE = 2;
+	static final int MSG_ADD_LISTABLE = 3;
 	/**
 	 * Inbound: the client wants to move a Listable to a new index. A ListableInfo should be in the
 	 * data bundle (using BUNDLE_INFO_KEY for its key), with the absolute index of the new parent in
@@ -99,7 +111,7 @@ public class AlarmDataService extends Service {
 	 * <br/>
 	 * Outbound: N/A
 	 */
-	static final int MSG_MOVE_LISTABLE = 3;
+	static final int MSG_MOVE_LISTABLE = 4;
 	/**
 	 * Inbound: the client wants to delete a Listable. The absolute index of the Listable should be
 	 * in the arg1 field. Triggers MSG_DATA_CHANGED and may trigger MSG_DATA_EMPTIED messages to be
@@ -107,7 +119,7 @@ public class AlarmDataService extends Service {
 	 * <br/>
 	 * Outbound: N/A
 	 */
-	static final int MSG_DELETE_LISTABLE = 4;
+	static final int MSG_DELETE_LISTABLE = 5;
 
 	/**
 	 * Inbound: the client wants to toggle isActive on a Listable. The absolute index of the
@@ -115,35 +127,35 @@ public class AlarmDataService extends Service {
 	 * <br/>
 	 * Outbound: N/A
 	 */
-	static final int MSG_TOGGLE_ACTIVE = 5;
+	static final int MSG_TOGGLE_ACTIVE = 6;
 	/**
 	 * Inbound: the client wants to toggle an AlarmGroup open/closed. The absolute index of the
 	 * AlarmGroup should be in the arg1 field. Triggers MSG_DATA_CHANGED messages to be sent.
 	 * <br/>
 	 * Outbound: N/A
 	 */
-	static final int MSG_TOGGLE_OPEN_FOLDER = 6;
+	static final int MSG_TOGGLE_OPEN_FOLDER = 7;
 	/**
 	 * Inbound: the client wants to snooze an Alarm. The absolute index of the Alarm should be
 	 * in the arg1 field. Triggers MSG_DATA_CHANGED messages to be sent.
 	 * <br/>
 	 * Outbound: N/A
 	 */
-	static final int MSG_SNOOZE_ALARM = 7;
+	static final int MSG_SNOOZE_ALARM = 8;
 	/**
 	 * Inbound: the client wants to unsnooze an Alarm. The absolute index of the Alarm should be
 	 * in the arg1 field. Triggers MSG_DATA_CHANGED messages to be sent.
 	 * <br/>
 	 * Outbound: N/A
 	 */
-	static final int MSG_UNSNOOZE_ALARM = 8;
+	static final int MSG_UNSNOOZE_ALARM = 9;
 	/**
 	 * Inbound: the client wants to dismiss an Alarm. The absolute index of the Alarm should be
 	 * in the arg1 field. Triggers MSG_DATA_CHANGED messages to be sent.
 	 * <br/>
 	 * Outbound: N/A
 	 */
-	static final int MSG_DISMISS_ALARM = 9;
+	static final int MSG_DISMISS_ALARM = 10;
 
 	/**
 	 * Inbound: A client wants to change its notification of data changes. In the replyTo field
@@ -156,7 +168,7 @@ public class AlarmDataService extends Service {
 	 * count should be in the arg1 field. Means that the new data has been written to the alarm store
 	 * and can be queried from the service or read directly from disk.
 	 */
-	static final int MSG_DATA_CHANGED = 10;
+	static final int MSG_DATA_CHANGED = 11;
 
 	/**
 	 * Inbound: A client wants to change its notification of the data being empty or full. In the
@@ -168,7 +180,7 @@ public class AlarmDataService extends Service {
 	 * <br/>
 	 * Outbound: N/A
 	 */
-	static final int MSG_DATA_EMPTY_LISTENER = 11;
+	static final int MSG_DATA_EMPTY_LISTENER = 12;
 	/**
 	 * Inbound: N/A
 	 * <br/>
@@ -176,7 +188,7 @@ public class AlarmDataService extends Service {
 	 * anymore. No guarantees can be made about message fields. Only sent to registered empty
 	 * listeners.
 	 */
-	static final int MSG_DATA_EMPTIED = 12;
+	static final int MSG_DATA_EMPTIED = 13;
 	/**
 	 * Inbound: N/A
 	 * <br/>
@@ -184,7 +196,7 @@ public class AlarmDataService extends Service {
 	 * it was empty before. No guarantees can be made about message fields. Only sent to registered
 	 * empty listeners.
 	 */
-	static final int MSG_DATA_FILLED = 13;
+	static final int MSG_DATA_FILLED = 14;
 
 	/* *************************************  Instance Fields  ********************************** */
 
@@ -261,7 +273,7 @@ public class AlarmDataService extends Service {
 	 * @return A populated ArrayList of Listables or an empty one in the case of an error
 	 */
 	@NotNull
-	static ArrayList<Listable> getAlarmsFromDisk(@NotNull Context context) {
+	private static ArrayList<Listable> getAlarmsFromDisk(@NotNull Context context) {
 		ArrayList<Listable> data = new ArrayList<>();
 
 		try {
@@ -362,6 +374,39 @@ public class AlarmDataService extends Service {
 		Message outMsg = Message.obtain(null, MSG_GET_LISTABLE);
 		Bundle bundle = new Bundle();
 		bundle.putParcelable(BUNDLE_INFO_KEY, info);
+		outMsg.setData(bundle);
+		outMsg.arg1 = inMsg.arg1;
+
+		if (inMsg.replyTo != null) {
+			try {
+				inMsg.replyTo.send(outMsg);
+			}
+			catch (RemoteException e) {
+				e.printStackTrace();
+			}
+		}
+		else {
+			inMsg.getTarget().dispatchMessage(outMsg);
+		}
+	}
+
+	/**
+	 * Responds to an inbound MSG_GET_LISTABLE message. Using the replyTo field from the message,
+	 * sends the requested Listable to that Messenger, or if null sends it to the Handler specified
+	 * by the getTarget() method.
+	 * @param inMsg the inbound MSG_GET_LISTABLE message
+	 */
+	private void handleGetFolders(@NotNull Message inMsg) {
+		if (inMsg.replyTo == null && inMsg.getTarget() == null) {
+			Log.e(TAG, "Inbound MSG_GET_FOLDERS message had a null reply to field and no target.");
+			return;
+		}
+
+		// get listable with abs index in arg1
+		ArrayList<String> list = rootFolder.toReducedList();
+		Message outMsg = Message.obtain(null, MSG_GET_LISTABLE);
+		Bundle bundle = new Bundle();
+		bundle.putStringArrayList(BUNDLE_LIST_KEY, list);
 		outMsg.setData(bundle);
 		outMsg.arg1 = inMsg.arg1;
 
@@ -825,6 +870,10 @@ public class AlarmDataService extends Service {
 				case MSG_GET_LISTABLE:
 					service.handleGetListable(msg);
 					Log.d(TAG, "Got a listable for a client.");
+					break;
+				case MSG_GET_FOLDERS:
+					service.handleGetFolders(msg);
+					Log.d(TAG, "Got folder structure for a client.");
 					break;
 				case MSG_SET_LISTABLE:
 					service.handleSetListable(msg);

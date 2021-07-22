@@ -1,6 +1,6 @@
 To do list for new features or bugs to be fixed
 
-CURRENTLY WORKING ON: documentation for existing code 
+CURRENTLY WORKING ON: moving Listables 
 
 moving existing Listables around (ListableEditor) 
 	could send the entire database in the intent, wouldn't be that fast though
@@ -42,6 +42,7 @@ could use DiffUtil perhaps for differences between versions of lists (minimal an
 could possibly make the distinction in Listable between viewable size and actual size (same for getting lookups or listables from folders)
 show multiple alarms if they ring near the same time (in a notification? together with the other alarm?)
 	what happens right now is that they will ring one after the other (kind of annoying, but I guess it's a feature, not a bug)
+use a toast if invalid data is entered into ListableEditor 
 
 BUGS
 if you click on the buttons presented by the heads up notification (when an alarm is ringing), the new activity it calls will flash for a brief moment while it's sending the message and closing

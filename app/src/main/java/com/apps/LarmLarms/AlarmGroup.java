@@ -757,23 +757,42 @@ public final class AlarmGroup implements Listable, Cloneable {
 	}
 
 	/**
-	 * Returns a string describing the AlarmGroup and any AlarmGroups within it
-	 * @return a String that can be decoded with fromStoreString()
+	 * Returns a list of strings describing the AlarmGroup and any AlarmGroups within it
+	 * @return an array list of strings that stores all of the names of the folders within the group,
+	 * including the folder itself. Each string shows the full path of the folder, excluding the
+	 * original root folder, separated by slashes.
 	 */
 	@NotNull @Contract(pure = true)
-	String toReducedString() {
-		StringBuilder builder = new StringBuilder(getStoreStringSingle());
-		builder.append('\n');
-		for (Listable l : listables) {
-			if (!l.isAlarm()) {
-				String[] reducedList = ((AlarmGroup)l).toReducedString().split("\n");
-				for (int i = 0; i < reducedList.length; i++) {
-					reducedList[i] = "\t" + reducedList[i];
-				}
-				builder.append(reducedList).append('\n');
+	ArrayList<String> toReducedList() {
+		return toReducedList("", this, true);
+	}
+
+	/**
+	 * Helper function for toReducedList().
+	 * @param prefix the prefix that should be added to the current parent name and all of its
+	 *               children. Shouldn't be null
+	 * @param parent the current AlarmGroup we're on, shouldn't be null
+	 * @param isTopLevel whether the parent is top level or not (excludes the name in the prefix if
+	 *                   it is top level)
+	 * @return an array list of strings that stores all of the folders within the parent. All strings
+	 * should have the prefix appended to them, and should contain the full path of each folder.
+	 */
+	private static ArrayList<String> toReducedList(@NotNull String prefix, @NotNull AlarmGroup parent,
+												   boolean isTopLevel) {
+		ArrayList<String> reducedList = new ArrayList<>();
+		String storeString = parent.getStoreStringSingle();
+		reducedList.add(prefix + storeString);
+		if (!isTopLevel) {
+			if (!prefix.isEmpty()) prefix += '/';
+			prefix += storeString;
+		}
+
+		for (Listable child : parent.listables) {
+			if (!child.isAlarm()) {
+				reducedList.addAll(toReducedList(prefix, (AlarmGroup) child, false));
 			}
 		}
-		return builder.toString();
+		return reducedList;
 	}
 
 	/**

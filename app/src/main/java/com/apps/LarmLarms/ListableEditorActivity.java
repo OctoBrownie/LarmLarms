@@ -1,11 +1,20 @@
 package com.apps.LarmLarms;
 
 import android.annotation.SuppressLint;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.res.TypedArray;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.IBinder;
+import android.os.Looper;
+import android.os.Message;
+import android.os.Messenger;
+import android.os.RemoteException;
 import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.View;
@@ -35,6 +44,9 @@ import androidx.appcompat.app.AppCompatActivity;
  * Activity used for creating new Listables or editing existing ones.
  */
 public class ListableEditorActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
+
+	/* **************************************  Constants  *************************************** */
+
 	/**
 	 * Tag of the class for logging purposes.
 	 */
@@ -85,6 +97,8 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 	 * Request code to get a ringtone for the app. 
 	 */
 	private final static int REQ_GET_RINGTONE = 4;
+
+	/* ***********************************  Instance Fields  ************************************ */
 
 	/**
 	 * The current Listable being edited/created in this activity. 
@@ -143,6 +157,16 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 	 */
 	private ViewGroup alarmDateOfMonthLayout;
 
+	// data service fields
+	/**
+	 * Shows whether it is bound to the data service or not.
+	 */
+	private boolean boundToDataService = false;
+	/**
+	 * The service connection to the data service.
+	 */
+	private DataServiceConnection dataConn;
+
 	/* *********************************  Lifecycle Methods  ******************************* */
 
 	/**
@@ -177,6 +201,9 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 				editFolderFieldSetup();
 				Log.i(TAG, "Editing an existing folder.");
 				break;
+			default:
+				Log.e(TAG, "Unknown request code!");
+				exitActivity();
 		}
 
 		if (workingListable == null) {
@@ -196,10 +223,17 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 			case REQ_EDIT_FOLDER:
 				((EditText) findViewById(R.id.nameInput)).setText(workingListable.getListableName());
 				break;
-			default:
-				Log.e(TAG, "Unknown request code!");
-				exitActivity();
 		}
+	}
+
+	/**
+	 * Called when the fragment is being started. Binds to the data service.
+	 */
+	@Override
+	protected void onStart() {
+		super.onStart();
+
+		bindService(new Intent(this, AlarmDataService.class), dataConn, Context.BIND_AUTO_CREATE);
 	}
 
 	/**
@@ -213,6 +247,20 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 		if (isEditingAlarm) {
 			// matches the TimePicker's display mode to current system config (12 hr or 24 hr)
 			alarmTimePicker.setIs24HourView(DateFormat.is24HourFormat(this));
+		}
+	}
+
+
+	/**
+	 * Called when the app is stopping. Unbinds from the data service if it hasn't already.
+	 */
+	@Override
+	protected void onStop() {
+		super.onStop();
+
+		if (boundToDataService) {
+			unbindService(dataConn);
+			boundToDataService = false;
 		}
 	}
 
@@ -432,16 +480,7 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 	@Override
 	public void onNothingSelected(@NotNull AdapterView<?> parent) {}
 
-	/* ************************************  Other Methods  ********************************* */
-
-	/**
-	 * Exits the current activity gracefully. Sets the result as RESULT_CANCELLED to ensure that
-	 * nothing is done to any data as a result of this exit.
-	 */
-	private void exitActivity() {
-		setResult(RESULT_CANCELED);
-		finish();
-	}
+	/* ***********************************  Field Setup  *************************************** */
 
 	/**
 	 * Sets up class fields if editing a new alarm.
@@ -494,6 +533,8 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 			exitActivity();
 		}
 	}
+
+	/* ***************************************  UI Setup  ************************************** */
 
 	/**
 	 * Sets up the UI for editing (or creating) an alarm.
@@ -597,10 +638,70 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 		TextView alarmSoundLabel = findViewById(R.id.soundText);
 		alarmSoundLabel.setText(alarm.getRingtoneName());
 	}
+
 	/**
 	 * Sets up the UI for editing (or creating) a folder.
 	 */
 	private void folderUISetup() { setContentView(R.layout.activity_folder_editor); }
+
+	/**
+	 * Sets up the clickable week days text views with text and enabled/disabled colors.
+	 */
+	private void setupWeekDays() {
+		Alarm alarm = (Alarm) workingListable;
+		ArrayList<View> children = getAllChildren(alarmDaysLayout);
+		String[] dayStrings = (new DateFormatSymbols()).getShortWeekdays();
+
+		changeColors(children, alarm.getRepeatDays());
+
+		// loops through Calendar constants for days, starts at 1 and ends at 7
+		for (int i = 1; i < dayStrings.length; i++) {
+			((TextView) children.get(i - 1)).setText(dayStrings[i]);
+		}
+	}
+
+	/**
+	 * Sets up the clickable months text views with text and enabled/disabled colors.
+	 */
+	private void setupMonths() {
+		Alarm alarm = (Alarm) workingListable;
+		ArrayList<View> children = getAllChildren(alarmMonthsLayout);
+		String[] monthStrings = (new DateFormatSymbols()).getShortMonths();
+
+		changeColors(children, alarm.getRepeatMonths());
+
+		// loops through Calendar constants for months, starts at 0 and ends at 11
+		for (int i = 0; i < monthStrings.length; i++) {
+			((TextView) children.get(i)).setText(monthStrings[i]);
+		}
+	}
+
+	/**
+	 * Handles setup of folder spinner. Sets it up after the data service returns with the actual
+	 * data structure.
+	 * @param msg the inbound MSG_GET_FOLDERS message
+	 */
+	private void setupFolderStructure(@NotNull Message msg) {
+		Bundle data = msg.getData();
+		if (data == null) {
+			Log.e(TAG, "Message from alarm service had a null bundle.");
+			return;
+		}
+
+		// TODO: implement
+		// use data.getStringArrayList(AlarmDataService.BUNDLE_LIST_KEY)
+	}
+
+	/* ************************************  Other Methods  ********************************* */
+
+	/**
+	 * Exits the current activity gracefully. Sets the result as RESULT_CANCELLED to ensure that
+	 * nothing is done to any data as a result of this exit.
+	 */
+	private void exitActivity() {
+		setResult(RESULT_CANCELED);
+		finish();
+	}
 
 	/**
 	 * Changes repeat type to the new specified type.
@@ -741,35 +842,77 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 		textColors.recycle();
 	}
 
+	/* ***********************************  Inner Classes  ************************************* */
+
 	/**
-	 * Sets up the clickable week days text views with text and enabled/disabled colors.
+	 * The service connection used for connecting to the data service. Used for passing the messenger
+	 * on to the recycler adapter.
 	 */
-	private void setupWeekDays() {
-		Alarm alarm = (Alarm) workingListable;
-		ArrayList<View> children = getAllChildren(alarmDaysLayout);
-		String[] dayStrings = (new DateFormatSymbols()).getShortWeekdays();
+	private class DataServiceConnection implements ServiceConnection {
+		/**
+		 * Called when the service is connected. Sends the messenger to the adapter.
+		 * @param className the name of the class that was bound to (unused)
+		 * @param service the binder that the service returned
+		 */
+		@Override
+		public void onServiceConnected(@NotNull ComponentName className, @NotNull IBinder service) {
+			boundToDataService = true;
 
-		changeColors(children, alarm.getRepeatDays());
+			Messenger messenger = new Messenger(service);
+			Message msg = Message.obtain(null, AlarmDataService.MSG_GET_FOLDERS);
+			msg.replyTo = new Messenger(new MsgHandler(ListableEditorActivity.this));
+			try {
+				messenger.send(msg);
+			}
+			catch (RemoteException e) {
+				e.printStackTrace();
+			}
+		}
 
-		// loops through Calendar constants for days, starts at 1 and ends at 7
-		for (int i = 1; i < dayStrings.length; i++) {
-			((TextView) children.get(i - 1)).setText(dayStrings[i]);
+		/**
+		 * Called when the data service crashes.
+		 * @param className the name of the class that was bound to (unused)
+		 */
+		@Override
+		public void onServiceDisconnected(@NotNull ComponentName className) {
+			Log.e(TAG, "The data service crashed.");
+			boundToDataService = false;
 		}
 	}
 
 	/**
-	 * Sets up the clickable months text views with text and enabled/disabled colors.
+	 * Inner Handler class for handling messages from the data service. Only really handles
+	 * MSG_GET_FOLDERS messages.
 	 */
-	private void setupMonths() {
-		Alarm alarm = (Alarm) workingListable;
-		ArrayList<View> children = getAllChildren(alarmMonthsLayout);
-		String[] monthStrings = (new DateFormatSymbols()).getShortMonths();
+	private static class MsgHandler extends Handler {
+		/**
+		 * The activity that owns this handler.
+		 */
+		@NotNull
+		private ListableEditorActivity activity;
 
-		changeColors(children, alarm.getRepeatMonths());
+		/**
+		 * Creates a new handler on the main thread.
+		 */
+		private MsgHandler(@NotNull ListableEditorActivity currActivity) {
+			super(Looper.getMainLooper());
 
-		// loops through Calendar constants for months, starts at 0 and ends at 11
-		for (int i = 0; i < monthStrings.length; i++) {
-			((TextView) children.get(i)).setText(monthStrings[i]);
+			activity = currActivity;
+		}
+
+		/**
+		 * Handles messages from the data service. If it's not a MSG_GET_FOLDERS message, doesn't
+		 * do anything. Otherwise, sends it to the activity.
+		 * @param msg the incoming Message to handle
+		 */
+		@Override
+		public void handleMessage(@Nullable Message msg) {
+			if (msg == null || msg.what != AlarmDataService.MSG_GET_FOLDERS) {
+				Log.e(TAG, "Message to handle is invalid. Ignoring...");
+				return;
+			}
+
+			activity.setupFolderStructure(msg);
 		}
 	}
 }
