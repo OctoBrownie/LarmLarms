@@ -80,8 +80,8 @@ public final class AlarmGroup implements Listable, Cloneable {
 		isActive = true;
 		isOpen = true;
 		listables = children;
-		lookup = generateLookup(children);
-		totalNumItems = 1;		// for the empty AlarmGroup
+		lookup = new ArrayList<>();			// invalid data
+		refreshLookup();					// makes lookup valid and sets totalNumItems
 	}
 
 	/* *******************************  Methods from Listable  ****************************** */
@@ -587,7 +587,7 @@ public final class AlarmGroup implements Listable, Cloneable {
 	@NotNull @Contract(pure = true)
 	AlarmGroup getParentListableAtAbsIndex(final int absIndex) {
 		ListableInfo i = getListableInfo(absIndex);
-		if (i == null) return this;
+		if (i == null || i.parent == null) return this;
 
 		return i.parent;
 	}
