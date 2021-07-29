@@ -207,12 +207,6 @@ public class AlarmDataService extends Service {
 	private HandlerThread handlerThread;
 
 	/**
-	 * The messenger of the data service.
-	 */
-	@NotNull
-	private Messenger messenger;
-
-	/**
 	 * List of registered listeners for data change events. Data change events include adding,
 	 * changing, moving, or removing alarms from the list. It also includes some method calls on
 	 * listables, such as toggling open/closed a folder or snoozing alarms. Cannot be null.
@@ -246,7 +240,6 @@ public class AlarmDataService extends Service {
 		dataChangeListeners = new ArrayList<>();
 		emptyListeners = new ArrayList<>();
 		handlerThread = new HandlerThread(HANDLER_THREAD_NAME);
-		messenger = new Messenger(new MsgHandler(this, handlerThread));
 	}
 
 	/**
@@ -264,6 +257,7 @@ public class AlarmDataService extends Service {
 		setNextAlarmToRing();
 
 		handlerThread.start();
+		Messenger messenger = new Messenger(new MsgHandler(this, handlerThread));
 		return messenger.getBinder();
 	}
 
