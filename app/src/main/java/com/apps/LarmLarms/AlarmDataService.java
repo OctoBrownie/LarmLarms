@@ -207,6 +207,12 @@ public class AlarmDataService extends Service {
 	private HandlerThread handlerThread;
 
 	/**
+	 * The messenger of the data service.
+	 */
+	@NotNull
+	private Messenger messenger;
+
+	/**
 	 * List of registered listeners for data change events. Data change events include adding,
 	 * changing, moving, or removing alarms from the list. It also includes some method calls on
 	 * listables, such as toggling open/closed a folder or snoozing alarms. Cannot be null.
@@ -223,7 +229,8 @@ public class AlarmDataService extends Service {
 	private List<Messenger> emptyListeners;
 
 	/**
-	 * The folder holding the entire dataset. Cannot be null.
+	 * The folder holding the entire dataset. Cannot be null but before the service is bound it will
+	 * be an empty folder.
 	 */
 	@NotNull
 	private AlarmGroup rootFolder;
@@ -231,29 +238,32 @@ public class AlarmDataService extends Service {
 	/* **********************************  Lifecycle Methods  ********************************** */
 
 	/**
-	 * Initializes AlarmDataService. If not already created, makes a new notification channel to post
-	 * alarms to and sets the next alarm to ring.
+	 * Initializes AlarmDataService. Since the context hasn't been created yet, initializes some
+	 * fields to dummy data.
 	 */
-	private AlarmDataService() {
-		rootFolder = new AlarmGroup(getResources().getString(R.string.root_folder), getAlarmsFromDisk(this));
+	public AlarmDataService() {
+		rootFolder = new AlarmGroup();
 		dataChangeListeners = new ArrayList<>();
 		emptyListeners = new ArrayList<>();
 		handlerThread = new HandlerThread(HANDLER_THREAD_NAME);
-
-		createNotificationChannel();
-		setNextAlarmToRing();
+		messenger = new Messenger(new MsgHandler(this, handlerThread));
 	}
 
 	/**
-	 * Creates a new handler thread and registers a new messenger to handle messages within that
-	 * thread.
+	 * Since the context is valid, fetches alarms from disk, checks for notification channels, and
+	 * sets the next alarm to ring. Starts the handler thread and registers a new messenger to
+	 * handle messages within that thread.
 	 * @param intent intent delivered from the first call to Context.bindService()
 	 * @return an IBinder for a Messenger
 	 */
 	@Override @NotNull
 	public IBinder onBind(@NotNull Intent intent) {
+		rootFolder = new AlarmGroup(getResources().getString(R.string.root_folder), getAlarmsFromDisk(this));
+
+		createNotificationChannel();
+		setNextAlarmToRing();
+
 		handlerThread.start();
-		Messenger messenger = new Messenger(new MsgHandler(this, handlerThread));
 		return messenger.getBinder();
 	}
 
