@@ -185,7 +185,7 @@ public class MainActivity extends AppCompatActivity {
 	private void showFrag() {
 		fragContainer.setVisibility(View.VISIBLE);
 		noAlarmsText.setVisibility(View.GONE);
-		Log.i("RecyclerViewFragment", "Recycler view shown.");
+		Log.i(TAG, "Recycler view shown.");
 	}
 
 	/**
@@ -194,7 +194,7 @@ public class MainActivity extends AppCompatActivity {
 	private void hideFrag() {
 		fragContainer.setVisibility(View.GONE);
 		noAlarmsText.setVisibility(View.VISIBLE);
-		Log.i("RecyclerViewFragment", "Recycler view hidden.");
+		Log.i(TAG, "Recycler view hidden.");
 	}
 
 	/* ***********************************  Inner Classes  ************************************** */
