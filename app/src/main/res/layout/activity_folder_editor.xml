@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- NOTE: designtime only x/y positions: layout_editor_absoluteX or layout_editor_absoluteY -->
+<!-- NOTE: designtime only x/y positions: layout_editor_absoluteX or layout_editor_absoluteY
+	 TODO: perhaps make a common layout that both have which is included in both layout files? -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-
 	style="@style/Theme.AppTheme"
 
 	android:layout_width="match_parent"
@@ -40,7 +40,7 @@
 	Naming conventions for input/text fields (here only):
 	Id names correspond to the field it fills in its AlarmGroup object (the alarmName field is filled
 	by the alarmNameInput EditText)
-	Ids for fields are always appended with "Input," and their corresponding labels with "Text"
+	Ids for fields are always appended with "Input" and their corresponding labels with "Text"
 	-->
 
 	<ScrollView
@@ -49,23 +49,52 @@
 		<LinearLayout
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
-			android:orientation="horizontal">
-
-			<TextView
-				style="@style/EditorLabelStyle"
-
-				android:id="@+id/nameText"
-				android:layout_width="wrap_content"
+			android:orientation="vertical">
+			<!-- name layout, common input field -->
+			<LinearLayout
+				android:layout_width="match_parent"
 				android:layout_height="wrap_content"
-				android:labelFor="@+id/folderNameInput"
-				android:text="@string/editor_name_text" />
-			<EditText
-				style="@style/EditorInputStyle"
+				android:orientation="horizontal">
 
-				android:id="@+id/nameInput"
-				android:inputType="textAutoComplete"
-				android:imeOptions="actionDone"
-				android:hint="@string/folder_editor_name_hint" />
+				<TextView
+					style="@style/EditorLabelStyle"
+
+					android:id="@+id/nameText"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:labelFor="@+id/folderNameInput"
+					android:text="@string/editor_name_text" />
+				<EditText
+					style="@style/EditorInputStyle"
+
+					android:id="@+id/nameInput"
+					android:inputType="textAutoComplete"
+					android:imeOptions="actionDone"
+					android:hint="@string/folder_editor_name_hint" />
+			</LinearLayout>
+
+			<!-- parent folder layout, common input field -->
+			<LinearLayout
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:orientation="horizontal"
+				android:baselineAligned="true">
+
+				<TextView
+					style="@style/EditorLabelStyle"
+
+					android:id="@+id/parentFolderText"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:labelFor="@+id/parentFolderInput"
+					android:text="@string/editor_parent_folder_text"/>
+				<Spinner
+					style="@style/SpinnerStyle"
+
+					android:id="@+id/parentFolderInput"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"/>
+			</LinearLayout>
 		</LinearLayout>
 	</ScrollView>
 </LinearLayout>

@@ -36,8 +36,8 @@
 	<!--
 	Naming conventions for input/text field ids (here only):
 	All alarm-specific ids are prefixed with "alarm"
-	Id names correspond to the field it fills in its Alarm object (the name field is filled
-	by EditText with id alarmNameInput)
+	Id names correspond to the field it fills in its Alarm object (the name field is filled by
+	EditText with id alarmNameInput)
 	Ids for fields are always appended with "Input" and their corresponding labels with "Text"
 	TODO: remove unnecessary ids, like for most labels
 	-->
@@ -388,7 +388,7 @@
 
 			<!-- - - - - - - - - - - - - - - -  Other Input Fields  - - - - - - - - - - - - - - -->
 
-			<!-- name layout -->
+			<!-- name layout, common input field -->
 			<LinearLayout
 				android:layout_width="match_parent"
 				android:layout_height="wrap_content"
@@ -400,7 +400,7 @@
 					android:id="@+id/nameText"
 					android:layout_width="wrap_content"
 					android:layout_height="wrap_content"
-					android:labelFor="@+id/alarmNameInput"
+					android:labelFor="@+id/nameInput"
 					android:text="@string/editor_name_text" />
 
 				<EditText
@@ -410,6 +410,29 @@
 					android:inputType="textAutoComplete"
 					android:imeOptions="actionDone"
 					android:hint="@string/alarm_editor_name_hint" />
+			</LinearLayout>
+
+			<!-- parent folder layout, common input field -->
+			<LinearLayout
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:orientation="horizontal"
+				android:baselineAligned="true">
+
+				<TextView
+					style="@style/EditorLabelStyle"
+
+					android:id="@+id/parentFolderText"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:labelFor="@+id/parentFolderInput"
+					android:text="@string/editor_parent_folder_text"/>
+				<Spinner
+					style="@style/SpinnerStyle"
+
+					android:id="@+id/parentFolderInput"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"/>
 			</LinearLayout>
 
 			<!-- ringtone layout -->

@@ -71,6 +71,8 @@
 	<string name="editor_back_button">back</string>
 	<string name="editor_save_button">save</string>
 	<string name="editor_name_text">"Title: "</string>
+	<string name="editor_parent_folder_text">"Parent folder: "</string>
+
 	<string name="alarm_editor_repeat_type_text">"Type of alarm: "</string>
 	<string name="alarm_editor_name_hint">Alarm name</string>
 	<string name="folder_editor_name_hint">Folder name</string>
