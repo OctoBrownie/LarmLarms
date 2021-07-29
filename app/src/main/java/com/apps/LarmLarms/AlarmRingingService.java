@@ -82,7 +82,6 @@ public class AlarmRingingService extends Service implements MediaPlayer.OnPrepar
 	 */
 	public AlarmRingingService() {
 		dataConn = new DataServiceConnection();
-		bindService(new Intent(this, AlarmDataService.class), dataConn, Context.BIND_AUTO_CREATE);
 	}
 
 	/**
@@ -94,6 +93,8 @@ public class AlarmRingingService extends Service implements MediaPlayer.OnPrepar
 	 */
 	@Override
 	public int onStartCommand(@NotNull Intent inIntent, int flags, int startId) {
+		bindService(new Intent(this, AlarmDataService.class), dataConn, Context.BIND_AUTO_CREATE);
+
 		Alarm currAlarm = Alarm.fromEditString(this,
 				inIntent.getStringExtra(ListableEditorActivity.EXTRA_LISTABLE));
 		if (currAlarm == null) {
