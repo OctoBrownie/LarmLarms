@@ -25,8 +25,8 @@ public final class AlarmGroup implements Listable, Cloneable {
 	private static final int NUM_EDIT_FIELDS = 2;
 
 	/**
-	 * Stores the name of the folder. Only restricted character: tabs. If tabs are present, the
-	 * class will log errors.
+	 * Stores the name of the folder. Restricted characters: tabs and backslashes. If the user tries
+	 * to set them as part of the name, they will be automatically stripped out.
 	 */
 	@NotNull
 	private String name;
@@ -75,13 +75,17 @@ public final class AlarmGroup implements Listable, Cloneable {
 	 * @param children the new Listables within the folder
 	 */
 	public AlarmGroup(@NotNull String title, @NotNull ArrayList<Listable> children) {
-		// TODO: init dummy data for AlarmGroup
-		name = title;
+		// invalid data for now
+		name = "";
+		listables = new ArrayList<>();
+		lookup = new ArrayList<>();
+
 		isActive = true;
 		isOpen = true;
-		listables = children;
-		lookup = new ArrayList<>();			// invalid data
-		refreshLookup();					// makes lookup valid and sets totalNumItems
+
+		// validating data passed through constructor
+		setListableName(title);
+		setListables(children);		// also automatically refreshes lookup/size
 	}
 
 	/* *******************************  Methods from Listable  ****************************** */
@@ -101,15 +105,19 @@ public final class AlarmGroup implements Listable, Cloneable {
 	public String getListableName() { return name; }
 
 	/**
-	 * Sets the name of the folder. If the new name is invalid, will no do anything.
+	 * Sets the name of the folder. If the new name is invalid, will no do anything. If it has
+	 * restricted characters, will remove them.
 	 * @param newName the new name, can be null
 	 */
 	@Override
 	public void setListableName(@Nullable String newName) {
-		if (newName == null || newName.length() == 0 || newName.indexOf('\t') != -1) {
+		if (newName == null || newName.length() == 0) {
 			Log.e(TAG, "New name is invalid.");
 			return;
 		}
+
+		newName = newName.replaceAll("[\t/]", "");
+
 		name = newName;
 	}
 
@@ -780,7 +788,7 @@ public final class AlarmGroup implements Listable, Cloneable {
 	private static ArrayList<String> toReducedList(@NotNull String prefix, @NotNull AlarmGroup parent,
 												   boolean isTopLevel) {
 		ArrayList<String> reducedList = new ArrayList<>();
-		String storeString = parent.getStoreStringSingle();
+		String storeString = parent.getListableName();
 		reducedList.add(prefix + storeString);
 		if (!isTopLevel) {
 			if (!prefix.isEmpty()) prefix += '/';
