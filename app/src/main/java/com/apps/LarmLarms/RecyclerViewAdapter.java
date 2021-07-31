@@ -257,25 +257,26 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 	/* **********************************  Other Methods  ********************************* */
 
 	/**
-	 * Sends the specified listable off to ListableEditor for editing. If the listable is null,
-	 * doesn't do anything.
-	 * @param listable the listable to edit, can be null
-	 * @param index the absolute index of the listable
+	 * Sends an explicit intent off to ListableEditor for editing. Sends a ListableInfo describing
+	 * the Listable to edit with the key ListableEditorActivity.EXTRA_LISTABLE_INFO, and the request
+	 * ID with the key ListableEditorActivity.EXTRA_REQ_ID. If the listable is null, doesn't do
+	 * anything.
+	 * @param index the absolute index of the listable, assumes within range
 	 */
-	void editExistingListable(@Nullable final Listable listable, final int index) {
-		if (listable == null) {
-			Log.v(TAG, "Listable to edit was null.");
-			return;
-		}
+	void editExistingListable(final int index) {
 		// start new activity (AlarmCreator)
 		Intent intent = new Intent(context, ListableEditorActivity.class);
+		ListableInfo info = data.get(index);
+		if (info == null || info.listable == null) {
+			Log.e(TAG, "The listable is null so it cannot be edited.");
+			return;
+		}
 
 		// add extras (Listable, index, req id)
-		intent.putExtra(ListableEditorActivity.EXTRA_LISTABLE, listable.toEditString());
-		intent.putExtra(ListableEditorActivity.EXTRA_LISTABLE_INDEX, index);
+		intent.putExtra(ListableEditorActivity.EXTRA_LISTABLE_INFO, info);
 
 		int req;
-		if (listable.isAlarm()) { req = ListableEditorActivity.REQ_EDIT_ALARM; }
+		if (info.listable.isAlarm()) { req = ListableEditorActivity.REQ_EDIT_ALARM; }
 		else { req = ListableEditorActivity.REQ_EDIT_FOLDER; }
 
 		intent.putExtra(ListableEditorActivity.EXTRA_REQ_ID, req);
@@ -472,7 +473,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 			Message msg;
 			switch(v.getId()) {
 				case R.id.card_view:
-					adapter.editExistingListable(listable, getLayoutPosition());
+					adapter.editExistingListable(getLayoutPosition());
 					return;
 				case R.id.on_switch:
 					msg = Message.obtain(null, AlarmDataService.MSG_TOGGLE_ACTIVE,

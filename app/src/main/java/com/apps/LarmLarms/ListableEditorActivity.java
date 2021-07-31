@@ -56,20 +56,20 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 	/**
 	 * An extra used for carrying a Listable in edit string form. 
 	 */
-	final static String EXTRA_LISTABLE = "com.apps.AlarmsButBetter.ALARM";
+	final static String EXTRA_LISTABLE = "com.apps.AlarmsButBetter.LISTABLE";
 	/**
 	 * An extra used for carrying a Listable's absolute index within the data. 
 	 */
-	final static String EXTRA_LISTABLE_INDEX = "com.apps.AlarmsButBetter.ALARM_INDEX";
+	final static String EXTRA_LISTABLE_INDEX = "com.apps.AlarmsButBetter.ABS_INDEX";
 	/**
-	 * An extra with the request ID. 
+	 * An extra used for carrying a ListableInfo.
+	 */
+	final static String EXTRA_LISTABLE_INFO = "com.apps.AlarmsButBetter.INFO";
+	/**
+	 * An extra with the request ID the activity is being called for. The editor does something
+	 * different based on what ID is received.
 	 */
 	final static String EXTRA_REQ_ID = "com.apps.AlarmsButBetter.REQ_ID";
-	/**
-	 * An extra with a reduced folder string of the entire folder structure.
-	 * TODO: implement logic
-	 */
-	final static String EXTRA_FOLDERS = "com.apps.AlarmsButBetter.FOLDERS";
 
 	// for inbound intents
 	/**
@@ -181,26 +181,31 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 		dataConn = new DataServiceConnection();
 
 		int startedState = getIntent().getIntExtra(EXTRA_REQ_ID, -1);
+		ListableInfo info = getIntent().getParcelableExtra(EXTRA_LISTABLE_INFO);
 
 		// NOTE: this switch statement is only for setting up activity variables, NOT queuing any UI
 		// changes, since the content view hasn't been set up yet.
 		switch(startedState) {
 			case REQ_NEW_ALARM:
-				newAlarmFieldSetup();
+				isEditingAlarm = true;
+				isEditing = false;
+				workingListable = new Alarm(this);
 				Log.v(TAG, "Creating a new alarm.");
 				break;
-				
 			case REQ_EDIT_ALARM:
-				editAlarmFieldSetup();
+				isEditingAlarm = true;
+				isEditing = true;
 				Log.v(TAG, "Editing an existing alarm.");
 				break;
-				
 			case REQ_NEW_FOLDER:
-				newFolderFieldSetup();
+				isEditingAlarm = false;
+				isEditing = false;
+				workingListable = new AlarmGroup();
 				Log.v(TAG, "Creating a new folder.");
 				break;
 			case REQ_EDIT_FOLDER:
-				editFolderFieldSetup();
+				isEditingAlarm = false;
+				isEditing = true;
 				Log.v(TAG, "Editing an existing folder.");
 				break;
 			default:
@@ -208,19 +213,20 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 				exitActivity();
 		}
 
-		if (workingListable == null) {
-			Log.e(TAG, "Couldn't open the editor.");
-			exitActivity();
+		if (isEditing) {
+			listableIndex = info.absIndex;
+			workingListable = info.listable;
+			if (workingListable == null) {
+				Log.e(TAG, "The ListableInfo had a null listable.");
+				exitActivity();
+			}
 		}
 
 		if (isEditingAlarm) { alarmUISetup(); }
 		else { folderUISetup(); }
 
-		// this switch statement can be used for any REQ-specific UI changes
+		// switch statement is used for any REQ-specific UI changes
 		switch(startedState) {
-			case REQ_NEW_ALARM:
-			case REQ_NEW_FOLDER:
-				break;
 			case REQ_EDIT_ALARM:
 			case REQ_EDIT_FOLDER:
 				((EditText) findViewById(R.id.nameInput)).setText(workingListable.getListableName());
@@ -294,8 +300,9 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 		workingListable.setListableName(nameInput.getText().toString());
 		workingListable.turnOn();
 
-		// saving alarm data
+		// saving alarm time data
 		if (isEditingAlarm) {
+			((Alarm) workingListable).unsnooze();
 			Calendar alarmCalendar = ((Alarm) workingListable).getAlarmTimeCalendar();
 
 			switch(((Alarm) workingListable).getRepeatType()) {
@@ -482,60 +489,6 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 	@Override
 	public void onNothingSelected(@NotNull AdapterView<?> parent) {}
 
-	/* ***********************************  Field Setup  *************************************** */
-
-	/**
-	 * Sets up class fields if editing a new alarm.
-	 */
-	private void newAlarmFieldSetup() {
-		isEditingAlarm = true;
-		isEditing = false;
-		workingListable = new Alarm(this);
-	}
-	/**
-	 * Sets up class fields if editing an existing alarm.
-	 */
-	private void editAlarmFieldSetup() {
-		Intent callingIntent = getIntent();
-
-		isEditingAlarm = true;
-		isEditing = true;
-		listableIndex = callingIntent.getIntExtra(EXTRA_LISTABLE_INDEX, -1);
-
-		workingListable = Alarm.fromEditString(this, callingIntent.getStringExtra(EXTRA_LISTABLE));
-		if (workingListable == null) {
-			Log.e(TAG, "fromEditString returned null.");
-			exitActivity();
-		}
-
-		((Alarm)workingListable).unsnooze();
-	}
-
-	/**
-	 * Sets up class fields if editing a new folder.
-	 */
-	private void newFolderFieldSetup() {
-		isEditingAlarm = false;
-		isEditing = false;
-		workingListable = new AlarmGroup();
-	}
-	/**
-	 * Sets up class fields if editing an existing folder.
-	 */
-	private void editFolderFieldSetup() {
-		Intent callingIntent = getIntent();
-
-		isEditingAlarm = false;
-		isEditing = true;
-		listableIndex = callingIntent.getIntExtra(EXTRA_LISTABLE_INDEX, -1);
-
-		workingListable = AlarmGroup.fromEditString(callingIntent.getStringExtra(EXTRA_LISTABLE));
-		if (workingListable == null) {
-			Log.e(TAG, "fromEditString returned null.");
-			exitActivity();
-		}
-	}
-
 	/* ***************************************  UI Setup  ************************************** */
 
 	/**
@@ -546,7 +499,7 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 		// TODO: to speed this specific method up, could do some of this setup when swapping alarm types?
 		setContentView(R.layout.activity_alarm_editor);
 
-		// getting handles to views
+		// getting handles to views (for swapping between repeat types)
 		alarmTimePicker = findViewById(R.id.alarmTimeInput);
 		alarmDatePicker = findViewById(R.id.alarmDateInput);
 		alarmDaysLayout = findViewById(R.id.alarmDaysInput);
