@@ -20,7 +20,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 /**
- * Manages the Recycler View fragment.
+ * Manages the Recycler View fragment and connection to the data service for the recycler view's
+ * adapter.
  */
 public class RecyclerViewFrag extends Fragment {
 	/**
@@ -174,7 +175,8 @@ public class RecyclerViewFrag extends Fragment {
 	 */
 	private class DataServiceConnection implements ServiceConnection {
 		/**
-		 * Called when the service is connected. Sends the messenger to the adapter.
+		 * Called when the service is connected. Sends the messenger to the adapter and gives the
+		 * adapter to the recycler view.
 		 * @param className the name of the class that was bound to (unused)
 		 * @param service the binder that the service returned
 		 */
@@ -197,7 +199,6 @@ public class RecyclerViewFrag extends Fragment {
 			boundToDataService = false;
 			recyclerView.setAdapter(null);
 			myAdapter.setDataService(null);
-
 		}
 	}
 }

@@ -101,7 +101,8 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 	/* ***********************************  Instance Fields  ************************************ */
 
 	/**
-	 * The current Listable being edited/created in this activity. 
+	 * The current Listable being edited/created in this activity. Is not null (after the activity
+	 * is created).
 	 */
 	private Listable workingListable;
 
@@ -119,41 +120,42 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 	 */
 	private boolean isEditing;
 
-	// handles to views
+	// handles to views for repeat types (all are alarms only)
 	/**
-	 * The time picker (alarms only).
+	 * The time picker (for alarms).
 	 */
 	private TimePicker alarmTimePicker;
 	/**
-	 * The date picker (alarms only).
+	 * The date picker (for alarms only).
 	 */
 	private DatePicker alarmDatePicker;
 	/**
-	 * Layout for the clickable weekdays TextViews.
+	 * Layout for the clickable weekdays TextViews (for alarms only).
 	 */
 	private ViewGroup alarmDaysLayout;
 	/**
-	 * Layout for the offset days label and text field.
+	 * Layout for the offset days label and text field (for alarms only).
 	 */
 	private ViewGroup alarmOffsetDaysLayout;
 	/**
-	 * Layout for the offset hours label and text field.
+	 * Layout for the offset hours label and text field (for alarms only).
 	 */
 	private ViewGroup alarmOffsetHoursLayout;
 	/**
-	 * Layout for the offset minutes label and text field.
+	 * Layout for the offset minutes label and text field (for alarms only).
 	 */
 	private ViewGroup alarmOffsetMinsLayout;
 	/**
-	 * Layout for the day and week to ring on (label and two spinners for which week and which day).
+	 * Layout for the day and week to ring on (label and two spinners for which week and which day,
+	 * for alarms only).
 	 */
 	private ViewGroup alarmDayMonthlyLayout;
 	/**
-	 * Layout for the clickable months TextViews.
+	 * Layout for the clickable months TextViews (for alarms only).
 	 */
 	private ViewGroup alarmMonthsLayout;
 	/**
-	 * Layout for the day of the month to ring on.
+	 * Layout for the day of the month to ring on (for alarms only).
 	 */
 	private ViewGroup alarmDateOfMonthLayout;
 
