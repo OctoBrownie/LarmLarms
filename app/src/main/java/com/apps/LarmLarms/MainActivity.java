@@ -247,13 +247,14 @@ public class MainActivity extends AppCompatActivity {
 		}
 
 		/**
-		 * Called when the data service crashes.
+		 * Called when the data service crashes. Hides the RecyclerView so that the screen isn't blank.
 		 * @param className the name of the class that was bound to (unused)
 		 */
 		@Override
 		public void onServiceDisconnected(@NotNull ComponentName className) {
 			// sad, it crashed...
 			boundToDataService = false;
+			hideFrag();
 		}
 
 		/**
