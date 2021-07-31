@@ -408,7 +408,7 @@ public class AlarmDataService extends Service {
 
 		// get listable with abs index in arg1
 		ArrayList<String> list = rootFolder.toReducedList();
-		Message outMsg = Message.obtain(null, MSG_GET_LISTABLE);
+		Message outMsg = Message.obtain(null, MSG_GET_FOLDERS);
 		Bundle bundle = new Bundle();
 		bundle.putStringArrayList(BUNDLE_LIST_KEY, list);
 		outMsg.setData(bundle);
