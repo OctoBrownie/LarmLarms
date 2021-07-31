@@ -178,6 +178,8 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 	protected void onCreate(@Nullable Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
+		dataConn = new DataServiceConnection();
+
 		int startedState = getIntent().getIntExtra(EXTRA_REQ_ID, -1);
 
 		// NOTE: this switch statement is only for setting up activity variables, NOT queuing any UI
@@ -185,21 +187,21 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 		switch(startedState) {
 			case REQ_NEW_ALARM:
 				newAlarmFieldSetup();
-				Log.i(TAG, "Creating a new alarm.");
+				Log.v(TAG, "Creating a new alarm.");
 				break;
 				
 			case REQ_EDIT_ALARM:
 				editAlarmFieldSetup();
-				Log.i(TAG, "Editing an existing alarm.");
+				Log.v(TAG, "Editing an existing alarm.");
 				break;
 				
 			case REQ_NEW_FOLDER:
 				newFolderFieldSetup();
-				Log.i(TAG, "Creating a new folder.");
+				Log.v(TAG, "Creating a new folder.");
 				break;
 			case REQ_EDIT_FOLDER:
 				editFolderFieldSetup();
-				Log.i(TAG, "Editing an existing folder.");
+				Log.v(TAG, "Editing an existing folder.");
 				break;
 			default:
 				Log.e(TAG, "Unknown request code!");
@@ -566,7 +568,6 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 			timePickerMin = alarm.getAlarmTimeCalendar().get(Calendar.MINUTE);
 
 			if (currRepeatType == Alarm.REPEAT_ONCE_REL || currRepeatType == Alarm.REPEAT_OFFSET) {
-				// TODO: use String.format() to format these numbers?
 				EditText curr;
 
 				curr = findViewById(R.id.alarmOffsetDaysInput);
@@ -604,7 +605,6 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 		spinner.setAdapter(adapter);
 		spinner.setOnItemSelectedListener(this);
 		spinner.setSelection(((Alarm) workingListable).getRepeatType());
-		// changeRepeatType(currRepeatType);
 
 		// DAY_MONTHLY week of month spinner
 		spinner = alarmDayMonthlyLayout.findViewById(R.id.alarmWeekOfMonthInput);
@@ -688,8 +688,27 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 			return;
 		}
 
-		// TODO: implement
-		// use data.getStringArrayList(AlarmDataService.BUNDLE_LIST_KEY)
+		ArrayList<String> array = data.getStringArrayList(AlarmDataService.BUNDLE_LIST_KEY);
+		if (array == null) {
+			Log.e(TAG, "Message from alarm service had a null folder structure.");
+			return;
+		}
+
+		Spinner spinner = findViewById(R.id.parentFolderInput);
+		ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item);
+		adapter.addAll(array);
+		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+		spinner.setAdapter(adapter);
+
+		if (isEditing) {
+			spinner.setSelection(0);		// TODO: select the correct parent
+		}
+		else {
+			spinner.setSelection(0);
+		}
+
+		unbindService(dataConn);
+		boundToDataService = false;
 	}
 
 	/* ************************************  Other Methods  ********************************* */
