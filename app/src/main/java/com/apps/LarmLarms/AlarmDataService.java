@@ -523,7 +523,7 @@ public class AlarmDataService extends Service {
 		((AlarmGroup) l).toggleOpen();
 
 		writeAlarmsToDisk(this, rootFolder);
-		setNextAlarmToRing();
+		rootFolder.refreshLookup();
 		sendDataChanged();
 	}
 
@@ -679,7 +679,7 @@ public class AlarmDataService extends Service {
 		}
 	}
 
-	/* ***********************************  Other Methods  *********************************** */
+	/* ********************************  Send Message Methods  ******************************** */
 
 	/**
 	 * Sends MSG_DATA_CHANGED messages to all registered data change listeners. The message should
@@ -761,6 +761,8 @@ public class AlarmDataService extends Service {
 			Log.i(TAG, "Sent an intent to AlarmManager.");
 		}
 	}
+
+	/* *************************************  Other Methods  *********************************** */
 
 	/**
 	 * Searches for the next Alarm that will ring. Returns the listable and absolute index of the
