@@ -290,22 +290,25 @@ public class AlarmDataService extends Service {
 			Listable currListable;
 
 			while (currLine != null) {
+				// end of the current folder
 				if (!currLine.startsWith("\t") && currFolder != null) {
-					// removing the last '\n'
-					if (currFolder.length() != 0) currFolder.deleteCharAt(currFolder.length() - 1);
 					currListable = AlarmGroup.fromStoreString(context, currFolder.toString());
 					if (currListable != null) { data.add(currListable); }
+					currFolder = null;
 				}
 
+				// a top-level alarm
 				if (currLine.startsWith("a")) {
 					currListable = Alarm.fromStoreString(context, currLine);
 					if (currListable != null) { data.add(currListable); }
 				}
+				// start of a top-level folder
 				else if (currLine.startsWith("f")) {
 					currFolder = new StringBuilder(currLine);
 				}
+				// part of a top-level folder
 				else if (currLine.startsWith("\t") && currFolder != null) {
-					currFolder.append(currLine);
+					currFolder.append('\n').append(currLine);
 				}
 				else {
 					Log.e(TAG, "Invalid line in alarms.txt: " + currLine);
@@ -313,8 +316,8 @@ public class AlarmDataService extends Service {
 				}
 				currLine = bReader.readLine();
 			}
+			// ends the folder in case there wasn't another alarm after it to close within the loop
 			if (currFolder != null) {
-				if (currFolder.length() != 0) currFolder.deleteCharAt(currFolder.length() - 1);
 				currListable = AlarmGroup.fromStoreString(context, currFolder.toString());
 				if (currListable != null) { data.add(currListable); }
 			}
@@ -407,7 +410,7 @@ public class AlarmDataService extends Service {
 		}
 
 		// get listable with abs index in arg1
-		ArrayList<String> list = rootFolder.toReducedList();
+		ArrayList<String> list = rootFolder.toPathList();
 		Message outMsg = Message.obtain(null, MSG_GET_FOLDERS);
 		Bundle bundle = new Bundle();
 		bundle.putStringArrayList(BUNDLE_LIST_KEY, list);
