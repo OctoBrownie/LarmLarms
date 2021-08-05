@@ -224,7 +224,8 @@ public final class Alarm implements Listable, Cloneable {
 		numSnoozes = 0;
 
 		// TODO: use getActualDefaultRingtoneUri(context, type) or getDefaultRingtoneUri(type)?
-		ringtoneUri = RingtoneManager.getActualDefaultRingtoneUri(context, RingtoneManager.TYPE_ALARM);
+		if (context != null)
+			ringtoneUri = RingtoneManager.getActualDefaultRingtoneUri(context, RingtoneManager.TYPE_ALARM);
 	}
 
 	/* ********************************  Methods from Listable  ********************************** */
