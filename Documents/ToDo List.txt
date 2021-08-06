@@ -17,7 +17,7 @@ use a (color) selector to make disabled alarms more obvious (MainActivity)
 	see https://programmer.ink/think/a-detailed-explanation-of-the-use-of-selector-in-android.html
 style all components
 	also ensure all components of a single type all have the same style (or children of it)
-some documentation for each method and field? Also make documentation less... conversational?
+make documentation less... conversational?
 make snake_case and camelCase variables and stuff all consistent?
 make CardViews draggable (to reorder within folders??)
 	helpful Android documentation: https://developer.android.com/guide/topics/ui/drag-drop
@@ -32,11 +32,7 @@ could possibly give user choice for some color presets (like the "sandy blue" th
 can maybe use FlexboxLayout for alarm editor (similar to FlowLayout in Java Swing)
 	Google blog post: https://android-developers.googleblog.com/2017/02/build-flexible-layouts-with.html
 	GitHub: https://github.com/google/flexbox-layout
-could make alarm loading asynchronous, so that layout is more responsive...?
-	however, when it boots up, that means that the alarm list wouldn't be loaded yet
-make local tests instrumented tests instead
 make more tests
-add a callback to swap frags when the Alarm set transitions between being empty and filled 
 could make Alarm and AlarmGroup into Parcelables
 could use DiffUtil perhaps for differences between versions of lists (minimal animations)
 could possibly make the distinction in Listable between viewable size and actual size (same for getting lookups or listables from folders)
