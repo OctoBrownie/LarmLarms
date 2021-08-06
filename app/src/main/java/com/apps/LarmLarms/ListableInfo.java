@@ -119,16 +119,19 @@ class ListableInfo implements Parcelable {
 		dest.writeInt(absIndex);
 		dest.writeInt(relIndex);
 		dest.writeInt(numIndents);
+		dest.writeInt(absParentIndex);
 
+		// listable then isAlarm
 		if (listable == null) {
-			dest.writeString(null);						// listable
-			dest.writeString(Boolean.toString(false));	// isAlarm
+			dest.writeString(null);
+			dest.writeString(Boolean.toString(false));
 		}
 		else {
 			dest.writeString(listable.toEditString());
 			dest.writeString(Boolean.toString(listable.isAlarm()));
 		}
 
+		// parent
 		if (parent == null)
 			dest.writeString(null);
 		else
