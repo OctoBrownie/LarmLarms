@@ -107,17 +107,18 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 	@NotNull
 	private Listable workingListable;
 
+	// information about Listable being edited
 	/**
 	 * The path of the current working Listable.
 	 */
 	@Nullable
 	private String listablePath;
-
-	// information about Listable being edited
 	/**
 	 * The absolute index of the Listable being edited.
 	 */
 	private int listableIndex;
+
+	// current editor mode
 	/**
 	 * Shows whether the current activity is editing an Alarm (true) or AlarmGroup (false).
 	 */
@@ -523,7 +524,7 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 	@SuppressLint("DefaultLocale")
 	private void alarmUISetup() {
 		// TODO: to speed this specific method up, could do some of this setup when swapping alarm types?
-		setContentView(R.layout.activity_alarm_editor);
+		setContentView(R.layout.editor_alarm);
 
 		// getting handles to views (for swapping between repeat types)
 		alarmTimePicker = findViewById(R.id.alarmTimeInput);
@@ -621,7 +622,7 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 	/**
 	 * Sets up the UI for editing (or creating) a folder.
 	 */
-	private void folderUISetup() { setContentView(R.layout.activity_folder_editor); }
+	private void folderUISetup() { setContentView(R.layout.editor_folder); }
 
 	/**
 	 * Sets up the clickable week days text views with text and enabled/disabled colors.
