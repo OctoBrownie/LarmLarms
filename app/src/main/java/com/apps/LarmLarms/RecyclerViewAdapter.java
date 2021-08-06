@@ -264,7 +264,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 	 * @param index the absolute index of the listable, assumes within range
 	 */
 	void editExistingListable(final int index) {
-		// start new activity (AlarmCreator)
+		// start ListableEditor
 		Intent intent = new Intent(context, ListableEditorActivity.class);
 		ListableInfo info = data.get(index);
 		if (info == null || info.listable == null) {
@@ -272,7 +272,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 			return;
 		}
 
-		// add extras (Listable, index, req id)
+		// add extras (ListableInfo, req id)
 		intent.putExtra(ListableEditorActivity.EXTRA_LISTABLE_INFO, info);
 
 		int req;
