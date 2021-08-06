@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The menu for the editor, meant to be included -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="match_parent"
+	android:layout_height="wrap_content"
+	android:orientation="horizontal"
+	style="@style/Theme.AppTheme">
+
+	<android.widget.Button
+		style="@style/ButtonStyle.Borderless"
+
+		android:id="@+id/backButton"
+		android:layout_width="0px"
+		android:layout_height="wrap_content"
+		android:layout_weight="1"
+		android:onClick="backButtonClicked"
+		android:text="@string/editor_back_button" />
+
+	<android.widget.Button
+		style="@style/ButtonStyle"
+
+		android:id="@+id/saveButton"
+		android:layout_width="0px"
+		android:layout_height="wrap_content"
+		android:layout_weight="1"
+		android:onClick="saveListable"
+		android:text="@string/editor_save_button" />
+</LinearLayout>

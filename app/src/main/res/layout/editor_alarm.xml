@@ -6,32 +6,7 @@
 	android:orientation="vertical"
 	style="@style/Theme.AppTheme">
 
-	<!-- Essentially a menu at the top of the screen -->
-	<LinearLayout
-		android:layout_width="match_parent"
-		android:layout_height="wrap_content"
-		android:orientation="horizontal">
-
-		<android.widget.Button
-			style="@style/ButtonStyle.Borderless"
-
-			android:id="@+id/backButton"
-			android:layout_width="0px"
-			android:layout_height="wrap_content"
-			android:layout_weight="1"
-			android:onClick="backButtonClicked"
-			android:text="@string/editor_back_button" />
-
-		<android.widget.Button
-			style="@style/ButtonStyle"
-
-			android:id="@+id/saveButton"
-			android:layout_width="0px"
-			android:layout_height="wrap_content"
-			android:layout_weight="1"
-			android:onClick="saveListable"
-			android:text="@string/editor_save_button" />
-	</LinearLayout>
+	<include layout="@layout/editor_menu" />
 
 	<!--
 	Naming conventions for input/text field ids (here only):
@@ -388,54 +363,9 @@
 
 			<!-- - - - - - - - - - - - - - - -  Other Input Fields  - - - - - - - - - - - - - - -->
 
-			<!-- name layout, common input field -->
-			<LinearLayout
-				android:layout_width="match_parent"
-				android:layout_height="wrap_content"
-				android:orientation="horizontal">
+			<include layout="@layout/editor_common_fields" />
 
-				<TextView
-					style="@style/EditorLabelStyle"
-
-					android:id="@+id/nameText"
-					android:layout_width="wrap_content"
-					android:layout_height="wrap_content"
-					android:labelFor="@+id/nameInput"
-					android:text="@string/editor_name_text" />
-
-				<EditText
-					style="@style/EditorInputStyle"
-
-					android:id="@+id/nameInput"
-					android:inputType="textAutoComplete"
-					android:imeOptions="actionDone"
-					android:hint="@string/alarm_editor_name_hint" />
-			</LinearLayout>
-
-			<!-- parent folder layout, common input field -->
-			<LinearLayout
-				android:layout_width="match_parent"
-				android:layout_height="wrap_content"
-				android:orientation="horizontal"
-				android:baselineAligned="true">
-
-				<TextView
-					style="@style/EditorLabelStyle"
-
-					android:id="@+id/parentFolderText"
-					android:layout_width="wrap_content"
-					android:layout_height="wrap_content"
-					android:labelFor="@+id/parentFolderInput"
-					android:text="@string/editor_parent_folder_text"/>
-				<Spinner
-					style="@style/SpinnerStyle"
-
-					android:id="@+id/parentFolderInput"
-					android:layout_width="wrap_content"
-					android:layout_height="wrap_content"/>
-			</LinearLayout>
-
-			<!-- ringtone layout -->
+			<!-- ringtone button -->
 			<LinearLayout
 				android:layout_width="match_parent"
 				android:layout_height="wrap_content"
