@@ -47,6 +47,13 @@ class ListableInfo implements Parcelable {
 	AlarmGroup parent;
 
 	/**
+	 * Represents the path to this listable but doesn't include the listable itself. It is in the
+	 * same form as the strings returned from AlarmGroup.toPathList().
+	 */
+	@Nullable
+	String path;
+
+	/**
 	 * Initializes dummy data in the struct variables.
 	 */
 	ListableInfo() {
@@ -56,6 +63,7 @@ class ListableInfo implements Parcelable {
 		absParentIndex = 0;
 		listable = null;
 		parent = null;
+		path = null;
 	}
 
 	/**
@@ -81,6 +89,8 @@ class ListableInfo implements Parcelable {
 		else {
 			parent = AlarmGroup.fromEditString(l);
 		}
+
+		path = in.readString();
 	}
 
 	/* *******************************  Parcelable Things  ********************************** */
@@ -90,8 +100,8 @@ class ListableInfo implements Parcelable {
 	 */
 	public static final Parcelable.Creator<ListableInfo> CREATOR =
 		new Parcelable.Creator<ListableInfo>() {
-			@NotNull
-			public ListableInfo createFromParcel(Parcel in) {
+			@NotNull @Contract(pure = true)
+			public ListableInfo createFromParcel(@NotNull Parcel in) {
 				return new ListableInfo(in);
 			}
 			@NotNull @Contract(pure = true)
@@ -136,5 +146,7 @@ class ListableInfo implements Parcelable {
 			dest.writeString(null);
 		else
 			dest.writeString(parent.toEditString());
+
+		dest.writeString(path);
 	}
 }

@@ -104,7 +104,14 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 	 * The current Listable being edited/created in this activity. Is not null (after the activity
 	 * is created).
 	 */
+	@NotNull
 	private Listable workingListable;
+
+	/**
+	 * The path of the current working Listable.
+	 */
+	@Nullable
+	private String listablePath;
 
 	// information about Listable being edited
 	/**
@@ -167,9 +174,18 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 	/**
 	 * The service connection to the data service.
 	 */
+	@NotNull
 	private DataServiceConnection dataConn;
 
 	/* *********************************  Lifecycle Methods  ******************************* */
+
+	/**
+	 * Creates a new ListableEditor and initializes some fields.
+	 */
+	public ListableEditorActivity() {
+		dataConn = new DataServiceConnection();
+		workingListable = new AlarmGroup();			// dummy data (except for REQ_NEW_FOLDER)
+	}
 
 	/**
 	 * Called when the activity is first being created. Initializes fields and UI based on the type
@@ -180,10 +196,13 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 	protected void onCreate(@Nullable Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		dataConn = new DataServiceConnection();
-
-		int startedState = getIntent().getIntExtra(EXTRA_REQ_ID, -1);
-		ListableInfo info = getIntent().getParcelableExtra(EXTRA_LISTABLE_INFO);
+		Bundle extras = getIntent().getExtras();
+		if (extras == null) {
+			Log.e(TAG, "Extras passed to ListableEditor are null.");
+			exitActivity();
+			return;
+		}
+		int startedState = extras.getInt(EXTRA_REQ_ID, -1);
 
 		// NOTE: this switch statement is only for setting up activity variables, NOT queuing any UI
 		// changes, since the content view hasn't been set up yet.
@@ -202,7 +221,7 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 			case REQ_NEW_FOLDER:
 				isEditingAlarm = false;
 				isEditing = false;
-				workingListable = new AlarmGroup();
+				// already created in constructor
 				Log.v(TAG, "Creating a new folder.");
 				break;
 			case REQ_EDIT_FOLDER:
@@ -213,15 +232,20 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 			default:
 				Log.e(TAG, "Unknown request code!");
 				exitActivity();
+				return;
 		}
 
 		if (isEditing) {
+			ListableInfo info = extras.getParcelable(EXTRA_LISTABLE_INFO);
+
+			if (info == null || info.listable == null || info.path == null) {
+				Log.e(TAG, "Listable info is invalid.");
+				exitActivity();
+				return;
+			}
 			listableIndex = info.absIndex;
 			workingListable = info.listable;
-			if (workingListable == null) {
-				Log.e(TAG, "The ListableInfo had a null listable.");
-				exitActivity();
-			}
+			listablePath = info.path;
 		}
 
 		if (isEditingAlarm) { alarmUISetup(); }
@@ -656,7 +680,10 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 		spinner.setAdapter(adapter);
 
 		if (isEditing) {
-			spinner.setSelection(0);		// TODO: select the correct parent
+			int index = array.indexOf(listablePath);
+			if (index == -1) index = 0;
+
+			spinner.setSelection(index);
 		}
 		else {
 			spinner.setSelection(0);

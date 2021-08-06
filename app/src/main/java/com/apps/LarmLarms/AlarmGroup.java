@@ -361,8 +361,8 @@ public final class AlarmGroup implements Listable, Cloneable {
 				return null;
 			}
 			else { lines[i] = lines[i].substring(1); }			// removing the first indent
-
 		}
+
 		for (int i = 1; i < lines.length; i++) {
 			String item = lines[i];
 			if (item.startsWith("a")) {
@@ -387,7 +387,7 @@ public final class AlarmGroup implements Listable, Cloneable {
 						i = j - 1;
 						break;
 					}
-					new_src.append("\n").append(lines[j]);
+					new_src.append('\n').append(lines[j]);
 				}
 
 				// didn't trip on the break statement, so we want it to end after this loop (j =
@@ -468,32 +468,53 @@ public final class AlarmGroup implements Listable, Cloneable {
 	}
 
 	/**
-	 * Searches for a Listable at srcIndex and returns data within a ListableInfo about it.
-	 * @param data The actual list of Listables to search through. Won't change the data within
-	 *             the structure.
-	 * @param lookup The lookup list for the data list. Won't change the data within the structure.
+	 * Searches for a Listable at srcIndex and returns data within a ListableInfo about it. Fills all
+	 * fields of the ListableInfo.
+	 * @param root the folder to look through for this Listable. Will not change the data within it
 	 * @param srcIndex the absolute position of the Listable to search for
 	 * @return a ListableInfo describing everything it can about the Listable at srcIndex, or null
 	 * if the Listable was not found
 	 */
 	@Nullable @Contract(pure = true)
-	private static ListableInfo getListableInfo(@Nullable ArrayList<Listable> data,
-										@Nullable ArrayList<Integer> lookup, final int srcIndex) {
-		if (data == null || lookup == null) {
-			Log.v(TAG, "Listable data or lookup was null.");
+	private static ListableInfo getListableInfo(@Nullable AlarmGroup root, final int srcIndex) {
+		if (root == null) {
+			Log.v(TAG, "Listable to look through is null.");
 			return null;
 		}
 
+		ArrayList<Listable> data = root.listables;
+		ArrayList<Integer> lookup = root.lookup;
+
+		// the final ListableInfo to store stuff in
 		ListableInfo info = new ListableInfo();
+
+		// the relative index to the current folder
 		int index = findOuterListableIndex(lookup, srcIndex, AlarmGroup.getSizeOfList(data));
+
+		// the number of indents for this listable
 		int indents = 0;
 
 		// represents the absolute index of the Listable we're looking for in the current folder
 		int absIndex = srcIndex;
-		int currFolderIndex = index;
+
+		// represents the absolute index of the current folder we're in, starts at -1 to account for
+		// something later and to show that there the listable doesn't have a parent (besides the
+		// current folder)
+		int currFolderIndex = -1;
+
+		// the current folder we're in
 		AlarmGroup currFolder = null;
 
+		// the current path of the Listable
+		@NotNull
+		StringBuilder pathBuilder = new StringBuilder();
+
 		while (index != -1) {
+			// builds the path, must run on ALL iterations, so must run before we check whether this
+			// is the index we were searching for
+			if (pathBuilder.length() != 0) pathBuilder.append('/');
+			if (currFolder != null) pathBuilder.append(currFolder);
+
 			// must be the element itself in the current folder
 			if (lookup.get(index) == absIndex) {
 				info.absIndex = srcIndex;
@@ -503,17 +524,30 @@ public final class AlarmGroup implements Listable, Cloneable {
 				info.listable = data.get(index);
 				info.parent = currFolder;
 
+				// if only within the root folder
+				if (pathBuilder.length() == 0) pathBuilder.append(root.getListableName());
+				info.path = pathBuilder.toString();
+
 				return info;
 			}
 
-			// listable is within an AlarmGroup, subtract 1 to take into account the folder itself
+			// listable is within an AlarmGroup, so must find the new absolute index within that folder
+			// must subtract 1 to take into account the folder itself
 			absIndex = absIndex - 1 - index;
-			currFolderIndex += index + 1;		// take into account the folder itself
+
+			// must add 1 to take into account the previous outer folder (initializes with -1 so that
+			// the root folder isn't actually accounted for, since index starts within the root folder)
+			currFolderIndex += index + 1;
+
+			// new folder to look inside
 			currFolder = (AlarmGroup) data.get(index);
 			lookup = currFolder.getLookup();
 			data = currFolder.getListables();
-			index = findOuterListableIndex(lookup, absIndex, currFolder.size() - 1);
+
 			indents++;
+
+			// new index relative to the new folder
+			index = findOuterListableIndex(lookup, absIndex, currFolder.size() - 1);
 		}
 		Log.e(TAG, "Could not find the specified Listable's info in the source data/lookup.");
 		return null;
@@ -567,9 +601,7 @@ public final class AlarmGroup implements Listable, Cloneable {
 	 * @return the Listable or null if not found
 	 */
 	@Contract(pure = true)
-	ListableInfo getListableInfo(final int absIndex) {
-		return getListableInfo(listables, lookup, absIndex);
-	}
+	ListableInfo getListableInfo(final int absIndex) { return getListableInfo(this, absIndex); }
 
 	/**
 	 * Gets the relative listable index at the specified absolute index
@@ -767,16 +799,15 @@ public final class AlarmGroup implements Listable, Cloneable {
 	/**
 	 * Returns a list of strings describing the AlarmGroup and any AlarmGroups within it
 	 * @return an array list of strings that stores all of the names of the folders within the group,
-	 * including the folder itself. Each string shows the full path of the folder, excluding the
-	 * original root folder, separated by slashes.
+	 * including the folder itself. The first item in the list will be the name of the folder itself.
+	 * Each string shows the full path of the child, excluding the original root folder and separated
+	 * by slashes. Each string does not start with a slash.
 	 */
 	@NotNull @Contract(pure = true)
-	ArrayList<String> toReducedList() {
-		return toReducedList("", this, true);
-	}
+	ArrayList<String> toPathList() { return toPathList("", this, true); }
 
 	/**
-	 * Helper function for toReducedList().
+	 * Helper function for toPathList().
 	 * @param prefix the prefix that should be added to the current parent name and all of its
 	 *               children. Shouldn't be null
 	 * @param parent the current AlarmGroup we're on, shouldn't be null
@@ -785,11 +816,11 @@ public final class AlarmGroup implements Listable, Cloneable {
 	 * @return an array list of strings that stores all of the folders within the parent. All strings
 	 * should have the prefix appended to them, and should contain the full path of each folder.
 	 */
-	private static ArrayList<String> toReducedList(@NotNull String prefix, @NotNull AlarmGroup parent,
-												   boolean isTopLevel) {
-		ArrayList<String> reducedList = new ArrayList<>();
+	private static ArrayList<String> toPathList(@NotNull String prefix, @NotNull AlarmGroup parent,
+												boolean isTopLevel) {
+		ArrayList<String> pathList = new ArrayList<>();
 		String storeString = parent.getListableName();
-		reducedList.add(prefix + storeString);
+		pathList.add(prefix + storeString);
 		if (!isTopLevel) {
 			if (!prefix.isEmpty()) prefix += '/';
 			prefix += storeString;
@@ -797,16 +828,16 @@ public final class AlarmGroup implements Listable, Cloneable {
 
 		for (Listable child : parent.listables) {
 			if (!child.isAlarm()) {
-				reducedList.addAll(toReducedList(prefix, (AlarmGroup) child, false));
+				pathList.addAll(toPathList(prefix, (AlarmGroup) child, false));
 			}
 		}
-		return reducedList;
+		return pathList;
 	}
 
 	/**
 	 * Updates the lookup list and the total number of items in the AlarmGroup.
 	 */
-	private void refreshLookup() {
+	void refreshLookup() {
 		lookup = generateLookup(listables);
 		totalNumItems = getSizeOfList(listables) + 1;
 	}
