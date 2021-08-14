@@ -646,6 +646,18 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 	}
 
 	/**
+	 * Sets up the date pickerfor the first time. Sets up both the field and the UI. Does not check
+	 * whether the field is null or not. For alarms only.
+	 */
+	private void setupDatePicker() {
+		// used temp variable because otherwise the IDE says there's a possible null ptr exception
+		DatePicker picker = findViewById(R.id.alarmDateInput);
+		picker.setMinDate(new GregorianCalendar().getTimeInMillis());
+
+		alarmDatePicker = picker;
+	}
+
+	/**
 	 * Sets up the day monthly layout for the first time. Sets the field and the UI (spinners). Does
 	 * not check whether the field is null or not. For alarms only.
 	 */
@@ -804,10 +816,7 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 				if (alarmTimePicker == null) setupTimePicker();
 				alarmTimePicker.setVisibility(View.VISIBLE);
 
-				if (alarmDatePicker == null) {
-					alarmDatePicker = findViewById(R.id.alarmDateInput);
-					alarmDatePicker.setMinDate(new GregorianCalendar().getTimeInMillis());
-				}
+				if (alarmDatePicker == null) setupDatePicker();
 				alarmDatePicker.setVisibility(View.VISIBLE);
 				break;
 			case Alarm.REPEAT_OFFSET:
