@@ -132,39 +132,48 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 	/**
 	 * The time picker (for alarms).
 	 */
+	@Nullable
 	private TimePicker alarmTimePicker;
 	/**
 	 * The date picker (for alarms only).
 	 */
+	@Nullable
 	private DatePicker alarmDatePicker;
 	/**
 	 * Layout for the clickable weekdays TextViews (for alarms only).
 	 */
+	@Nullable
 	private ViewGroup alarmDaysLayout;
 	/**
 	 * Layout for the offset days label and text field (for alarms only).
 	 */
+	@Nullable
 	private ViewGroup alarmOffsetDaysLayout;
 	/**
 	 * Layout for the offset hours label and text field (for alarms only).
 	 */
+	@Nullable
 	private ViewGroup alarmOffsetHoursLayout;
 	/**
 	 * Layout for the offset minutes label and text field (for alarms only).
 	 */
+	@Nullable
 	private ViewGroup alarmOffsetMinsLayout;
 	/**
 	 * Layout for the day and week to ring on (label and two spinners for which week and which day,
 	 * for alarms only).
 	 */
+	@Nullable
 	private ViewGroup alarmDayMonthlyLayout;
 	/**
 	 * Layout for the clickable months TextViews (for alarms only).
 	 */
+	@Nullable
 	private ViewGroup alarmMonthsLayout;
 	/**
 	 * Layout for the day of the month to ring on (for alarms only).
 	 */
+	@Nullable
 	private ViewGroup alarmDateOfMonthLayout;
 
 	// data service fields
@@ -185,7 +194,7 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 	 */
 	public ListableEditorActivity() {
 		dataConn = new DataServiceConnection();
-		workingListable = new AlarmGroup();			// dummy data (except for REQ_NEW_FOLDER)
+		workingListable = new AlarmGroup();		// used in REQ_NEW_FOLDER, dummy data for all others
 	}
 
 	/**
@@ -279,7 +288,7 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 	protected void onResume() {
 		super.onResume();
 
-		if (isEditingAlarm) {
+		if (isEditingAlarm && alarmTimePicker != null) {
 			// matches the TimePicker's display mode to current system config (12 hr or 24 hr)
 			alarmTimePicker.setIs24HourView(DateFormat.is24HourFormat(this));
 		}
@@ -314,8 +323,9 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 	}
 
 	/**
-	 * An onclick callback for the save button. Closes the AlarmCreator, returns RESULT_OK and
-	 * the Listable (in string form) in the intent.
+	 * An onclick callback for the save button. If an error is encountered, will close the activity
+	 * using exitActivity(). If no error, will return RESULT_OK and the Listable (in string form) in
+	 * the intent.
 	 * @param view the save button (view that triggered the callback)
 	*/
 	public void saveListable(@NotNull View view) {
@@ -335,6 +345,12 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 			switch(((Alarm) workingListable).getRepeatType()) {
 				case Alarm.REPEAT_ONCE_ABS:
 				case Alarm.REPEAT_DATE_YEARLY:
+					if (alarmDatePicker == null || alarmTimePicker == null) {
+						Log.wtf(TAG, "The alarm date/time pickers are null.");
+						exitActivity();
+						return;
+					}
+
 					alarmCalendar.set(Calendar.YEAR, alarmDatePicker.getYear());
 					alarmCalendar.set(Calendar.MONTH, alarmDatePicker.getMonth());
 					alarmCalendar.set(Calendar.DAY_OF_MONTH, alarmDatePicker.getDayOfMonth());
@@ -344,6 +360,13 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 					break;
 				case Alarm.REPEAT_ONCE_REL:
 				case Alarm.REPEAT_OFFSET:
+					if (alarmOffsetDaysLayout == null || alarmOffsetHoursLayout == null ||
+							alarmOffsetMinsLayout == null) {
+						Log.wtf(TAG, "The alarm offset layouts are null.");
+						exitActivity();
+						return;
+					}
+
 					EditText currEditText;
 					int days, hours, mins;
 					NumberFormat format = NumberFormat.getInstance();
@@ -393,16 +416,28 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 					((Alarm) workingListable).setAlarmTimeMillis(newCalendar.getTimeInMillis());
 					break;
 				case Alarm.REPEAT_DATE_MONTHLY:
+					if (alarmDateOfMonthLayout == null) {
+						Log.wtf(TAG, "The alarm date of month is null.");
+						exitActivity();
+						return;
+					}
+
 					NumberPicker picker = alarmDateOfMonthLayout.findViewById(R.id.alarmDateOfMonthInput);
 					alarmCalendar.set(Calendar.DAY_OF_MONTH, picker.getValue());
+					// continues onto the next case
 				case Alarm.REPEAT_DAY_WEEKLY:
 				case Alarm.REPEAT_DAY_MONTHLY:
+					if (alarmTimePicker == null) {
+						Log.wtf(TAG, "The alarm time picker is null.");
+						exitActivity();
+					}
+
 					alarmCalendar.set(Calendar.HOUR_OF_DAY, alarmTimePicker.getCurrentHour());
 					alarmCalendar.set(Calendar.MINUTE, alarmTimePicker.getCurrentMinute());
 					break;
 				default:
 					Log.e(TAG, "The alarm has an invalid repeat type.");
-					break;
+					exitActivity();
 			}
 
 			((Alarm) workingListable).updateRingTime();
@@ -494,8 +529,7 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 	public void onItemSelected(@NotNull AdapterView<?> parent, View view, int pos, long id) {
 		switch (parent.getId()) {
 			case R.id.alarmRepeatTypeInput:
-				((Alarm) workingListable).setRepeatType(pos);
-				changeRepeatType(pos);
+				changeRepeatType(pos, false);
 				break;
 			case R.id.alarmWeekOfMonthInput:
 				((Alarm) workingListable).setRepeatWeek(pos);
@@ -521,58 +555,9 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 	/**
 	 * Sets up the UI for editing (or creating) an alarm.
 	 */
-	@SuppressLint("DefaultLocale")
 	private void alarmUISetup() {
-		// TODO: to speed this specific method up, could do some of this setup when swapping alarm types?
 		setContentView(R.layout.editor_alarm);
-
-		// getting handles to views (for swapping between repeat types)
-		alarmTimePicker = findViewById(R.id.alarmTimeInput);
-		alarmDatePicker = findViewById(R.id.alarmDateInput);
-		alarmDaysLayout = findViewById(R.id.alarmDaysInput);
-		alarmOffsetDaysLayout = findViewById(R.id.alarmOffsetDays);
-		alarmOffsetHoursLayout = findViewById(R.id.alarmOffsetHours);
-		alarmOffsetMinsLayout = findViewById(R.id.alarmOffsetMins);
-		alarmDayMonthlyLayout = findViewById(R.id.alarmDayMonthly);
-		alarmDateOfMonthLayout = findViewById(R.id.alarmDateOfMonth);
-		alarmMonthsLayout = findViewById(R.id.alarmMonthsInput);
-
-		int currRepeatType = ((Alarm) workingListable).getRepeatType();
-		GregorianCalendar sysClock = new GregorianCalendar();
-		int timePickerHour, timePickerMin;
-		Alarm alarm = (Alarm) workingListable;
-
-		if (isEditing) {
-			// REQ_EDIT_ALARM
-			timePickerHour = alarm.getAlarmTimeCalendar().get(Calendar.HOUR_OF_DAY);
-			timePickerMin = alarm.getAlarmTimeCalendar().get(Calendar.MINUTE);
-
-			if (currRepeatType == Alarm.REPEAT_ONCE_REL || currRepeatType == Alarm.REPEAT_OFFSET) {
-				EditText curr;
-
-				curr = findViewById(R.id.alarmOffsetDaysInput);
-				curr.setText(String.format("%d", alarm.getOffsetDays()));
-
-				curr = findViewById(R.id.alarmOffsetHoursInput);
-				curr.setText(String.format("%d", alarm.getOffsetHours()));
-
-				curr = findViewById(R.id.alarmOffsetMinsInput);
-				curr.setText(String.format("%d", alarm.getOffsetMins()));
-			}
-		}
-		else {
-			// REQ_NEW_ALARM
-			// matches the TimePicker time to current system time format, since we don't want to
-			// change this onResume because the user might have a custom time already set
-			timePickerHour = sysClock.get(Calendar.HOUR_OF_DAY);
-			timePickerMin = sysClock.get(Calendar.MINUTE);
-		}
-
-		// editing alarmTimePicker to match hour/min
-		alarmTimePicker.setCurrentHour(timePickerHour);
-		alarmTimePicker.setCurrentMinute(timePickerMin);
-
-		alarmDatePicker.setMinDate(sysClock.getTimeInMillis());
+		changeRepeatType(((Alarm) workingListable).getRepeatType(), true);
 
 		Spinner spinner;
 		ArrayAdapter<CharSequence> adapter;
@@ -586,37 +571,9 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 		spinner.setOnItemSelectedListener(this);
 		spinner.setSelection(((Alarm) workingListable).getRepeatType());
 
-		// DAY_MONTHLY week of month spinner
-		spinner = alarmDayMonthlyLayout.findViewById(R.id.alarmWeekOfMonthInput);
-		adapter = ArrayAdapter.createFromResource(this,
-				R.array.alarm_week_strings, android.R.layout.simple_spinner_dropdown_item);
-		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-		spinner.setAdapter(adapter);
-		spinner.setSelection(alarm.getRepeatWeek());
-		spinner.setOnItemSelectedListener(this);
-
-		// DAY_MONTHLY day of week spinner
-		spinner = alarmDayMonthlyLayout.findViewById(R.id.alarmDayOfWeekInput);
-		adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item);
-		adapter.addAll((new DateFormatSymbols()).getWeekdays());
-		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-		spinner.setAdapter(adapter);
-		spinner.setSelection(alarm.getAlarmTimeCalendar().get(Calendar.DAY_OF_WEEK) - 1);
-		spinner.setOnItemSelectedListener(this);
-
-		// DATE_MONTHLY day of month number picker
-		NumberPicker dateOfMonth = alarmDateOfMonthLayout.findViewById(R.id.alarmDateOfMonthInput);
-		dateOfMonth.setMinValue(1);
-		dateOfMonth.setMaxValue(31);
-		dateOfMonth.setValue(alarm.getAlarmTimeCalendar().get(Calendar.DAY_OF_MONTH));
-
-		// change colors of days and months layouts
-		setupWeekDays();
-		setupMonths();
-
 		// set name of the current ringtone
 		TextView alarmSoundLabel = findViewById(R.id.soundText);
-		alarmSoundLabel.setText(alarm.getRingtoneName());
+		alarmSoundLabel.setText(((Alarm) workingListable).getRingtoneName());
 	}
 
 	/**
@@ -625,9 +582,12 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 	private void folderUISetup() { setContentView(R.layout.editor_folder); }
 
 	/**
-	 * Sets up the clickable week days text views with text and enabled/disabled colors.
+	 * Sets up the days of the week field (alarmDaysLayout) and corresponding UI (text/colors). Does
+	 * not check whether the field is null or not. For alarms only.
 	 */
 	private void setupWeekDays() {
+		alarmDaysLayout = findViewById(R.id.alarmDaysInput);
+
 		Alarm alarm = (Alarm) workingListable;
 		ArrayList<View> children = getAllChildren(alarmDaysLayout);
 		String[] dayStrings = (new DateFormatSymbols()).getShortWeekdays();
@@ -641,9 +601,12 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 	}
 
 	/**
-	 * Sets up the clickable months text views with text and enabled/disabled colors.
+	 * Sets up the months field (alarmMonthsLayout) and corresponding UI (text/colors). Does not
+	 * check whether the field is null or not. For alarms only.
 	 */
 	private void setupMonths() {
+		alarmMonthsLayout = findViewById(R.id.alarmMonthsInput);
+
 		Alarm alarm = (Alarm) workingListable;
 		ArrayList<View> children = getAllChildren(alarmMonthsLayout);
 		String[] monthStrings = (new DateFormatSymbols()).getShortMonths();
@@ -654,6 +617,61 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 		for (int i = 0; i < monthStrings.length; i++) {
 			((TextView) children.get(i)).setText(monthStrings[i]);
 		}
+	}
+
+	/**
+	 * Sets up the time picker for the first time. Sets the field and UI (hours/minutes on picker).
+	 * Does not check whether the field is null or not. For alarms only.
+	 */
+	private void setupTimePicker() {
+		int timePickerHour, timePickerMin;
+		GregorianCalendar sysClock = new GregorianCalendar();
+
+		if (isEditing) {
+			// sets it to the current alarm time first
+			timePickerHour = ((Alarm) workingListable).getAlarmTimeCalendar().get(Calendar.HOUR_OF_DAY);
+			timePickerMin = ((Alarm) workingListable).getAlarmTimeCalendar().get(Calendar.MINUTE);
+		}
+		else {
+			// matches the TimePicker time to current system time, should only be once
+			timePickerHour = sysClock.get(Calendar.HOUR_OF_DAY);
+			timePickerMin = sysClock.get(Calendar.MINUTE);
+		}
+
+		alarmTimePicker = findViewById(R.id.alarmTimeInput);
+
+		// editing alarmTimePicker to match hour/min
+		alarmTimePicker.setCurrentHour(timePickerHour);
+		alarmTimePicker.setCurrentMinute(timePickerMin);
+	}
+
+	/**
+	 * Sets up the day monthly layout for the first time. Sets the field and the UI (spinners). Does
+	 * not check whether the field is null or not. For alarms only.
+	 */
+	private void setupDayMonthlyLayout() {
+		alarmDayMonthlyLayout = findViewById(R.id.alarmDayMonthly);
+
+		Spinner spinner;
+		ArrayAdapter<CharSequence> adapter;
+
+		// week of month spinner
+		spinner = alarmDayMonthlyLayout.findViewById(R.id.alarmWeekOfMonthInput);
+		adapter = ArrayAdapter.createFromResource(this,
+				R.array.alarm_week_strings, android.R.layout.simple_spinner_dropdown_item);
+		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+		spinner.setAdapter(adapter);
+		spinner.setSelection(((Alarm) workingListable).getRepeatWeek());
+		spinner.setOnItemSelectedListener(this);
+
+		// day of week spinner
+		spinner = alarmDayMonthlyLayout.findViewById(R.id.alarmDayOfWeekInput);
+		adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item);
+		adapter.addAll((new DateFormatSymbols()).getWeekdays());
+		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+		spinner.setAdapter(adapter);
+		spinner.setSelection(((Alarm) workingListable).getAlarmTimeCalendar().get(Calendar.DAY_OF_WEEK) - 1);
+		spinner.setOnItemSelectedListener(this);
 	}
 
 	/**
@@ -706,77 +724,159 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 	}
 
 	/**
-	 * Changes repeat type to the new specified type.
+	 * Changes repeat type to the new specified type. Changes both the working alarm type and the UI
+	 * layouts. For alarms only.
 	 * @param type new type to set it to, should be one of the Alarm constants
+	 * @param first whether the repeat type is the first repeat type to be initialized or not
 	 */
-	private void changeRepeatType(int type) {
+	@SuppressLint("DefaultLocale")
+	private void changeRepeatType(int type, boolean first) {
+		if (!first) {
+			switch (((Alarm) workingListable).getRepeatType()) {
+				case Alarm.REPEAT_DATE_YEARLY:
+				case Alarm.REPEAT_ONCE_ABS:
+					// requires: time picker, date picker
+					if (alarmTimePicker == null || alarmDatePicker == null) {
+						Log.wtf(TAG, "The alarm date/time pickers are null.");
+						exitActivity();
+						return;
+					}
+					alarmTimePicker.setVisibility(View.GONE);
+					alarmDatePicker.setVisibility(View.GONE);
+					break;
+				case Alarm.REPEAT_OFFSET:
+				case Alarm.REPEAT_ONCE_REL:
+					// requires: offset fields (days, hours, minutes)
+					if (alarmOffsetDaysLayout == null || alarmOffsetHoursLayout == null ||
+							alarmOffsetMinsLayout == null) {
+						Log.wtf(TAG, "The alarm offsets layouts are null.");
+						exitActivity();
+						return;
+					}
+					alarmOffsetDaysLayout.setVisibility(View.GONE);
+					alarmOffsetHoursLayout.setVisibility(View.GONE);
+					alarmOffsetMinsLayout.setVisibility(View.GONE);
+					break;
+				case Alarm.REPEAT_DAY_WEEKLY:
+					// requires: time picker, list of days (clickable text)
+					if (alarmTimePicker == null || alarmDaysLayout == null) {
+						Log.wtf(TAG, "The alarm time picker or days of week layout is null.");
+						exitActivity();
+						return;
+					}
+					alarmTimePicker.setVisibility(View.GONE);
+					alarmDaysLayout.setVisibility(View.GONE);
+					break;
+				case Alarm.REPEAT_DATE_MONTHLY:
+					// requires: time picker, date of month (number picker), list of months (clickable text)
+					if (alarmTimePicker == null || alarmMonthsLayout == null ||
+							alarmDateOfMonthLayout == null) {
+						Log.wtf(TAG, "The alarm time picker, months layout, or date of month layout is null.");
+						exitActivity();
+						return;
+					}
+					alarmTimePicker.setVisibility(View.GONE);
+					alarmMonthsLayout.setVisibility(View.GONE);
+					alarmDateOfMonthLayout.setVisibility(View.GONE);
+					break;
+				case Alarm.REPEAT_DAY_MONTHLY:
+					// requires: time picker, list of months, date of month (number picker), spinner for the week #
+					if (alarmTimePicker == null || alarmDayMonthlyLayout == null ||
+							alarmMonthsLayout == null) {
+						Log.wtf(TAG, "The alarm time picker, day of the month, or months layout is null.");
+						exitActivity();
+						return;
+					}
+					alarmTimePicker.setVisibility(View.GONE);
+					alarmDayMonthlyLayout.setVisibility(View.GONE);
+					alarmMonthsLayout.setVisibility(View.GONE);
+					break;
+				default:
+					Log.e(TAG, "Invalid previous alarm type selected.");
+					exitActivity();
+			}
+		}
+
 		switch (type) {
 			case Alarm.REPEAT_DATE_YEARLY:
 			case Alarm.REPEAT_ONCE_ABS:
-				// require: time picker, date picker
+				// requires: time picker, date picker
+				if (alarmTimePicker == null) setupTimePicker();
 				alarmTimePicker.setVisibility(View.VISIBLE);
+
+				if (alarmDatePicker == null) {
+					alarmDatePicker = findViewById(R.id.alarmDateInput);
+					alarmDatePicker.setMinDate(new GregorianCalendar().getTimeInMillis());
+				}
 				alarmDatePicker.setVisibility(View.VISIBLE);
-				alarmDaysLayout.setVisibility(View.GONE);
-				alarmOffsetDaysLayout.setVisibility(View.GONE);
-				alarmOffsetHoursLayout.setVisibility(View.GONE);
-				alarmOffsetMinsLayout.setVisibility(View.GONE);
-				alarmDayMonthlyLayout.setVisibility(View.GONE);
-				alarmMonthsLayout.setVisibility(View.GONE);
-				alarmDateOfMonthLayout.setVisibility(View.GONE);
 				break;
 			case Alarm.REPEAT_OFFSET:
 			case Alarm.REPEAT_ONCE_REL:
-				// requires: time fields or number pickers (days, hours, minutes)
-				alarmTimePicker.setVisibility(View.GONE);
-				alarmDatePicker.setVisibility(View.GONE);
-				alarmDaysLayout.setVisibility(View.GONE);
+				// requires: offset fields (days, hours, minutes)
+				// only really need to check one offset field, since they essentially come as a set
+				if (alarmOffsetDaysLayout == null) {
+					EditText curr;
+
+					alarmOffsetDaysLayout = findViewById(R.id.alarmOffsetDays);
+					curr = alarmOffsetDaysLayout.findViewById(R.id.alarmOffsetDaysInput);
+					curr.setText(String.format("%d", ((Alarm) workingListable).getOffsetDays()));
+
+					alarmOffsetHoursLayout = findViewById(R.id.alarmOffsetHours);
+					curr = alarmOffsetHoursLayout.findViewById(R.id.alarmOffsetHoursInput);
+					curr.setText(String.format("%d", ((Alarm) workingListable).getOffsetHours()));
+
+					alarmOffsetMinsLayout = findViewById(R.id.alarmOffsetMins);
+					curr = alarmOffsetMinsLayout.findViewById(R.id.alarmOffsetMinsInput);
+					curr.setText(String.format("%d", ((Alarm) workingListable).getOffsetMins()));
+				}
+
 				alarmOffsetDaysLayout.setVisibility(View.VISIBLE);
 				alarmOffsetHoursLayout.setVisibility(View.VISIBLE);
 				alarmOffsetMinsLayout.setVisibility(View.VISIBLE);
-				alarmDayMonthlyLayout.setVisibility(View.GONE);
-				alarmMonthsLayout.setVisibility(View.GONE);
-				alarmDateOfMonthLayout.setVisibility(View.GONE);
 				break;
 			case Alarm.REPEAT_DAY_WEEKLY:
 				// requires: time picker, list of days (clickable text)
+				if (alarmTimePicker == null) setupTimePicker();
 				alarmTimePicker.setVisibility(View.VISIBLE);
-				alarmDatePicker.setVisibility(View.GONE);
+
+				if (alarmDaysLayout == null) setupWeekDays();
 				alarmDaysLayout.setVisibility(View.VISIBLE);
-				alarmOffsetDaysLayout.setVisibility(View.GONE);
-				alarmOffsetHoursLayout.setVisibility(View.GONE);
-				alarmOffsetMinsLayout.setVisibility(View.GONE);
-				alarmDayMonthlyLayout.setVisibility(View.GONE);
-				alarmMonthsLayout.setVisibility(View.GONE);
-				alarmDateOfMonthLayout.setVisibility(View.GONE);
 				break;
 			case Alarm.REPEAT_DATE_MONTHLY:
 				// requires: time picker, date of month (number picker), list of months (clickable text)
+				if (alarmTimePicker == null) setupTimePicker();
 				alarmTimePicker.setVisibility(View.VISIBLE);
-				alarmDatePicker.setVisibility(View.GONE);
-				alarmDaysLayout.setVisibility(View.GONE);
-				alarmOffsetDaysLayout.setVisibility(View.GONE);
-				alarmOffsetHoursLayout.setVisibility(View.GONE);
-				alarmOffsetMinsLayout.setVisibility(View.GONE);
-				alarmDayMonthlyLayout.setVisibility(View.GONE);
+
+				if (alarmMonthsLayout == null) setupMonths();
 				alarmMonthsLayout.setVisibility(View.VISIBLE);
+
+				if (alarmDateOfMonthLayout == null) {
+					alarmDateOfMonthLayout = findViewById(R.id.alarmDateOfMonth);
+
+					// day of month number picker
+					NumberPicker dateOfMonth = alarmDateOfMonthLayout.findViewById(R.id.alarmDateOfMonthInput);
+					dateOfMonth.setMinValue(1);
+					dateOfMonth.setMaxValue(31);
+					dateOfMonth.setValue(((Alarm) workingListable).getAlarmTimeCalendar().get(Calendar.DAY_OF_MONTH));
+				}
 				alarmDateOfMonthLayout.setVisibility(View.VISIBLE);
 				break;
 			case Alarm.REPEAT_DAY_MONTHLY:
 				// requires: time picker, list of months, date of month (number picker), spinner for the week #
+				if (alarmTimePicker == null) setupTimePicker();
 				alarmTimePicker.setVisibility(View.VISIBLE);
-				alarmDatePicker.setVisibility(View.GONE);
-				alarmDaysLayout.setVisibility(View.GONE);
-				alarmOffsetDaysLayout.setVisibility(View.GONE);
-				alarmOffsetHoursLayout.setVisibility(View.GONE);
-				alarmOffsetMinsLayout.setVisibility(View.GONE);
+
+				if (alarmDayMonthlyLayout == null) setupDayMonthlyLayout();
 				alarmDayMonthlyLayout.setVisibility(View.VISIBLE);
+
+				if (alarmMonthsLayout == null) setupMonths();
 				alarmMonthsLayout.setVisibility(View.VISIBLE);
-				alarmDateOfMonthLayout.setVisibility(View.GONE);
 				break;
 			default:
 				Log.e(TAG, "Invalid alarm type selected.");
 				exitActivity();
 		}
+		((Alarm) workingListable).setRepeatType(type);
 	}
 
 	/**

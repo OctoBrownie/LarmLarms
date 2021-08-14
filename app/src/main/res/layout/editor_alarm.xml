@@ -57,7 +57,8 @@
 				android:id="@+id/alarmTimeInput"
 				android:layout_width="match_parent"
 				android:layout_height="wrap_content"
-				android:layout_marginTop="@dimen/marginSizeDefault" />
+				android:layout_marginTop="@dimen/marginSizeDefault"
+				android:visibility="gone"/>
 
 			<!-- TODO: selecting year doesn't work very well (can't scroll, calendar mode only) -->
 			<DatePicker
@@ -66,7 +67,8 @@
 				android:id="@+id/alarmDateInput"
 				android:layout_width="match_parent"
 				android:layout_height="wrap_content"
-				android:gravity="center_horizontal" />
+				android:gravity="center_horizontal"
+				android:visibility="gone" />
 
 			<!-- date of month layout -->
 			<LinearLayout
@@ -74,7 +76,8 @@
 				android:layout_width="match_parent"
 				android:layout_height="wrap_content"
 				android:orientation="horizontal"
-				android:gravity="center">
+				android:gravity="center"
+				android:visibility="gone">
 				<TextView
 					style="@style/EditorLabelStyle"
 
@@ -104,7 +107,8 @@
 				android:layout_width="match_parent"
 				android:layout_height="wrap_content"
 				android:orientation="horizontal"
-				android:gravity="center_horizontal">
+				android:gravity="center_horizontal"
+				android:visibility="gone">
 				<TextView
 					style="@style/EditorDaysStyle"
 
@@ -161,7 +165,8 @@
 				android:id="@+id/alarmDayMonthly"
 				android:layout_width="match_parent"
 				android:layout_height="wrap_content"
-				android:orientation="horizontal">
+				android:orientation="horizontal"
+				android:visibility="gone">
 
 				<TextView
 					style="@style/EditorLabelStyle"
@@ -192,7 +197,8 @@
 				android:id="@+id/alarmMonthsInput"
 				android:layout_width="match_parent"
 				android:layout_height="wrap_content"
-				android:orientation="vertical">
+				android:orientation="vertical"
+				android:visibility="gone">
 				<LinearLayout
 					android:layout_width="match_parent"
 					android:layout_height="wrap_content"
@@ -297,7 +303,8 @@
 				android:id="@+id/alarmOffsetDays"
 				android:layout_width="match_parent"
 				android:layout_height="wrap_content"
-				android:orientation="horizontal">
+				android:orientation="horizontal"
+				android:visibility="gone">
 
 				<TextView
 					style="@style/EditorLabelStyle"
@@ -320,7 +327,8 @@
 				android:id="@+id/alarmOffsetHours"
 				android:layout_width="match_parent"
 				android:layout_height="wrap_content"
-				android:orientation="horizontal">
+				android:orientation="horizontal"
+				android:visibility="gone">
 
 				<TextView
 					style="@style/EditorLabelStyle"
@@ -343,7 +351,8 @@
 				android:id="@+id/alarmOffsetMins"
 				android:layout_width="match_parent"
 				android:layout_height="wrap_content"
-				android:orientation="horizontal">
+				android:orientation="horizontal"
+				android:visibility="gone">
 
 				<TextView
 					style="@style/EditorLabelStyle"
