@@ -24,10 +24,13 @@ interface Listable {
 	@NotNull @Contract(pure = true)
 	String getListableName();
 	/**
-	 * Sets the name of the listable. If the name is null, shouldn't do anything. 
+	 * Sets the name of the listable. Nonzero return codes mean an error has occurred. If the new
+	 * name is null or empty, the method returns 1, if it contains a tab, returns 2, and if it
+	 * contains a slash, returns 3.
 	 * @param newName the new name to set it to, can be null
+	 * @return 0 (no error) or an error code specified above
 	 */
-	void setListableName(@Nullable String newName);
+	int setListableName(@Nullable String newName);
 
 	/**
 	 * Returns a string that shows how the Listable (Alarm) repeats (or blank).

@@ -245,16 +245,30 @@ public final class Alarm implements Listable, Cloneable {
 	public String getListableName() { return name; }
 
 	/**
-	 * Sets the name of the alarm.
-	 * @param name the new name of the alarm 
+	 * Sets the name of the alarm. If an error is encountered, return code will be nonzero, based
+	 * on which error is encountered. See Listable documentation for return codes.
+	 * @param newName the new name of the alarm
+	 * @return 0 (no error) or an error code specified in Listable documentation
 	 */
 	@Override
-	public void setListableName(String name) {
-		if (name == null || name.equals("") || name.indexOf('\t') != -1) {
-			Log.e(TAG, "New name is invalid.");
-			return;
+	public int setListableName(String newName) {
+		if (newName == null || newName.equals("")) {
+			Log.e(TAG, "New name is is null or empty.");
+			return 1;
 		}
-		this.name = name;
+
+		if (newName.indexOf('\t') != -1) {
+			Log.e(TAG, "New name has tabs in it.");
+			return 2;
+		}
+
+		if (newName.indexOf('/') != -1) {
+			Log.e(TAG, "New name has slashes in it.");
+			return 3;
+		}
+
+		name = newName;
+		return 0;
 	}
 
 	/**

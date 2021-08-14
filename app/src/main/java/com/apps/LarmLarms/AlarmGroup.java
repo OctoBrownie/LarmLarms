@@ -105,20 +105,30 @@ public final class AlarmGroup implements Listable, Cloneable {
 	public String getListableName() { return name; }
 
 	/**
-	 * Sets the name of the folder. If the new name is invalid, will no do anything. If it has
-	 * restricted characters, will remove them.
+	 * Sets the name of the folder. If an error is encountered, return code will be nonzero, based
+	 * on which error is encountered. See Listable documentation for return codes.
 	 * @param newName the new name, can be null
+	 * @return 0 (no error) or an error code specified in Listable documentation
 	 */
 	@Override
-	public void setListableName(@Nullable String newName) {
-		if (newName == null || newName.length() == 0) {
-			Log.e(TAG, "New name is invalid.");
-			return;
+	public int setListableName(@Nullable String newName) {
+		if (newName == null || newName.equals("")) {
+			Log.e(TAG, "New name is is null or empty.");
+			return 1;
 		}
 
-		newName = newName.replaceAll("[\t/]", "");
+		if (newName.indexOf('\t') != -1) {
+			Log.e(TAG, "New name has tabs in it.");
+			return 2;
+		}
+
+		if (newName.indexOf('/') != -1) {
+			Log.e(TAG, "New name has slashes in it.");
+			return 3;
+		}
 
 		name = newName;
+		return 0;
 	}
 
 	/**
