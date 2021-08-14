@@ -25,8 +25,7 @@ interface Listable {
 	String getListableName();
 	/**
 	 * Sets the name of the listable. Nonzero return codes mean an error has occurred. If the new
-	 * name is null or empty, the method returns 1, if it contains a tab, returns 2, and if it
-	 * contains a slash, returns 3.
+	 * name is null or empty, the method returns 1, if it contains a restricted character, returns 2.
 	 * @param newName the new name to set it to, can be null
 	 * @return 0 (no error) or an error code specified above
 	 */

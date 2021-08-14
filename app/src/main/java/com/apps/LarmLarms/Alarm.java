@@ -257,14 +257,9 @@ public final class Alarm implements Listable, Cloneable {
 			return 1;
 		}
 
-		if (newName.indexOf('\t') != -1) {
+		if (newName.indexOf('\t') != -1 || newName.indexOf('/') != -1) {
 			Log.e(TAG, "New name has tabs in it.");
 			return 2;
-		}
-
-		if (newName.indexOf('/') != -1) {
-			Log.e(TAG, "New name has slashes in it.");
-			return 3;
 		}
 
 		name = newName;
