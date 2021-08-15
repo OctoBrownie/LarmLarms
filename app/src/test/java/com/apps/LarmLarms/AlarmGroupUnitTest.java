@@ -44,13 +44,33 @@ public class AlarmGroupUnitTest {
 		folder.addListable(innerFolder);
 		folder.addListable(new Alarm(null, "alarm 4"));
 
-		assertEquals(null, folder.getListableAbs(-1));
-		assertEquals("alarm 1", folder.getListableAbs(0).getListableName());
-		assertEquals("alarm 2", folder.getListableAbs(1).getListableName());
-		assertEquals("inner", folder.getListableAbs(2).getListableName());
-		assertEquals("alarm 3", folder.getListableAbs(3).getListableName());
-		assertEquals("alarm 4", folder.getListableAbs(4).getListableName());
-		assertEquals(null, folder.getListableAbs(5));
+		Listable testListable = folder.getListableAbs(1);
+		assert testListable != null;
+		assertEquals(null, testListable);
+
+		testListable = folder.getListableAbs(0);
+		assert testListable != null;
+		assertEquals("alarm 1", testListable.getListableName());
+
+		testListable = folder.getListableAbs(1);
+		assert testListable != null;
+		assertEquals("alarm 2", testListable.getListableName());
+
+		testListable = folder.getListableAbs(2);
+		assert testListable != null;
+		assertEquals("inner", testListable.getListableName());
+
+		testListable = folder.getListableAbs(3);
+		assert testListable != null;
+		assertEquals("alarm 3", testListable.getListableName());
+
+		testListable = folder.getListableAbs(4);
+		assert testListable != null;
+		assertEquals("alarm 4", testListable.getListableName());
+
+		testListable = folder.getListableAbs(5);
+		assert testListable != null;
+		assertEquals(null, testListable);
 	}
 
 	@Test
@@ -177,10 +197,21 @@ public class AlarmGroupUnitTest {
 		lookupAnswer.add(4);
 		assertEquals(true, lookupAnswer.equals(folder.getLookup()));
 
-		assertEquals("alarm 1", folder.getListable(0).getListableName());
-		assertEquals("alarm 2", folder.getListable(1).getListableName());
-		assertEquals("inner", folder.getListable(2).getListableName());
-		assertEquals("alarm 4", folder.getListable(3).getListableName());
+		Listable testListable = folder.getListable(0);
+		assert testListable != null;
+		assertEquals("alarm 1", testListable.getListableName());
+
+		testListable = folder.getListable(1);
+		assert testListable != null;
+		assertEquals("alarm 2", testListable.getListableName());
+
+		testListable = folder.getListable(2);
+		assert testListable != null;
+		assertEquals("inner", testListable.getListableName());
+
+		testListable = folder.getListable(3);
+		assert testListable != null;
+		assertEquals("alarm 4", testListable.getListableName());
 	}
 
 	// tests whether the lookup tables are correct
@@ -212,23 +243,50 @@ public class AlarmGroupUnitTest {
 	 */
 	@Test
 	public void storeStringAlarmTest() throws Exception {
-		Alarm a1 = new Alarm(null), a2 = new Alarm(null, "asdf"), a3 = new Alarm(null, " "), a4 = new Alarm(null, "alarm 4");
-		a1.turnOff();
-		a1.setRepeatType(Alarm.REPEAT_ONCE_REL);
-		a2.setRepeatType(Alarm.REPEAT_DATE_MONTHLY);
-		a3.turnOff();
-		a3.setRepeatType(Alarm.REPEAT_DATE_YEARLY);
+		System.out.println("Testing strings:");
 
-		String s1 = a1.toStoreString(), s2 = a2.toStoreString(), s3 = a3.toStoreString(),
-			   s4 = a4.toStoreString();
-		System.out.println("Testing strings: \n" + s1 + '\n' + s2 + '\n' + s3 + '\n' + s4);
+		Alarm initAlarm = new Alarm(null);
+		initAlarm.turnOff();
 
-		Alarm test1 = Alarm.fromStoreString(null, s1), test2 = Alarm.fromStoreString(null, s2),
-			  test3 = Alarm.fromStoreString(null, s3), test4 = Alarm.fromStoreString(null, s4);
-		assertEquals("dum dum", test1.getListableName());
-		assertEquals("asdf", test2.getListableName());
-		assertEquals(" ", test3.getListableName());
-		assertEquals("alarm 4", test4.getListableName());
+		String storeString = initAlarm.toStoreString();
+		System.out.println(storeString);
+
+		Alarm testAlarm = Alarm.fromStoreString(null, storeString);
+		assert testAlarm != null;
+		assertEquals(initAlarm.getListableName(), testAlarm.getListableName());
+
+
+		initAlarm = new Alarm(null, "asdf");
+		initAlarm.setRepeatType(Alarm.REPEAT_DATE_MONTHLY);
+
+		storeString = initAlarm.toStoreString();
+		System.out.println(storeString);
+
+		testAlarm = Alarm.fromStoreString(null, storeString);
+		assert testAlarm != null;
+		assertEquals(initAlarm.getListableName(), testAlarm.getListableName());
+
+
+		initAlarm = new Alarm(null, " ");
+		initAlarm.turnOff();
+
+		storeString = initAlarm.toStoreString();
+		System.out.println(storeString);
+
+		testAlarm = Alarm.fromStoreString(null, storeString);
+		assert testAlarm != null;
+		assertEquals(initAlarm.getListableName(), testAlarm.getListableName());
+
+
+		initAlarm = new Alarm(null, "alarm 4");
+		initAlarm.setRepeatType(Alarm.REPEAT_DATE_YEARLY);
+
+		storeString = initAlarm.toStoreString();
+		System.out.println(storeString);
+
+		testAlarm = Alarm.fromStoreString(null, storeString);
+		assert testAlarm != null;
+		assertEquals(initAlarm.getListableName(), testAlarm.getListableName());
 	}
 
 	/**
@@ -252,16 +310,33 @@ public class AlarmGroupUnitTest {
 		System.out.println("Testing string: \n" + s);
 
 		AlarmGroup tester = AlarmGroup.fromStoreString(null, s);
-		if (tester == null) { throw new AssertionError(); }
+		assert tester != null;
 
 		assertEquals("test", tester.getListableName());
 
-		assertEquals("alarm 1", tester.getListable(0).getListableName());
-		assertEquals("alarm 2", tester.getListable(1).getListableName());
-		assertEquals("inner", tester.getListable(2).getListableName());
-		assertEquals("alarm 3", ((AlarmGroup) tester.getListable(2)).getListable(0).getListableName());
-		assertEquals("alarm 4", tester.getListable(3).getListableName());
-		assertEquals("alarm 5", tester.getListable(4).getListableName());
+		Listable testListable = tester.getListable(0);
+		assert testListable != null;
+		assertEquals("alarm 1", testListable.getListableName());
+
+		testListable = tester.getListable(1);
+		assert testListable != null;
+		assertEquals("alarm 2", testListable.getListableName());
+
+		testListable = tester.getListable(2);
+		assert testListable != null;
+		assertEquals("inner", testListable.getListableName());
+
+		testListable = ((AlarmGroup) testListable).getListable(0);
+		assert testListable != null;
+		assertEquals("alarm 3", testListable.getListableName());
+
+		testListable = tester.getListable(3);
+		assert testListable != null;
+		assertEquals("alarm 4", testListable.getListableName());
+
+		testListable = tester.getListable(4);
+		assert testListable != null;
+		assertEquals("alarm 5", testListable.getListableName());
 	}
 
 	/**
@@ -270,7 +345,8 @@ public class AlarmGroupUnitTest {
 	 */
 	@Test
 	public void editStringAlarmTest() throws Exception {
-		Alarm a1 = new Alarm(null), a2 = new Alarm(null, "asdf"), a3 = new Alarm(null, " "), a4 = new Alarm(null, "alarm 4");
+		Alarm a1 = new Alarm(null), a2 = new Alarm(null, "asdf"), a3 = new Alarm(null, " "),
+				a4 = new Alarm(null, "alarm 4");
 		a1.turnOff();
 		a1.setRepeatType(Alarm.REPEAT_ONCE_REL);
 		a2.setRepeatType(Alarm.REPEAT_DATE_MONTHLY);
@@ -283,9 +359,16 @@ public class AlarmGroupUnitTest {
 
 		Alarm test1 = Alarm.fromEditString(null, s1), test2 = Alarm.fromEditString(null, s2),
 				test3 = Alarm.fromEditString(null, s3), test4 = Alarm.fromEditString(null, s4);
+		assert test1 != null;
 		assertEquals("dum dum", test1.getListableName());
+
+		assert test2 != null;
 		assertEquals("asdf", test2.getListableName());
+
+		assert test3 != null;
 		assertEquals(" ", test3.getListableName());
+
+		assert test4 != null;
 		assertEquals("alarm 4", test4.getListableName());
 	}
 
@@ -310,7 +393,7 @@ public class AlarmGroupUnitTest {
 		System.out.println("Testing string: \n" + s);
 
 		AlarmGroup tester = AlarmGroup.fromEditString(s);
-		if (tester == null) { throw new AssertionError(); }
+		assert tester != null;
 
 		assertEquals("test", tester.getListableName());
 
