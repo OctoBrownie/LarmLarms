@@ -805,8 +805,8 @@ public final class AlarmGroup implements Listable, Cloneable {
 	 * Returns a list of strings describing the AlarmGroup and any AlarmGroups within it
 	 * @return an array list of strings that stores all of the names of the folders within the group,
 	 * including the folder itself. The first item in the list will be the name of the folder itself.
-	 * Each string shows the full path of the child, excluding the original root folder and separated
-	 * by slashes. Each string does not start with a slash.
+	 * Each string shows the full path of the child, separated by slashes. Each string has a trailing
+	 * slash.
 	 */
 	@NotNull @Contract(pure = true)
 	ArrayList<String> toPathList() { return toPathList("", this); }
@@ -817,13 +817,14 @@ public final class AlarmGroup implements Listable, Cloneable {
 	 *               children. Shouldn't be null
 	 * @param parent the current AlarmGroup we're on, shouldn't be null
 	 * @return an array list of strings that stores all of the folders within the parent. All strings
-	 * should have the prefix appended to them, and should contain the full path of each folder.
+	 * should have the prefix appended to them, have a trailing slash, and should contain the full
+	 * path of each folder.
 	 */
 	private static ArrayList<String> toPathList(@NotNull String prefix, @NotNull AlarmGroup parent) {
 		ArrayList<String> pathList = new ArrayList<>();
-		String storeString = parent.getListableName();
+		String storeString = parent.getListableName() + '/';
 		pathList.add(prefix + storeString);
-		prefix += storeString + '/';
+		prefix += storeString;
 
 		for (Listable child : parent.listables) {
 			if (!child.isAlarm()) {
