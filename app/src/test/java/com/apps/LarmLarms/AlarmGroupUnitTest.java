@@ -396,7 +396,33 @@ public class AlarmGroupUnitTest {
 		assert tester != null;
 
 		assertEquals("test", tester.getListableName());
+	}
 
+	/**
+	 * Tests the conversion into path lists.
+	 */
+	@Test
+	public void pathListTest() throws Exception {
+		AlarmGroup folder = new AlarmGroup("test");		// index 0
+		folder.addListable(new Alarm(null, "alarm 1"));		// index 1
+		folder.addListable(new Alarm(null, "alarm 2"));		// index 2
 
+		AlarmGroup innerFolder = new AlarmGroup("inner");		// index 3
+		innerFolder.addListable(new Alarm(null, "alarm 3"));			// index 4
+
+		AlarmGroup doubleInner = new AlarmGroup("inner 2");		// index 5
+		doubleInner.addListable(new Alarm(null, "alarm 4"));			// index 6
+		innerFolder.addListable(doubleInner);
+
+		folder.addListable(innerFolder);
+		folder.addListable(new Alarm(null, "alarm 4"));		// index 7
+		folder.addListable(new Alarm(null, "alarm 5"));		// index 8
+
+		ArrayList<String> paths = folder.toPathList();
+
+		assert paths.size() == 3;
+		assertEquals("test", paths.get(0));
+		assertEquals("test/inner", paths.get(1));
+		assertEquals("test/inner/inner 2", paths.get(2));
 	}
 }

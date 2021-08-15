@@ -809,31 +809,25 @@ public final class AlarmGroup implements Listable, Cloneable {
 	 * by slashes. Each string does not start with a slash.
 	 */
 	@NotNull @Contract(pure = true)
-	ArrayList<String> toPathList() { return toPathList("", this, true); }
+	ArrayList<String> toPathList() { return toPathList("", this); }
 
 	/**
 	 * Helper function for toPathList().
 	 * @param prefix the prefix that should be added to the current parent name and all of its
 	 *               children. Shouldn't be null
 	 * @param parent the current AlarmGroup we're on, shouldn't be null
-	 * @param isTopLevel whether the parent is top level or not (excludes the name in the prefix if
-	 *                   it is top level)
 	 * @return an array list of strings that stores all of the folders within the parent. All strings
 	 * should have the prefix appended to them, and should contain the full path of each folder.
 	 */
-	private static ArrayList<String> toPathList(@NotNull String prefix, @NotNull AlarmGroup parent,
-												boolean isTopLevel) {
+	private static ArrayList<String> toPathList(@NotNull String prefix, @NotNull AlarmGroup parent) {
 		ArrayList<String> pathList = new ArrayList<>();
 		String storeString = parent.getListableName();
 		pathList.add(prefix + storeString);
-		if (!isTopLevel) {
-			if (!prefix.isEmpty()) prefix += '/';
-			prefix += storeString;
-		}
+		prefix += storeString + '/';
 
 		for (Listable child : parent.listables) {
 			if (!child.isAlarm()) {
-				pathList.addAll(toPathList(prefix, (AlarmGroup) child, false));
+				pathList.addAll(toPathList(prefix, (AlarmGroup) child));
 			}
 		}
 		return pathList;
