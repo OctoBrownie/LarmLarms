@@ -25,6 +25,11 @@ public final class Alarm implements Listable, Cloneable {
 	/* ************************************  Constants  *********************************** */
 
 	/**
+	 * Debug constant, enables/disables log messages.
+	 */
+	private final static boolean DEBUG = false;
+
+	/**
 	 * Tag of the class for logging purposes.
 	 */
 	private final static String TAG = "Alarm";
@@ -253,12 +258,12 @@ public final class Alarm implements Listable, Cloneable {
 	@Override
 	public int setListableName(String newName) {
 		if (newName == null || newName.equals("")) {
-			Log.e(TAG, "New name is is null or empty.");
+			if (DEBUG) Log.e(TAG, "New name is is null or empty.");
 			return 1;
 		}
 
 		if (newName.indexOf('\t') != -1 || newName.indexOf('/') != -1) {
-			Log.e(TAG, "New name has tabs in it.");
+			if (DEBUG) Log.e(TAG, "New name has tabs in it.");
 			return 2;
 		}
 
@@ -275,7 +280,7 @@ public final class Alarm implements Listable, Cloneable {
 	@NotNull @Override
 	public String getRepeatString() {
 		if (context == null) {
-			Log.e(TAG, "Context was null when trying to get a repeat string.");
+			if (DEBUG) Log.e(TAG, "Context was null when trying to get a repeat string.");
 			return "";
 		}
 		
@@ -316,7 +321,7 @@ public final class Alarm implements Listable, Cloneable {
 						getOffsetString(), dateStr);
 				break;
 			default:
-				Log.e(TAG, "Unknown repeat type!");
+				if (DEBUG) Log.e(TAG, "Unknown repeat type!");
 				break;
 		}
 		return repeatString;
@@ -446,7 +451,7 @@ public final class Alarm implements Listable, Cloneable {
 				break;
 			default:
 				// TODO: Any better ways to handle the invalid case? Throw an exception?
-				Log.e(TAG, "Invalid alarm repeat type.");
+				if (DEBUG) Log.e(TAG, "Invalid alarm repeat type.");
 				return "";
 		}
 
@@ -504,7 +509,7 @@ public final class Alarm implements Listable, Cloneable {
 	 */
 	void setAlarmTimeMillis(long time) {
 		if (time < 0) {
-			Log.e(TAG, "New calendar time was negative.");
+			if (DEBUG) Log.e(TAG, "New calendar time was negative.");
 			return;
 		}
 		ringTime.setTimeInMillis(time);
@@ -523,7 +528,7 @@ public final class Alarm implements Listable, Cloneable {
 	 */
 	void setRepeatType(int type) {
 		if (type < 0 || type >= NUM_REPEAT_TYPES) {
-			Log.e(TAG, "Repeat type is invalid.");
+			if (DEBUG) Log.e(TAG, "Repeat type is invalid.");
 			return;
 		}
 		repeatType = type;
@@ -544,7 +549,7 @@ public final class Alarm implements Listable, Cloneable {
 	 */
 	boolean getRepeatDays(int index) {
 		if (index < 0 || index >= 7) {
-			Log.e(TAG, "Index given to setRepeatDays is invalid.");
+			if (DEBUG) Log.e(TAG, "Index given to setRepeatDays is invalid.");
 			return false;
 		}
 		return repeatDays[index];
@@ -558,7 +563,7 @@ public final class Alarm implements Listable, Cloneable {
 	 */
 	void setRepeatDays(int index, boolean active) {
 		if (index < 0 || index >= 7) {
-			Log.e(TAG, "Index given to setRepeatDays is invalid.");
+			if (DEBUG) Log.e(TAG, "Index given to setRepeatDays is invalid.");
 			return;
 		}
 		repeatDays[index] = active;
@@ -580,7 +585,7 @@ public final class Alarm implements Listable, Cloneable {
 	 */
 	boolean getRepeatMonths(int index) {
 		if (index < 0 || index >= 12) {
-			Log.e(TAG, "Index given to setRepeatMonths is invalid.");
+			if (DEBUG) Log.e(TAG, "Index given to setRepeatMonths is invalid.");
 			return false;
 		}
 		return repeatMonths[index];
@@ -594,7 +599,7 @@ public final class Alarm implements Listable, Cloneable {
 	 */
 	void setRepeatMonths(int index, boolean active) {
 		if (index < 0 || index >= 12) {
-			Log.e(TAG, "Index given to setRepeatMonths is invalid.");
+			if (DEBUG) Log.e(TAG, "Index given to setRepeatMonths is invalid.");
 			return;
 		}
 		repeatMonths[index] = active;
@@ -614,7 +619,7 @@ public final class Alarm implements Listable, Cloneable {
 	 */
 	void setRepeatWeek(int newWeek) {
 		if (newWeek < 0 || newWeek >= 5) {
-			Log.e(TAG, "New week to repeat on is invalid.");
+			if (DEBUG) Log.e(TAG, "New week to repeat on is invalid.");
 			return;
 		}
 		repeatWeek = newWeek;
@@ -634,7 +639,7 @@ public final class Alarm implements Listable, Cloneable {
 	 */
 	void setOffsetDays(int days) {
 		if (days < 0) {
-			Log.e(TAG, "New number of days is invalid.");
+			if (DEBUG) Log.e(TAG, "New number of days is invalid.");
 			return;
 		}
 		offsetDays = days;
@@ -655,7 +660,7 @@ public final class Alarm implements Listable, Cloneable {
 	 */
 	void setOffsetHours(int hours) {
 		if (hours < 0 || hours >= 24) {
-			Log.e(TAG, "New number of hours is invalid.");
+			if (DEBUG) Log.e(TAG, "New number of hours is invalid.");
 			return;
 		}
 		offsetHours = hours;
@@ -675,7 +680,7 @@ public final class Alarm implements Listable, Cloneable {
 	 */
 	void setOffsetMins(int min) {
 		if (min < 0 || min >= 60) {
-			Log.e(TAG, "New number of minutes is invalid.");
+			if (DEBUG) Log.e(TAG, "New number of minutes is invalid.");
 			return;
 		}
 		offsetMins = min;
@@ -722,7 +727,7 @@ public final class Alarm implements Listable, Cloneable {
 	 * @param newRingtone the new ringtone to set it to, can be null if the ringtone is silent
 	 */
 	void setRingtoneUri(@Nullable Uri newRingtone) {
-		if (newRingtone == null) {
+		if (DEBUG && newRingtone == null) {
 			Log.i(TAG, "The new ringtone is silent.");
 		}
 		ringtoneUri = newRingtone;
@@ -735,7 +740,7 @@ public final class Alarm implements Listable, Cloneable {
 	@NotNull @Contract(pure = true)
 	String getRingtoneName() {
 		if (context == null) {
-			Log.e(TAG, "Context is null, cannot query the name of the ringtone.");
+			if (DEBUG) Log.e(TAG, "Context is null, cannot query the name of the ringtone.");
 			return "";
 		}
 		Ringtone r = RingtoneManager.getRingtone(context, ringtoneUri);
@@ -758,16 +763,16 @@ public final class Alarm implements Listable, Cloneable {
 	@Nullable @Contract(pure = true)
 	static Alarm fromEditString(@Nullable Context context, @Nullable String src) {
 		if (src == null) {
-			Log.e(TAG, "Edit string is null.");
+			if (DEBUG) Log.e(TAG, "Edit string is null.");
 			return null;
 		} else if (src.length() == 0) {
-			Log.e(TAG, "Edit string is empty.");
+			if (DEBUG) Log.e(TAG, "Edit string is empty.");
 			return null;
 		}
 
 		String[] fields = src.split("\t");
 		if (fields.length != 7) {
-			Log.e(TAG, "Edit string didn't have a correct number of fields.");
+			if (DEBUG) Log.e(TAG, "Edit string didn't have a correct number of fields.");
 			return null;
 		}
 
@@ -779,13 +784,13 @@ public final class Alarm implements Listable, Cloneable {
 			res.setRepeatType(Integer.parseInt(repeatTypeInfo[0]));
 		}
 		catch (NumberFormatException e) {
-			Log.e(TAG, "Edit string has an incorrectly formatted repeat type.");
+			if (DEBUG) Log.e(TAG, "Edit string has an incorrectly formatted repeat type.");
 			return null;
 		}
 		switch(res.repeatType) {
 			case REPEAT_DAY_WEEKLY:
 				if (repeatTypeInfo.length != 8) {
-					Log.e(TAG, "Edit string had the wrong number of repeat type fields.");
+					if (DEBUG) Log.e(TAG, "Edit string had the wrong number of repeat type fields.");
 					return null;
 				}
 				for (int i = 0; i < 7; i++) {
@@ -794,7 +799,7 @@ public final class Alarm implements Listable, Cloneable {
 				break;
 			case REPEAT_DAY_MONTHLY:
 				if (repeatTypeInfo.length != 14) {
-					Log.e(TAG, "Edit string had the wrong number of repeat type fields.");
+					if (DEBUG) Log.e(TAG, "Edit string had the wrong number of repeat type fields.");
 					return null;
 				}
 				res.repeatWeek = Integer.parseInt(repeatTypeInfo[1]);
@@ -804,7 +809,7 @@ public final class Alarm implements Listable, Cloneable {
 				break;
 			case REPEAT_DATE_MONTHLY:
 				if (repeatTypeInfo.length != 13) {
-					Log.e(TAG, "Edit string had the wrong number of repeat type fields.");
+					if (DEBUG) Log.e(TAG, "Edit string had the wrong number of repeat type fields.");
 					return null;
 				}
 				for (int i = 0; i < 12; i++) {
@@ -814,7 +819,7 @@ public final class Alarm implements Listable, Cloneable {
 			case REPEAT_ONCE_REL:
 			case REPEAT_OFFSET:
 				if (repeatTypeInfo.length != 4) {
-					Log.e(TAG, "Edit string had the wrong number of repeat type fields.");
+					if (DEBUG) Log.e(TAG, "Edit string had the wrong number of repeat type fields.");
 					return null;
 				}
 				try {
@@ -823,19 +828,19 @@ public final class Alarm implements Listable, Cloneable {
 					res.offsetMins = Integer.parseInt(repeatTypeInfo[3]);
 				}
 				catch (NumberFormatException e) {
-					Log.e(TAG, "Edit string has incorrectly formatted offsets.");
+					if (DEBUG) Log.e(TAG, "Edit string has incorrectly formatted offsets.");
 					return null;
 				}
 				break;
 			case REPEAT_ONCE_ABS:
 			case REPEAT_DATE_YEARLY:
 				if (repeatTypeInfo.length != 1) {
-					Log.e(TAG, "Edit string had the wrong number of repeat type fields.");
+					if (DEBUG) Log.e(TAG, "Edit string had the wrong number of repeat type fields.");
 					return null;
 				}
 				break;
 			default:
-				Log.e(TAG, "Edit string had an unknown repeat type.");
+				if (DEBUG) Log.e(TAG, "Edit string had an unknown repeat type.");
 				return null;
 		}
 
@@ -851,7 +856,7 @@ public final class Alarm implements Listable, Cloneable {
 			res.numSnoozes = Integer.parseInt(fields[6]);
 		}
 		catch (NumberFormatException e) {
-			Log.e(TAG, "Edit string has an incorrectly formatted number of snoozes.");
+			if (DEBUG) Log.e(TAG, "Edit string has an incorrectly formatted number of snoozes.");
 			return null;
 		}
 
@@ -870,15 +875,15 @@ public final class Alarm implements Listable, Cloneable {
 	@Nullable @Contract(pure = true)
 	static Alarm fromStoreString(@Nullable Context currContext, @Nullable String src) {
 		if (src == null) {
-			Log.e(TAG, "Store string is null.");
+			if (DEBUG) Log.e(TAG, "Store string is null.");
 			return null;
 		} else if (src.length() == 0) {
-			Log.e(TAG, "Store string is empty.");
+			if (DEBUG) Log.e(TAG, "Store string is empty.");
 			return null;
 		}
 
 		if (!src.startsWith("a\t")) {
-			Log.e(TAG, "Store string has an unknown ID field.");
+			if (DEBUG) Log.e(TAG, "Store string has an unknown ID field.");
 			return null;
 		}
 		return fromEditString(currContext, src.substring(2));		// removes the "a\t"
@@ -896,7 +901,7 @@ public final class Alarm implements Listable, Cloneable {
 	@NotNull
 	private String getWeeklyDisplayString() {
 		if (context == null) {
-			Log.e(TAG, "Context is null, cannot get the weekly display string.");
+			if (DEBUG) Log.e(TAG, "Context is null, cannot get the weekly display string.");
 			return "";
 		}
 
@@ -934,7 +939,7 @@ public final class Alarm implements Listable, Cloneable {
 	@NotNull
 	private String getExceptionMonthsString() {
 		if (context == null) {
-			Log.e(TAG, "Context is null, cannot get the exception months display string.");
+			if (DEBUG) Log.e(TAG, "Context is null, cannot get the exception months display string.");
 			return "";
 		}
 
@@ -963,7 +968,7 @@ public final class Alarm implements Listable, Cloneable {
 	@NotNull
 	private String getOffsetString() {
 		if (context == null) {
-			Log.e(TAG, "Context is null, cannot get the offset display string.");
+			if (DEBUG) Log.e(TAG, "Context is null, cannot get the offset display string.");
 			return "";
 		}
 
@@ -1090,7 +1095,7 @@ public final class Alarm implements Listable, Cloneable {
 				ringTime.add(Calendar.MINUTE, offsetMins);
 				return;
 			default:
-				Log.wtf(TAG, "Somehow the repeat type within the Alarm is wrong.");
+				if (DEBUG) Log.wtf(TAG, "Somehow the repeat type within the Alarm is wrong.");
 				return;
 		}
 		ringTime.setTimeInMillis(workingClock.getTimeInMillis());
