@@ -4,7 +4,7 @@
 	<string name="space">" "</string>
 	<string name="separator">", "</string>
 	<string name="final_separator">" and "</string>
-	<string name="root_folder">no folder</string>
+	<string name="root_folder">""</string>
 
 	<!-- notification display strings, prefixed by "notif" -->
 	<string name="notif_channel_name">Alarms</string>
@@ -72,6 +72,13 @@
 	<string name="editor_save_button">save</string>
 	<string name="editor_name_text">"Title: "</string>
 	<string name="editor_parent_folder_text">"Parent folder: "</string>
+
+	<!-- toasts for naming errors -->
+	<string name="alarm_editor_toast_empty">Please create a name for the alarm.</string>
+	<string name="folder_editor_toast_empty">Please create a name for the folder.</string>
+	<string name="alarm_editor_toast_restricted">Alarm names cannot contain tabs or forward slashes (/).</string>
+	<string name="folder_editor_toast_restricted">Folder names cannot contain tabs or forward slashes (/).</string>
+	<string name="folder_editor_toast_duplicate">There cannot be two folders with the same name in the same folder.</string>
 
 	<string name="alarm_editor_repeat_type_text">"Type of alarm: "</string>
 	<string name="alarm_editor_name_hint">Alarm name</string>

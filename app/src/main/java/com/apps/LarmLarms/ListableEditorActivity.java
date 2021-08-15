@@ -27,6 +27,7 @@ import android.widget.NumberPicker;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.TimePicker;
+import android.widget.Toast;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -94,29 +95,39 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 
 	// for outbound intents
 	/**
-	 * Request code to get a ringtone for the app. 
+	 * Request code to get a ringtone for the app.
 	 */
 	private final static int REQ_GET_RINGTONE = 4;
 
 	/* ***********************************  Instance Fields  ************************************ */
 
+	// information about Listable being edited
 	/**
 	 * The current Listable being edited/created in this activity. Is not null (after the activity
 	 * is created).
 	 */
 	@NotNull
 	private Listable workingListable;
-
-	// information about Listable being edited
 	/**
-	 * The path of the current working Listable.
+	 * The currently selected path of the current working Listable.
 	 */
 	@Nullable
 	private String listablePath;
 	/**
+	 * The original path of the current Listable.
+	 */
+	@Nullable
+	private String originalPath;
+	/**
 	 * The absolute index of the Listable being edited.
 	 */
 	private int listableIndex;
+
+	/**
+	 * The list of all paths as retrieved from the data service.
+	 */
+	@Nullable
+	private ArrayList<String> paths;
 
 	// current editor mode
 	/**
@@ -256,6 +267,7 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 			listableIndex = info.absIndex;
 			workingListable = info.listable;
 			listablePath = info.path;
+			originalPath = listablePath;
 		}
 
 		if (isEditingAlarm) { alarmUISetup(); }
@@ -333,8 +345,47 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 		Log.i(TAG, "Sending new listable back to the caller.");
 
 		// common fields
-		EditText nameInput = findViewById(R.id.nameInput);
-		workingListable.setListableName(nameInput.getText().toString());
+		String newName = ((EditText) findViewById(R.id.nameInput)).getText().toString();
+		int errorCode = workingListable.setListableName(newName);
+		if (errorCode != 0) {
+			String toastErrorText;
+
+			switch(errorCode) {
+				case 1:
+					// error: name is null/empty
+					if (isEditingAlarm) toastErrorText = getResources().getString(R.string.alarm_editor_toast_empty);
+					else toastErrorText = getResources().getString(R.string.folder_editor_toast_empty);
+					break;
+				case 2:
+					// error: name has tabs or slashes
+					if (isEditingAlarm) toastErrorText = getResources().getString(R.string.alarm_editor_toast_restricted);
+					else toastErrorText = getResources().getString(R.string.folder_editor_toast_restricted);
+					break;
+				default:
+					// error: unknown request code!
+					Log.e(TAG, "Unknown setListableName() request code! Exiting activity...");
+					exitActivity();
+					return;
+			}
+
+			Toast.makeText(this, toastErrorText, Toast.LENGTH_SHORT).show();
+
+			// don't exit, let the user fix it
+			return;
+		}
+
+		// checking for folders of the same name
+		if (!isEditingAlarm) {
+			String newPath = listablePath + '/' + newName;
+			if (paths == null || paths.indexOf(newPath) != -1) {
+				Toast.makeText(this, getResources().getString(R.string.folder_editor_toast_duplicate),
+						Toast.LENGTH_SHORT).show();
+
+				// don't exit, let the user fix it
+				return;
+			}
+		}
+
 		workingListable.turnOn();
 
 		// saving alarm time data
@@ -444,6 +495,7 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 		}
 
 		// encoding into an intent
+		// TODO: send data to the data service directly?
 		String editString = workingListable.toEditString();
 		Intent result_intent = new Intent();
 
@@ -537,6 +589,10 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 			case R.id.alarmDayOfWeekInput:
 				((Alarm) workingListable).getAlarmTimeCalendar().set(Calendar.DAY_OF_WEEK, pos + 1);
 				break;
+			case R.id.parentFolderInput:
+				if (paths != null)
+					listablePath = paths.get(pos);
+				break;
 			default:
 				Log.e(TAG, "Unknown AdapterView selected an item.");
 				exitActivity();
@@ -568,8 +624,8 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 				R.array.alarm_editor_repeat_strings, android.R.layout.simple_spinner_dropdown_item);
 		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		spinner.setAdapter(adapter);
-		spinner.setOnItemSelectedListener(this);
 		spinner.setSelection(((Alarm) workingListable).getRepeatType());
+		spinner.setOnItemSelectedListener(this);
 
 		// set name of the current ringtone
 		TextView alarmSoundLabel = findViewById(R.id.soundText);
@@ -698,20 +754,20 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 			return;
 		}
 
-		ArrayList<String> array = data.getStringArrayList(AlarmDataService.BUNDLE_LIST_KEY);
-		if (array == null) {
+		paths = data.getStringArrayList(AlarmDataService.BUNDLE_LIST_KEY);
+		if (paths == null) {
 			Log.e(TAG, "Message from alarm service had a null folder structure.");
 			return;
 		}
 
 		Spinner spinner = findViewById(R.id.parentFolderInput);
 		ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item);
-		adapter.addAll(array);
+		adapter.addAll(paths);
 		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		spinner.setAdapter(adapter);
 
 		if (isEditing) {
-			int index = array.indexOf(listablePath);
+			int index = paths.indexOf(listablePath);
 			if (index == -1) index = 0;
 
 			spinner.setSelection(index);
@@ -719,6 +775,8 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 		else {
 			spinner.setSelection(0);
 		}
+
+		spinner.setOnItemSelectedListener(this);
 
 		unbindService(dataConn);
 		boundToDataService = false;
