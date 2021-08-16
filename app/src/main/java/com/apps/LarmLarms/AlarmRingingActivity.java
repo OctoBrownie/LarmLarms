@@ -24,6 +24,11 @@ import androidx.appcompat.app.AppCompatActivity;
 
 public class AlarmRingingActivity extends AppCompatActivity {
 	/**
+	 * Static flag to enable/disable all logging. 
+	 */
+	private static final boolean DEBUG = false;
+	
+	/**
 	 * Tag of the class for logging purposes.
 	 */
 	private static final String TAG = "AlarmRingingActivity";
@@ -98,7 +103,7 @@ public class AlarmRingingActivity extends AppCompatActivity {
 		Alarm currAlarm = Alarm.fromEditString(this,
 				getIntent().getStringExtra(ListableEditorActivity.EXTRA_LISTABLE));
 		if (currAlarm == null) {
-			Log.e(TAG, "The alarm given was invalid...?");
+			if (DEBUG) Log.e(TAG, "The alarm given was invalid...?");
 			finish();
 			return;
 		}
@@ -209,7 +214,7 @@ public class AlarmRingingActivity extends AppCompatActivity {
 			return true;
 		}
 		catch (NullPointerException | RemoteException e) {
-			Log.e(TAG, "Ringing service is unavailable. Caching message.");
+			if (DEBUG) Log.e(TAG, "Ringing service is unavailable. Caching message.");
 			unsentMessage = msg;
 			return false;
 		}
@@ -245,7 +250,7 @@ public class AlarmRingingActivity extends AppCompatActivity {
 		 */
 		@Override
 		public void onServiceDisconnected(@NotNull ComponentName className) {
-			Log.e(TAG, "The ringing service crashed.");
+			if (DEBUG) Log.e(TAG, "The ringing service crashed.");
 			boundToRingingService = false;
 			ringingService = null;
 		}
