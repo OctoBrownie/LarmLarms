@@ -25,6 +25,11 @@ import androidx.fragment.app.FragmentTransaction;
  */
 public class MainActivity extends AppCompatActivity {
 	/**
+	 * Static flag to enable/disable all logging. 
+	 */
+	private static final boolean DEBUG = false;
+	
+	/**
 	 * Tag of the class for logging purposes.
 	 */
 	private final static String TAG = "MainActivity";
@@ -85,8 +90,6 @@ public class MainActivity extends AppCompatActivity {
 		trans.commitNow();
 
 		myRecyclerFrag = (RecyclerViewFrag) getSupportFragmentManager().findFragmentByTag("recycler_frag");
-
-		Log.i(TAG, "Activity created successfully.");
 	}
 
 	/**
@@ -155,12 +158,11 @@ public class MainActivity extends AppCompatActivity {
 	protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
 		// TODO: if this isn't true for some other activity we come back from, change
 		if (resultCode == RESULT_CANCELED) {
-			Log.i(TAG, "Action cancelled.");
 			return;
 		}
 		if (resultCode != RESULT_OK || data == null ||
 				data.getStringExtra(ListableEditorActivity.EXTRA_LISTABLE) == null) {
-			Log.e(TAG, "Data from ListableEditorActivity was invalid.");
+			if (DEBUG) Log.e(TAG, "Data from ListableEditorActivity was invalid.");
 			return;
 		}
 
@@ -172,7 +174,7 @@ public class MainActivity extends AppCompatActivity {
 				myRecyclerFrag.onListableCreatorResult(requestCode, data);
 				break;
 			default:
-				Log.e(TAG, "Unknown request code returned.");
+				if (DEBUG) Log.e(TAG, "Unknown request code returned.");
 		}
 
 	}
@@ -185,7 +187,6 @@ public class MainActivity extends AppCompatActivity {
 	private void showFrag() {
 		fragContainer.setVisibility(View.VISIBLE);
 		noAlarmsText.setVisibility(View.GONE);
-		Log.i(TAG, "Recycler view shown.");
 	}
 
 	/**
@@ -194,7 +195,6 @@ public class MainActivity extends AppCompatActivity {
 	private void hideFrag() {
 		fragContainer.setVisibility(View.GONE);
 		noAlarmsText.setVisibility(View.VISIBLE);
-		Log.i(TAG, "Recycler view hidden.");
 	}
 
 	/* ***********************************  Inner Classes  ************************************** */
@@ -300,7 +300,7 @@ public class MainActivity extends AppCompatActivity {
 		@Override
 		public void handleMessage(@Nullable Message msg) {
 			if (msg == null) {
-				Log.e(TAG, "Message sent to the main activity was null. Ignoring...");
+				if (DEBUG) Log.e(TAG, "Message sent to the main activity was null. Ignoring...");
 				return;
 			}
 
@@ -312,7 +312,7 @@ public class MainActivity extends AppCompatActivity {
 					activity.showFrag();
 					break;
 				default:
-					Log.e(TAG, "Unknown message type. Sending to Handler's handleMessage().");
+					if (DEBUG) Log.e(TAG, "Unknown message type. Sending to Handler's handleMessage().");
 					super.handleMessage(msg);
 					break;
 			}
