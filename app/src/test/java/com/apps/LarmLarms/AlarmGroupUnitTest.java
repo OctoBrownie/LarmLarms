@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import static org.junit.Assert.assertEquals;
 
 /**
- * Unit tests for the AlarmGroup class.
+ * Unit tests for the AlarmGroup class. Requires DEBUG flag to be false when run.
  */
 public class AlarmGroupUnitTest {
 	/* **********************************  Searching Tests  ********************************* */

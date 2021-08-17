@@ -5,7 +5,7 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 
 /**
- * Unit tests for Alarm methods.
+ * Unit tests for Alarm methods. Requires DEBUG flag to be false to run.
  */
 public class AlarmUnitTest {
 	/**
