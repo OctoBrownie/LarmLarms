@@ -33,7 +33,7 @@ public class AlarmGroupUnitTest {
 	}
 
 	@Test
-	public void absIndexTest () throws Exception {
+	public void absIndexTest() throws Exception {
 		AlarmGroup folder = new AlarmGroup("test");
 		folder.addListable(new Alarm(null, "alarm 1"));
 		folder.addListable(new Alarm(null, "alarm 2"));
@@ -44,7 +44,7 @@ public class AlarmGroupUnitTest {
 		folder.addListable(innerFolder);
 		folder.addListable(new Alarm(null, "alarm 4"));
 
-		Listable testListable = folder.getListableAbs(1);
+		Listable testListable = folder.getListableAbs(-1);
 		assert testListable != null;
 		assertEquals(null, testListable);
 
@@ -110,7 +110,7 @@ public class AlarmGroupUnitTest {
 	}
 
 	@Test
-	public void getRelIndexTest () throws Exception {
+	public void getRelIndexTest() throws Exception {
 		AlarmGroup folder = new AlarmGroup("test");
 		folder.addListable(new Alarm(null, "alarm 1"));		// index 0
 		folder.addListable(new Alarm(null, "alarm 2"));		// index 1
@@ -142,27 +142,6 @@ public class AlarmGroupUnitTest {
 		assertEquals(-1, folder.getListableIndexAtAbsIndex(10));
 	}
 
-	@Test
-	public void getParentTest () throws Exception {
-		AlarmGroup folder = new AlarmGroup("test");
-		folder.addListable(new Alarm(null, "alarm 1"));	// index 0
-		folder.addListable(new Alarm(null, "alarm 2"));	// index 1
-
-		AlarmGroup innerFolder = new AlarmGroup("inner");	// index 2
-		innerFolder.addListable(new Alarm(null, "alarm 3"));		// index 3
-
-		folder.addListable(innerFolder);
-		folder.addListable(new Alarm(null, "alarm 4"));	// index 4
-
-		assertEquals(null, folder.getParentListableAtAbsIndex(-1));
-		assertEquals(null, folder.getParentListableAtAbsIndex(0));
-		assertEquals(null, folder.getParentListableAtAbsIndex(1));
-		assertEquals(null, folder.getParentListableAtAbsIndex(2));
-		assertEquals("inner", folder.getParentListableAtAbsIndex(3).getListableName());
-		assertEquals(null, folder.getParentListableAtAbsIndex(4));
-		assertEquals(null, folder.getParentListableAtAbsIndex(5));
-	}
-
 	/* ********************************  Basic Function Tests  ***************************** */
 
 	/**
@@ -170,7 +149,7 @@ public class AlarmGroupUnitTest {
 	 * as well as the resulting list of Listables.
 	 */
 	@Test
-	public void alarmGroupAddTest() throws Exception {
+	public void addTest() throws Exception {
 		AlarmGroup folder = new AlarmGroup("test");
 		ArrayList<Integer> lookupAnswer = new ArrayList<>();
 		assertEquals(true, lookupAnswer.equals(folder.getLookup()));
@@ -216,7 +195,7 @@ public class AlarmGroupUnitTest {
 
 	// tests whether the lookup tables are correct
 	@Test
-	public void alarmGroupLookupTest() throws Exception {
+	public void lookupTest() throws Exception {
 		AlarmGroup folder = new AlarmGroup("test");
 		folder.addListable(new Alarm(null, "alarm 1"));
 		folder.addListable(new Alarm(null, "alarm 2"));
@@ -235,58 +214,6 @@ public class AlarmGroupUnitTest {
 		ArrayList<Integer> tester = folder.getLookup();
 
 		assertEquals(true, answer.equals(tester));
-	}
-
-	/**
-	 * Tests both the compressing and decompressing capabilities, and that they can work together.
-	 * Tests specifically for store strings, and stores only Alarms, no recursion.
-	 */
-	@Test
-	public void storeStringAlarmTest() throws Exception {
-		System.out.println("Testing strings:");
-
-		Alarm initAlarm = new Alarm(null);
-		initAlarm.turnOff();
-
-		String storeString = initAlarm.toStoreString();
-		System.out.println(storeString);
-
-		Alarm testAlarm = Alarm.fromStoreString(null, storeString);
-		assert testAlarm != null;
-		assertEquals(initAlarm.getListableName(), testAlarm.getListableName());
-
-
-		initAlarm = new Alarm(null, "asdf");
-		initAlarm.setRepeatType(Alarm.REPEAT_DATE_MONTHLY);
-
-		storeString = initAlarm.toStoreString();
-		System.out.println(storeString);
-
-		testAlarm = Alarm.fromStoreString(null, storeString);
-		assert testAlarm != null;
-		assertEquals(initAlarm.getListableName(), testAlarm.getListableName());
-
-
-		initAlarm = new Alarm(null, " ");
-		initAlarm.turnOff();
-
-		storeString = initAlarm.toStoreString();
-		System.out.println(storeString);
-
-		testAlarm = Alarm.fromStoreString(null, storeString);
-		assert testAlarm != null;
-		assertEquals(initAlarm.getListableName(), testAlarm.getListableName());
-
-
-		initAlarm = new Alarm(null, "alarm 4");
-		initAlarm.setRepeatType(Alarm.REPEAT_DATE_YEARLY);
-
-		storeString = initAlarm.toStoreString();
-		System.out.println(storeString);
-
-		testAlarm = Alarm.fromStoreString(null, storeString);
-		assert testAlarm != null;
-		assertEquals(initAlarm.getListableName(), testAlarm.getListableName());
 	}
 
 	/**
@@ -341,39 +268,6 @@ public class AlarmGroupUnitTest {
 
 	/**
 	 * Tests both the compressing and decompressing capabilities, and that they can work together.
-	 * Tests specifically for edit strings, and stores only Alarms, no recursion.
-	 */
-	@Test
-	public void editStringAlarmTest() throws Exception {
-		Alarm a1 = new Alarm(null), a2 = new Alarm(null, "asdf"), a3 = new Alarm(null, " "),
-				a4 = new Alarm(null, "alarm 4");
-		a1.turnOff();
-		a1.setRepeatType(Alarm.REPEAT_ONCE_REL);
-		a2.setRepeatType(Alarm.REPEAT_DATE_MONTHLY);
-		a3.turnOff();
-		a3.setRepeatType(Alarm.REPEAT_DATE_YEARLY);
-
-		String s1 = a1.toEditString(), s2 = a2.toEditString(), s3 = a3.toEditString(),
-				s4 = a4.toEditString();
-		System.out.println("Testing strings: \n" + s1 + '\n' + s2 + '\n' + s3 + '\n' + s4);
-
-		Alarm test1 = Alarm.fromEditString(null, s1), test2 = Alarm.fromEditString(null, s2),
-				test3 = Alarm.fromEditString(null, s3), test4 = Alarm.fromEditString(null, s4);
-		assert test1 != null;
-		assertEquals("dum dum", test1.getListableName());
-
-		assert test2 != null;
-		assertEquals("asdf", test2.getListableName());
-
-		assert test3 != null;
-		assertEquals(" ", test3.getListableName());
-
-		assert test4 != null;
-		assertEquals("alarm 4", test4.getListableName());
-	}
-
-	/**
-	 * Tests both the compressing and decompressing capabilities, and that they can work together.
 	 * Tests specifically for edit strings, so no recursion and no storing of Alarms.
 	 */
 	@Test
@@ -421,8 +315,8 @@ public class AlarmGroupUnitTest {
 		ArrayList<String> paths = folder.toPathList();
 
 		assert paths.size() == 3;
-		assertEquals("test", paths.get(0));
-		assertEquals("test/inner", paths.get(1));
-		assertEquals("test/inner/inner 2", paths.get(2));
+		assertEquals("test/", paths.get(0));
+		assertEquals("test/inner/", paths.get(1));
+		assertEquals("test/inner/inner 2/", paths.get(2));
 	}
 }

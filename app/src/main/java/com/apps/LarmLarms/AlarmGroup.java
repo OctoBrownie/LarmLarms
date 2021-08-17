@@ -628,20 +628,6 @@ public final class AlarmGroup implements Listable, Cloneable {
 
 		return i.relIndex;
 	}
-
-	/**
-	 * Gets the parent listable of the listable at the specified index
-	 * @param absIndex absolute index to search for
-	 * @return the parent Listable (can be the current Listable)
-	 */
-	@NotNull @Contract(pure = true)
-	AlarmGroup getParentListableAtAbsIndex(final int absIndex) {
-		ListableInfo i = getListableInfo(absIndex);
-		if (i == null || i.parent == null) return this;
-
-		return i.parent;
-	}
-
 	/**
 	 * Gets the number of indents of the listable at the specified index
 	 * @param absIndex absolute index to search for
