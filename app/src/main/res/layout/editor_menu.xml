@@ -23,6 +23,6 @@
 		android:layout_width="0px"
 		android:layout_height="wrap_content"
 		android:layout_weight="1"
-		android:onClick="saveListable"
+		android:onClick="saveButtonClicked"
 		android:text="@string/editor_save_button" />
 </LinearLayout>

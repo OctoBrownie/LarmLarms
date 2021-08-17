@@ -114,7 +114,8 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 	@NotNull
 	private Listable workingListable;
 	/**
-	 * The currently selected path of the current working Listable.
+	 * The currently selected path of the current working Listable. Will be null unless the path was
+	 * actually changed.
 	 */
 	@Nullable
 	private String listablePath;
@@ -267,8 +268,7 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 			}
 			listableIndex = info.absIndex;
 			workingListable = info.listable;
-			listablePath = info.path;
-			originalPath = listablePath;
+			originalPath = info.path;
 		}
 
 		if (isEditingAlarm) { alarmUISetup(); }
@@ -327,169 +327,20 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 	 * An onclick callback for the back button. Closes the AlarmCreator and return
 	 * RESULT_CANCELLED and no intent.
 	 * @param view the back button (view that triggered the callback)
-	*/
+	 */
 	public void backButtonClicked(@NotNull View view) {
 		// TODO: ask user if they REALLY want to exit?
 		exitActivity();
 	}
 
 	/**
-	 * An onclick callback for the save button. If an error is encountered, will close the activity
-	 * using exitActivity(). If no error, will return RESULT_OK and the Listable (in string form) in
-	 * the intent.
+	 * An onclick callback for the save button. If there is no error, will return RESULT_OK and the
+	 * Listable (in string form) in the intent. If there is an error, either the user is given the
+	 * chance to fix it (name error) or the activity exits through exitActivity().
 	 * @param view the save button (view that triggered the callback)
-	*/
-	public void saveListable(@NotNull View view) {
-		// TODO: validate any field inputs?
-		// common fields
-		String newName = ((EditText) findViewById(R.id.nameInput)).getText().toString();
-		int errorCode = workingListable.setListableName(newName);
-		if (errorCode != 0) {
-			String toastErrorText;
-
-			switch(errorCode) {
-				case 1:
-					// error: name is null/empty
-					if (isEditingAlarm) toastErrorText = getResources().getString(R.string.alarm_editor_toast_empty);
-					else toastErrorText = getResources().getString(R.string.folder_editor_toast_empty);
-					break;
-				case 2:
-					// error: name has tabs or slashes
-					if (isEditingAlarm) toastErrorText = getResources().getString(R.string.alarm_editor_toast_restricted);
-					else toastErrorText = getResources().getString(R.string.folder_editor_toast_restricted);
-					break;
-				default:
-					// error: unknown request code!
-					if (DEBUG) Log.e(TAG, "Unknown setListableName() request code! Exiting activity...");
-					exitActivity();
-					return;
-			}
-
-			Toast.makeText(this, toastErrorText, Toast.LENGTH_SHORT).show();
-
-			// don't exit, let the user fix it
-			return;
-		}
-
-		// checking for folders of the same name
-		if (!isEditingAlarm) {
-			String newPath = listablePath + '/' + newName;
-			if (paths == null || paths.indexOf(newPath) != -1) {
-				Toast.makeText(this, getResources().getString(R.string.folder_editor_toast_duplicate),
-						Toast.LENGTH_SHORT).show();
-
-				// don't exit, let the user fix it
-				return;
-			}
-		}
-
-		workingListable.turnOn();
-
-		// saving alarm time data
-		if (isEditingAlarm) {
-			((Alarm) workingListable).unsnooze();
-			Calendar alarmCalendar = ((Alarm) workingListable).getAlarmTimeCalendar();
-
-			switch(((Alarm) workingListable).getRepeatType()) {
-				case Alarm.REPEAT_ONCE_ABS:
-				case Alarm.REPEAT_DATE_YEARLY:
-					if (alarmDatePicker == null || alarmTimePicker == null) {
-						if (DEBUG) Log.wtf(TAG, "The alarm date/time pickers are null.");
-						exitActivity();
-						return;
-					}
-
-					alarmCalendar.set(Calendar.YEAR, alarmDatePicker.getYear());
-					alarmCalendar.set(Calendar.MONTH, alarmDatePicker.getMonth());
-					alarmCalendar.set(Calendar.DAY_OF_MONTH, alarmDatePicker.getDayOfMonth());
-
-					alarmCalendar.set(Calendar.HOUR_OF_DAY, alarmTimePicker.getCurrentHour());
-					alarmCalendar.set(Calendar.MINUTE, alarmTimePicker.getCurrentMinute());
-					break;
-				case Alarm.REPEAT_ONCE_REL:
-				case Alarm.REPEAT_OFFSET:
-					if (alarmOffsetDaysLayout == null || alarmOffsetHoursLayout == null ||
-							alarmOffsetMinsLayout == null) {
-						if (DEBUG) Log.wtf(TAG, "The alarm offset layouts are null.");
-						exitActivity();
-						return;
-					}
-
-					EditText currEditText;
-					int days, hours, mins;
-					NumberFormat format = NumberFormat.getInstance();
-					format.setParseIntegerOnly(true);
-
-					currEditText = alarmOffsetDaysLayout.findViewById(R.id.alarmOffsetDaysInput);
-					try {
-						days = format.parse(currEditText.getText().toString()).intValue();
-					} catch (ParseException e) {
-						if (DEBUG) Log.e(TAG, "Couldn't parse the days to offset.");
-						days = 0;
-					}
-
-					currEditText = alarmOffsetHoursLayout.findViewById(R.id.alarmOffsetHoursInput);
-					try {
-						hours = format.parse(currEditText.getText().toString()).intValue();
-					} catch (ParseException e) {
-						if (DEBUG) Log.e(TAG, "Couldn't parse the hours to offset.");
-						hours = 0;
-					}
-
-					currEditText = alarmOffsetMinsLayout.findViewById(R.id.alarmOffsetMinsInput);
-					try {
-						mins = format.parse(currEditText.getText().toString()).intValue();
-					} catch (ParseException e) {
-						if (DEBUG) Log.e(TAG, "Couldn't parse the minutes to offset.");
-						mins = 0;
-					}
-
-					// starts with curr time/date
-					GregorianCalendar newCalendar = new GregorianCalendar();
-					if (((Alarm) workingListable).getRepeatType() == Alarm.REPEAT_ONCE_REL) {
-						newCalendar.add(Calendar.DAY_OF_MONTH, days);
-						newCalendar.add(Calendar.HOUR_OF_DAY, hours);
-						newCalendar.add(Calendar.MINUTE, mins);
-					}
-
-					hours = hours + mins/60;
-					mins = mins % 60;
-					days = days + hours/24;
-					hours = hours % 24;
-
-					((Alarm) workingListable).setOffsetDays(days);
-					((Alarm) workingListable).setOffsetHours(hours);
-					((Alarm) workingListable).setOffsetMins(mins);
-
-					((Alarm) workingListable).setAlarmTimeMillis(newCalendar.getTimeInMillis());
-					break;
-				case Alarm.REPEAT_DATE_MONTHLY:
-					if (alarmDateOfMonthLayout == null) {
-						if (DEBUG) Log.wtf(TAG, "The alarm date of month is null.");
-						exitActivity();
-						return;
-					}
-
-					NumberPicker picker = alarmDateOfMonthLayout.findViewById(R.id.alarmDateOfMonthInput);
-					alarmCalendar.set(Calendar.DAY_OF_MONTH, picker.getValue());
-					// continues onto the next case
-				case Alarm.REPEAT_DAY_WEEKLY:
-				case Alarm.REPEAT_DAY_MONTHLY:
-					if (alarmTimePicker == null) {
-						if (DEBUG) Log.wtf(TAG, "The alarm time picker is null.");
-						exitActivity();
-					}
-
-					alarmCalendar.set(Calendar.HOUR_OF_DAY, alarmTimePicker.getCurrentHour());
-					alarmCalendar.set(Calendar.MINUTE, alarmTimePicker.getCurrentMinute());
-					break;
-				default:
-					if (DEBUG) Log.e(TAG, "The alarm has an invalid repeat type.");
-					exitActivity();
-			}
-
-			((Alarm) workingListable).updateRingTime();
-		}
+	 */
+	public void saveButtonClicked(@NotNull View view) {
+		saveToListable();
 
 		// encoding into an intent
 		// TODO: send data to the data service directly?
@@ -765,6 +616,7 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 
 		if (isEditing) {
 			int index = paths.indexOf(listablePath);
+			if (listablePath == null) index = paths.indexOf(originalPath);
 			if (index == -1) index = 0;
 
 			spinner.setSelection(index);
@@ -1006,6 +858,163 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 		else { view.setTextColor(textColors.getColor(1, 0)); }
 
 		textColors.recycle();
+	}
+
+	/**
+	 * Saves information from activity fields to workingListable. If an error is encountered, will
+	 * either create a Toast to tell the user how to fix it or close the activity using exitActivity(),
+	 * based on severity of the error.
+	 */
+	public void saveToListable() {
+		// common fields
+		String newName = ((EditText) findViewById(R.id.nameInput)).getText().toString();
+		int errorCode = workingListable.setListableName(newName);
+		if (errorCode != 0) {
+			String toastErrorText;
+
+			switch(errorCode) {
+				case 1:
+					// error: name is null/empty
+					if (isEditingAlarm) toastErrorText = getResources().getString(R.string.alarm_editor_toast_empty);
+					else toastErrorText = getResources().getString(R.string.folder_editor_toast_empty);
+					break;
+				case 2:
+					// error: name has tabs or slashes
+					if (isEditingAlarm) toastErrorText = getResources().getString(R.string.alarm_editor_toast_restricted);
+					else toastErrorText = getResources().getString(R.string.folder_editor_toast_restricted);
+					break;
+				default:
+					// error: unknown request code!
+					if (DEBUG) Log.e(TAG, "Unknown setListableName() request code! Exiting activity...");
+					exitActivity();
+					return;
+			}
+
+			Toast.makeText(this, toastErrorText, Toast.LENGTH_SHORT).show();
+			return;		// don't exit, let the user fix it
+		}
+
+		// checking for folders of the same name
+		if (!isEditingAlarm) {
+			// building future folder path
+			String newPath = listablePath;
+			if (listablePath == null) newPath = originalPath;
+			newPath += '/' + newName;
+
+			if (paths == null || paths.indexOf(newPath) != -1) {
+				Toast.makeText(this, getResources().getString(R.string.folder_editor_toast_duplicate),
+						Toast.LENGTH_SHORT).show();
+				return;		// don't exit, let the user fix it
+			}
+		}
+
+		workingListable.turnOn();
+
+		// saving alarm time data
+		if (isEditingAlarm) {
+			((Alarm) workingListable).unsnooze();
+			Calendar alarmCalendar = ((Alarm) workingListable).getAlarmTimeCalendar();
+
+			switch(((Alarm) workingListable).getRepeatType()) {
+				case Alarm.REPEAT_ONCE_ABS:
+				case Alarm.REPEAT_DATE_YEARLY:
+					if (alarmDatePicker == null || alarmTimePicker == null) {
+						if (DEBUG) Log.wtf(TAG, "The alarm date/time pickers are null.");
+						exitActivity();
+						return;
+					}
+
+					alarmCalendar.set(Calendar.YEAR, alarmDatePicker.getYear());
+					alarmCalendar.set(Calendar.MONTH, alarmDatePicker.getMonth());
+					alarmCalendar.set(Calendar.DAY_OF_MONTH, alarmDatePicker.getDayOfMonth());
+
+					alarmCalendar.set(Calendar.HOUR_OF_DAY, alarmTimePicker.getCurrentHour());
+					alarmCalendar.set(Calendar.MINUTE, alarmTimePicker.getCurrentMinute());
+					break;
+				case Alarm.REPEAT_ONCE_REL:
+				case Alarm.REPEAT_OFFSET:
+					if (alarmOffsetDaysLayout == null || alarmOffsetHoursLayout == null ||
+							alarmOffsetMinsLayout == null) {
+						if (DEBUG) Log.wtf(TAG, "The alarm offset layouts are null.");
+						exitActivity();
+						return;
+					}
+
+					EditText currEditText;
+					int days, hours, mins;
+					NumberFormat format = NumberFormat.getInstance();
+					format.setParseIntegerOnly(true);
+
+					currEditText = alarmOffsetDaysLayout.findViewById(R.id.alarmOffsetDaysInput);
+					try {
+						days = format.parse(currEditText.getText().toString()).intValue();
+					} catch (ParseException e) {
+						if (DEBUG) Log.e(TAG, "Couldn't parse the days to offset.");
+						days = 0;
+					}
+
+					currEditText = alarmOffsetHoursLayout.findViewById(R.id.alarmOffsetHoursInput);
+					try {
+						hours = format.parse(currEditText.getText().toString()).intValue();
+					} catch (ParseException e) {
+						if (DEBUG) Log.e(TAG, "Couldn't parse the hours to offset.");
+						hours = 0;
+					}
+
+					currEditText = alarmOffsetMinsLayout.findViewById(R.id.alarmOffsetMinsInput);
+					try {
+						mins = format.parse(currEditText.getText().toString()).intValue();
+					} catch (ParseException e) {
+						if (DEBUG) Log.e(TAG, "Couldn't parse the minutes to offset.");
+						mins = 0;
+					}
+
+					// starts with curr time/date
+					GregorianCalendar newCalendar = new GregorianCalendar();
+					if (((Alarm) workingListable).getRepeatType() == Alarm.REPEAT_ONCE_REL) {
+						newCalendar.add(Calendar.DAY_OF_MONTH, days);
+						newCalendar.add(Calendar.HOUR_OF_DAY, hours);
+						newCalendar.add(Calendar.MINUTE, mins);
+					}
+
+					hours = hours + mins/60;
+					mins = mins % 60;
+					days = days + hours/24;
+					hours = hours % 24;
+
+					((Alarm) workingListable).setOffsetDays(days);
+					((Alarm) workingListable).setOffsetHours(hours);
+					((Alarm) workingListable).setOffsetMins(mins);
+
+					((Alarm) workingListable).setAlarmTimeMillis(newCalendar.getTimeInMillis());
+					break;
+				case Alarm.REPEAT_DATE_MONTHLY:
+					if (alarmDateOfMonthLayout == null) {
+						if (DEBUG) Log.wtf(TAG, "The alarm date of month is null.");
+						exitActivity();
+						return;
+					}
+
+					NumberPicker picker = alarmDateOfMonthLayout.findViewById(R.id.alarmDateOfMonthInput);
+					alarmCalendar.set(Calendar.DAY_OF_MONTH, picker.getValue());
+					// continues onto the next case
+				case Alarm.REPEAT_DAY_WEEKLY:
+				case Alarm.REPEAT_DAY_MONTHLY:
+					if (alarmTimePicker == null) {
+						if (DEBUG) Log.wtf(TAG, "The alarm time picker is null.");
+						exitActivity();
+					}
+
+					alarmCalendar.set(Calendar.HOUR_OF_DAY, alarmTimePicker.getCurrentHour());
+					alarmCalendar.set(Calendar.MINUTE, alarmTimePicker.getCurrentMinute());
+					break;
+				default:
+					if (DEBUG) Log.e(TAG, "The alarm has an invalid repeat type.");
+					exitActivity();
+			}
+
+			((Alarm) workingListable).updateRingTime();
+		}
 	}
 
 	/* ***********************************  Inner Classes  ************************************* */
