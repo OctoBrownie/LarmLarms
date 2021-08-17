@@ -14,6 +14,11 @@ import java.util.ArrayList;
  */
 public final class AlarmGroup implements Listable, Cloneable {
 	/**
+	 * Static flag to enable/disable all logging. 
+	 */
+	private static final boolean DEBUG = false;
+	
+	/**
 	 * Tag of the class for logging purposes.
 	 */
 	private static final String TAG = "AlarmGroup";
@@ -113,12 +118,12 @@ public final class AlarmGroup implements Listable, Cloneable {
 	@Override
 	public int setListableName(@Nullable String newName) {
 		if (newName == null || newName.equals("")) {
-			Log.e(TAG, "New name is is null or empty.");
+			if (DEBUG) Log.e(TAG, "New name is is null or empty.");
 			return 1;
 		}
 
 		if (newName.indexOf('\t') != -1 || newName.indexOf('/') != -1) {
-			Log.e(TAG, "New name has tabs in it.");
+			if (DEBUG) Log.e(TAG, "New name has tabs in it.");
 			return 2;
 		}
 
@@ -286,12 +291,12 @@ public final class AlarmGroup implements Listable, Cloneable {
 	 */
 	void setListables(@Nullable ArrayList<Listable> listables) {
 		if (listables == null) {
-			Log.v(TAG, "New list of Listables is null.");
+			if (DEBUG) Log.v(TAG, "New list of Listables is null.");
 			return;
 		}
 		for (Listable l : listables) {
 			if (l == null) {
-				Log.e(TAG, "Listable in new list of Listables is null.");
+				if (DEBUG) Log.e(TAG, "Listable in new list of Listables is null.");
 				return;
 			}
 		}
@@ -311,16 +316,16 @@ public final class AlarmGroup implements Listable, Cloneable {
 	@Nullable @Contract(pure = true)
 	static AlarmGroup fromEditString(@Nullable String src) {
 		if (src == null) {
-			Log.v(TAG, "Edit string is null.");
+			if (DEBUG) Log.v(TAG, "Edit string is null.");
 			return null;
 		} else if (src.length() == 0) {
-			Log.v(TAG, "Edit string is empty.");
+			if (DEBUG) Log.v(TAG, "Edit string is empty.");
 			return null;
 		}
 
 		String[] fields = src.split("\t");
 		if (fields.length != NUM_EDIT_FIELDS) {
-			Log.e(TAG, "Edit string didn't have a correct number of fields.");
+			if (DEBUG) Log.e(TAG, "Edit string didn't have a correct number of fields.");
 			return null;
 		}
 
@@ -338,10 +343,10 @@ public final class AlarmGroup implements Listable, Cloneable {
 	@Nullable @Contract(pure = true)
 	static AlarmGroup fromStoreString(@Nullable Context currContext, @Nullable String src) {
 		if (src == null) {
-			Log.v(TAG, "Store string is null.");
+			if (DEBUG) Log.v(TAG, "Store string is null.");
 			return null;
 		} else if (src.length() == 0) {
-			Log.v(TAG, "Store string is empty.");
+			if (DEBUG) Log.v(TAG, "Store string is empty.");
 			return null;
 		}
 
@@ -349,20 +354,20 @@ public final class AlarmGroup implements Listable, Cloneable {
 
 		// first line for the AlarmGroup itself
 		if (!lines[0].startsWith("f\t")) {
-			Log.e(TAG, "Store string has an unknown ID field.");
+			if (DEBUG) Log.e(TAG, "Store string has an unknown ID field.");
 			return null;
 		}
 
 		AlarmGroup dest = fromEditString(lines[0].substring(2));
 		if (dest == null) {
-			Log.e(TAG, "Store string has an invalid first line.");
+			if (DEBUG) Log.e(TAG, "Store string has an invalid first line.");
 			return null;
 		}
 
 		for (int i = 1; i < lines.length; i++) {
 			// not a child of the current AlarmGroup
 			if (!lines[i].startsWith("\t")) {
-				Log.e(TAG, "Store string is formatted incorrectly (children aren't indented).");
+				if (DEBUG) Log.e(TAG, "Store string is formatted incorrectly (children aren't indented).");
 				return null;
 			}
 			else { lines[i] = lines[i].substring(1); }			// removing the first indent
@@ -374,7 +379,7 @@ public final class AlarmGroup implements Listable, Cloneable {
 				// is an Alarm
 				Alarm alarm = Alarm.fromStoreString(currContext, item);
 				if (alarm == null) {
-					Log.e(TAG, "Child alarm store string was invalid.");
+					if (DEBUG) Log.e(TAG, "Child alarm store string was invalid.");
 					return null;
 				}
 
@@ -402,14 +407,14 @@ public final class AlarmGroup implements Listable, Cloneable {
 				// essentially a recursive call with some looping involved
 				AlarmGroup curr_folder = fromStoreString(currContext, new_src.toString());
 				if (curr_folder == null) {
-					Log.e(TAG, "Child AlarmGroup store string was invalid.");
+					if (DEBUG) Log.e(TAG, "Child AlarmGroup store string was invalid.");
 					return null;
 				}
 
 				dest.addListable(curr_folder);
 			}
 			else {
-				Log.e(TAG, "Store string line has an unknown ID field.");
+				if (DEBUG) Log.e(TAG, "Store string line has an unknown ID field.");
 				return null;
 			}
 		}
@@ -424,7 +429,7 @@ public final class AlarmGroup implements Listable, Cloneable {
 	@Contract(pure = true)
 	private static int getSizeOfList(@Nullable ArrayList<Listable> listables) {
 		if (listables == null) {
-			Log.v(TAG, "List of listables to get size of was null.");
+			if (DEBUG) Log.v(TAG, "List of listables to get size of was null.");
 			return 0;
 		}
 
@@ -442,7 +447,7 @@ public final class AlarmGroup implements Listable, Cloneable {
 	@Contract(pure = true)
 	private static ArrayList<Integer> generateLookup(@Nullable final ArrayList<Listable> data) {
 		if (data == null) {
-			Log.v(TAG, "Input data to generateLookup was null.");
+			if (DEBUG) Log.v(TAG, "Input data to generateLookup was null.");
 			return new ArrayList<>();
 		}
 
@@ -460,7 +465,7 @@ public final class AlarmGroup implements Listable, Cloneable {
 		for (int i = 0; i < data.size() - 1; i++) {
 			l = data.get(i);
 			if (l == null) {
-				Log.e(TAG, "Listable within given data was null.");
+				if (DEBUG) Log.e(TAG, "Listable within given data was null.");
 				return new ArrayList<>();
 			}
 			if (!l.isAlarm()) { ((AlarmGroup) l).refreshLookup(); }
@@ -483,7 +488,7 @@ public final class AlarmGroup implements Listable, Cloneable {
 	@Nullable @Contract(pure = true)
 	private static ListableInfo getListableInfo(@Nullable AlarmGroup root, final int srcIndex) {
 		if (root == null) {
-			Log.v(TAG, "Listable to look through is null.");
+			if (DEBUG) Log.v(TAG, "Listable to look through is null.");
 			return null;
 		}
 
@@ -554,7 +559,7 @@ public final class AlarmGroup implements Listable, Cloneable {
 			// new index relative to the new folder
 			index = findOuterListableIndex(lookup, absIndex, currFolder.size() - 1);
 		}
-		Log.e(TAG, "Could not find the specified Listable's info in the source data/lookup.");
+		if (DEBUG) Log.e(TAG, "Could not find the specified Listable's info in the source data/lookup.");
 		return null;
 	}
 
@@ -572,14 +577,14 @@ public final class AlarmGroup implements Listable, Cloneable {
 	static int findOuterListableIndex(@Nullable final ArrayList<Integer> lookup, final int index,
 									  final int total) {
 		if (lookup == null) {
-			Log.v(TAG, "Listable lookup was null.");
+			if (DEBUG) Log.v(TAG, "Listable lookup was null.");
 			return -1;
 		}
 
 		int max = lookup.size();
 
 		if (max == 0 || index >= total || index < 0) {
-			Log.e(TAG, "Listable index is out of bounds!");
+			if (DEBUG) Log.e(TAG, "Listable index is out of bounds!");
 			return -1;
 		}
 		else if (max == 1) { return 0; }
@@ -594,7 +599,7 @@ public final class AlarmGroup implements Listable, Cloneable {
 			else if (index < lookup.get(mid)) { upper = mid - 1; }
 			else { lower = mid + 1; }
 		}
-		Log.e(TAG, "Could not find the specified Listable's parent index within the source data/lookup.");
+		if (DEBUG) Log.e(TAG, "Could not find the specified Listable's parent index within the source data/lookup.");
 		return -1;
 	}
 
@@ -617,7 +622,7 @@ public final class AlarmGroup implements Listable, Cloneable {
 	int getListableIndexAtAbsIndex(final int absIndex) {
 		ListableInfo i = getListableInfo(absIndex);
 		if (i == null) {
-			Log.e(TAG, "Listable at absolute index " + absIndex + " was not found.");
+			if (DEBUG) Log.e(TAG, "Listable at absolute index " + absIndex + " was not found.");
 			return -1;
 		}
 
@@ -646,7 +651,7 @@ public final class AlarmGroup implements Listable, Cloneable {
 	int getNumIndents(final int absIndex) {
 		ListableInfo i = getListableInfo(absIndex);
 		if (i == null) {
-			Log.e(TAG, "Listable at absolute index " + absIndex + " was not found.");
+			if (DEBUG) Log.e(TAG, "Listable at absolute index " + absIndex + " was not found.");
 			return -1;
 		}
 
@@ -663,7 +668,7 @@ public final class AlarmGroup implements Listable, Cloneable {
 	@Nullable @Contract(pure = true)
 	Listable getListable(final int relIndex) {
 		if (relIndex < 0 || relIndex >= listables.size()) {
-			Log.e(TAG, "Couldn't get Listable. Index is out of bounds.");
+			if (DEBUG) Log.e(TAG, "Couldn't get Listable. Index is out of bounds.");
 			return null;
 		}
 		return listables.get(relIndex);
@@ -676,10 +681,10 @@ public final class AlarmGroup implements Listable, Cloneable {
 	 */
 	private void setListable(final int relIndex, final Listable item) {
 		if (relIndex < 0 || relIndex >= listables.size()) {
-			Log.e(TAG, "Couldn't set Listable. Index is out of bounds.");
+			if (DEBUG) Log.e(TAG, "Couldn't set Listable. Index is out of bounds.");
 			return;
 		} else if (item == null) {
-			Log.e(TAG, "Couldn't set Listable. Item is null.");
+			if (DEBUG) Log.e(TAG, "Couldn't set Listable. Item is null.");
 			return;
 		}
 
@@ -699,7 +704,7 @@ public final class AlarmGroup implements Listable, Cloneable {
 	 */
 	void addListable(final Listable item) {
 		if (item == null) {
-			Log.e(TAG, "Couldn't set Listable. Item is null.");
+			if (DEBUG) Log.e(TAG, "Couldn't set Listable. Item is null.");
 			return;
 		}
 
@@ -714,7 +719,7 @@ public final class AlarmGroup implements Listable, Cloneable {
 	 */
 	private void deleteListable(final int relIndex) {
 		if (relIndex < 0 || relIndex >= listables.size()) {
-			Log.e(TAG, "Couldn't delete Listable. Index is out of bounds.");
+			if (DEBUG) Log.e(TAG, "Couldn't delete Listable. Index is out of bounds.");
 			return;
 		}
 		listables.remove(relIndex);
@@ -732,7 +737,7 @@ public final class AlarmGroup implements Listable, Cloneable {
 	Listable getListableAbs(final int absIndex) {
 		ListableInfo i = getListableInfo(absIndex);
 		if (i == null) {
-			Log.e(TAG, "Listable at absolute index " + absIndex + " was not found.");
+			if (DEBUG) Log.e(TAG, "Listable at absolute index " + absIndex + " was not found.");
 			return null;
 		}
 
@@ -748,7 +753,7 @@ public final class AlarmGroup implements Listable, Cloneable {
 	void setListableAbs(final int absIndex, final Listable item) {
 		ListableInfo i = getListableInfo(absIndex);
 		if (i == null) {
-			Log.e(TAG, "Listable at absolute index " + absIndex + " was not found.");
+			if (DEBUG) Log.e(TAG, "Listable at absolute index " + absIndex + " was not found.");
 			return;
 		}
 
@@ -768,7 +773,7 @@ public final class AlarmGroup implements Listable, Cloneable {
 	void deleteListableAbs(final int absIndex) {
 		ListableInfo i = getListableInfo(absIndex);
 		if (i == null) {
-			Log.e(TAG, "Listable at absolute index " + absIndex + " was not found.");
+			if (DEBUG) Log.e(TAG, "Listable at absolute index " + absIndex + " was not found.");
 			return;
 		}
 

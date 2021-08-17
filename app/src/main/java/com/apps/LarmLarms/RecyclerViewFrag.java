@@ -25,6 +25,11 @@ import androidx.recyclerview.widget.RecyclerView;
  */
 public class RecyclerViewFrag extends Fragment {
 	/**
+	 * Static flag to enable/disable all logging. 
+	 */
+	private static final boolean DEBUG = false;
+	
+	/**
 	 * Tag of the class for logging purposes.
 	 */
 	private static final String TAG = "RecyclerViewFragment";
@@ -121,7 +126,7 @@ public class RecyclerViewFrag extends Fragment {
 				new_listable = Alarm.fromEditString(getContext(),
 						data.getStringExtra(ListableEditorActivity.EXTRA_LISTABLE));
 				if (new_listable == null) {
-					Log.e(TAG, "ListableEditor returned with an invalid alarm edit string.");
+					if (DEBUG) Log.e(TAG, "ListableEditor returned with an invalid alarm edit string.");
 					return;
 				}
 				// TODO: add new alarm where its supposed to be nested
@@ -131,7 +136,7 @@ public class RecyclerViewFrag extends Fragment {
 				new_listable = Alarm.fromEditString(getContext(),
 						data.getStringExtra(ListableEditorActivity.EXTRA_LISTABLE));
 				if (new_listable == null) {
-					Log.e(TAG, "ListableEditor returned with an invalid alarm edit string.");
+					if (DEBUG) Log.e(TAG, "ListableEditor returned with an invalid alarm edit string.");
 					return;
 				}
 				myAdapter.setListableAbs(index, new_listable);
@@ -140,7 +145,7 @@ public class RecyclerViewFrag extends Fragment {
 				new_listable = AlarmGroup.fromEditString(
 						data.getStringExtra(ListableEditorActivity.EXTRA_LISTABLE));
 				if (new_listable == null) {
-					Log.e(TAG, "ListableEditor returned with an invalid folder edit string.");
+					if (DEBUG) Log.e(TAG, "ListableEditor returned with an invalid folder edit string.");
 					return;
 				}
 				// TODO: add new folder where its supposed to be nested
@@ -151,13 +156,13 @@ public class RecyclerViewFrag extends Fragment {
 				new_listable = AlarmGroup.fromEditString(
 						data.getStringExtra(ListableEditorActivity.EXTRA_LISTABLE));
 				if (new_listable == null) {
-					Log.e(TAG, "ListableEditor returned with an invalid folder edit string.");
+					if (DEBUG) Log.e(TAG, "ListableEditor returned with an invalid folder edit string.");
 					return;
 				}
 
 				Listable old_listable = myAdapter.getListableAbs(index);
 				if (old_listable == null || old_listable.isAlarm()) {
-					Log.e(TAG, "ListableEditor returned with an invalid index.");
+					if (DEBUG) Log.e(TAG, "ListableEditor returned with an invalid index.");
 					return;
 				}
 				((AlarmGroup) new_listable).setListables(((AlarmGroup) old_listable).getListables());
@@ -195,7 +200,7 @@ public class RecyclerViewFrag extends Fragment {
 		 */
 		@Override
 		public void onServiceDisconnected(@NotNull ComponentName className) {
-			Log.e(TAG, "The data service crashed.");
+			if (DEBUG) Log.e(TAG, "The data service crashed.");
 			boundToDataService = false;
 			recyclerView.setAdapter(null);
 			myAdapter.setDataService(null);

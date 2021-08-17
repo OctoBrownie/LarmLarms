@@ -34,6 +34,11 @@ import androidx.recyclerview.widget.RecyclerView;
  */
 public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.RecyclerViewHolder> {
 	/**
+	 * Static flag to enable/disable all logging. 
+	 */
+	private static final boolean DEBUG = false;
+	
+	/**
 	 * Tag of the class for logging purposes.
 	 */
 	private static final String TAG = "RecyclerViewAdapter";
@@ -180,7 +185,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 					unsentMessages.remove(0);
 				}
 				catch (RemoteException e) {
-					Log.e(TAG, "The new messenger no longer exists.");
+					if (DEBUG) Log.e(TAG, "The new messenger no longer exists.");
 					e.printStackTrace();
 					dataService = null;
 					return;
@@ -201,7 +206,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 	@Nullable
 	Listable getListableAbs(int absIndex) {
 		if (absIndex < 0 || absIndex >= data.size()) {
-			Log.v(TAG, "Absolute index to get listable for is out of bounds.");
+			if (DEBUG) Log.v(TAG, "Absolute index to get listable for is out of bounds.");
 			return null;
 		}
 
@@ -268,7 +273,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 		Intent intent = new Intent(context, ListableEditorActivity.class);
 		ListableInfo info = data.get(index);
 		if (info == null || info.listable == null) {
-			Log.e(TAG, "The listable is null so it cannot be edited.");
+			if (DEBUG) Log.e(TAG, "The listable is null so it cannot be edited.");
 			return;
 		}
 
@@ -317,7 +322,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 	 */
 	private void sendMessage(@Nullable Message msg) {
 		if (dataService == null) {
-			Log.e(TAG, "Data service is unavailable. Caching the message.");
+			if (DEBUG) Log.e(TAG, "Data service is unavailable. Caching the message.");
 			unsentMessages.add(msg);
 			return;
 		}
@@ -326,7 +331,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 			dataService.send(msg);
 		}
 		catch (RemoteException e) {
-			Log.e(TAG, "Data service is unavailable. Caching the message.");
+			if (DEBUG) Log.e(TAG, "Data service is unavailable. Caching the message.");
 			unsentMessages.add(msg);
 		}
 	}
@@ -486,7 +491,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 					adapter.sendMessage(msg);
 					return;
 				default:
-					Log.e(TAG, "Unexpected view using the recycler view holder onClick method.");
+					if (DEBUG) Log.e(TAG, "Unexpected view using the recycler view holder onClick method.");
 			}
 		}
 
@@ -503,7 +508,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 					adapter.deleteListableAbs(getLayoutPosition());
 					break;
 				default:
-					Log.e(TAG, "There was an invalid choice in the Listable dialog.");
+					if (DEBUG) Log.e(TAG, "There was an invalid choice in the Listable dialog.");
 					break;
 			}
 		}
@@ -518,7 +523,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 		@Override
 		public boolean onLongClick(@NotNull View v) {
 			if (listable == null) {
-				Log.v(TAG, "Long clicked Listable is null.");
+				if (DEBUG) Log.v(TAG, "Long clicked Listable is null.");
 				return false;
 			}
 
@@ -589,7 +594,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 		@Override
 		public void handleMessage(@Nullable Message msg) {
 			if (msg == null) {
-				Log.e(TAG, "Message sent to the recycler view adapter was null. Ignoring...");
+				if (DEBUG) Log.e(TAG, "Message sent to the recycler view adapter is null. Ignoring...");
 				return;
 			}
 
@@ -602,7 +607,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 					adapter.refreshListables();
 					break;
 				default:
-					Log.e(TAG, "Delivered message was of an unrecognized type. Sending to Handler.");
+					if (DEBUG) Log.e(TAG, "Delivered message iswas of an unrecognized type. Sending to Handler.");
 					super.handleMessage(msg);
 					break;
 			}
@@ -614,7 +619,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 		 */
 		private void handleGetListable(@NotNull Message msg) {
 			if (msg.what != AlarmDataService.MSG_GET_LISTABLE) {
-				Log.e(TAG, "Delivered message was not a GET_LISTABLE message. Sending to Handler.");
+				if (DEBUG) Log.e(TAG, "Delivered message is not a GET_LISTABLE message. Sending to Handler.");
 				super.handleMessage(msg);
 				return;
 			}
@@ -624,7 +629,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 			// what used to be onBindViewHolder()
 			ListableInfo i = msg.getData().getParcelable(AlarmDataService.BUNDLE_INFO_KEY);
 			if (i == null || i.listable == null) {
-				Log.e(TAG, "Listable at absolute index " + absIndex + " does not exist!");
+				if (DEBUG) Log.e(TAG, "Listable at absolute index " + absIndex + " does not exist!");
 				return;
 			}
 
