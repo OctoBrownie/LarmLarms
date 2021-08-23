@@ -120,14 +120,21 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 	@Nullable
 	private String listablePath;
 	/**
+	 * The absolute index of the Listable being edited.
+	 */
+	private int listableIndex;
+
+	// information about the original received Listable
+	/**
+	 * The original listable received from the caller. Can be null if a new listable is being made.
+	 */
+	@Nullable
+	private Listable originalListable;
+	/**
 	 * The original path of the current Listable.
 	 */
 	@Nullable
 	private String originalPath;
-	/**
-	 * The absolute index of the Listable being edited.
-	 */
-	private int listableIndex;
 
 	/**
 	 * The list of all paths as retrieved from the data service.
@@ -269,6 +276,8 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 			listableIndex = info.absIndex;
 			workingListable = info.listable;
 			originalPath = info.path;
+
+			originalListable = workingListable.clone();
 		}
 
 		if (isEditingAlarm) { alarmUISetup(); }
@@ -342,8 +351,17 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 	public void saveButtonClicked(@NotNull View view) {
 		saveToListable();
 
+		if (isEditing) {
+			// check if the path was changed (make it a MSG_MOVE_LISTABLE)
+			// check if the listable was changed (either make it a MSG_SET_LISTABLE or add to the
+			// MSG_MOVE_LISTABLE)
+			// if neither changed, then just exit
+		}
+		else {
+			// create MSG_ADD_LISTABLE
+		}
+		/*
 		// encoding into an intent
-		// TODO: send data to the data service directly?
 		String editString = workingListable.toEditString();
 		Intent result_intent = new Intent();
 
@@ -355,6 +373,7 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 		// exit with result
 		setResult(RESULT_OK, result_intent);
 		finish();
+		*/
 	}
 
 	/**
