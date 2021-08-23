@@ -394,6 +394,55 @@ public final class Alarm implements Listable, Cloneable {
 	}
 
 	/**
+	 * Determines whether other is equal to this Alarm or not. Checks for name, repeat type (+ repeat
+	 * type fields), ringtone uri, and whether the sound/vibrate/alarm itself is active or not.
+	 * @param other the other object to compare to
+	 * @return whether the two objects are equal or not
+	 */
+	@Contract("null -> false")
+	public boolean equals(Object other) {
+		if (!(other instanceof Alarm)) return false;
+
+		Alarm that = (Alarm) other;
+		if (!this.name.equals(that.name) || this.repeatType != that.repeatType ||
+				!this.ringTime.equals(that.ringTime)) return false;
+
+		switch (this.repeatType) {
+			case REPEAT_ONCE_ABS:
+			case REPEAT_DATE_YEARLY:
+				break;
+			case REPEAT_ONCE_REL:
+			case REPEAT_OFFSET:
+				// check offsets
+				if (this.offsetDays != that.offsetDays || this.offsetHours != that.offsetHours ||
+						this.offsetMins != that.offsetMins) return false;
+				break;
+			case REPEAT_DAY_WEEKLY:
+				// check repeatDays
+				for (int i = 0; i < repeatDays.length; i++)
+					if (this.repeatDays[i] != that.repeatDays[i]) return false;
+				break;
+			case REPEAT_DAY_MONTHLY:
+				// check repeatMonths, repeatWeek
+				if (this.repeatWeek != that.repeatWeek) return false;
+				// continue to check repeatMonths
+			case REPEAT_DATE_MONTHLY:
+				// check repeatMonths
+				for (int i = 0; i < repeatMonths.length; i++)
+					if (this.repeatMonths[i] != that.repeatMonths[i]) return false;
+				break;
+		}
+
+		if (this.ringtoneUri == null) {
+			if (that.ringtoneUri != null) return false;
+		}
+		else if (!this.ringtoneUri.equals(that.ringtoneUri)) return false;
+
+		return this.alarmIsActive == that.alarmIsActive && this.alarmSoundIsOn == that.alarmSoundIsOn &&
+				this.alarmVibrateIsOn == that.alarmVibrateIsOn;
+	}
+
+	/**
 	 * Creates an edit string from the current alarm. Often used to pass an Alarm between Activities
 	 * or threads.
 	 * <br/>

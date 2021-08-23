@@ -212,6 +212,20 @@ public final class AlarmGroup implements Listable, Cloneable {
 	}
 
 	/**
+	 * Determines whether other is equal to this AlarmGroup or not. Checks only for name and whether
+	 * it's active or not.
+	 * @param other the other object to compare to
+	 * @return whether the two objects are equal or not
+	 */
+	@Contract("null -> false")
+	public boolean equals(Object other) {
+		if (!(other instanceof AlarmGroup)) return false;
+
+		AlarmGroup that = (AlarmGroup) other;
+		return this.name.equals(that.name) && this.isActive == that.isActive;
+	}
+
+	/**
 	 * Creates an edit string for the current folder.
 	 * <br/>
 	 * Current edit string format (separated by tabs):

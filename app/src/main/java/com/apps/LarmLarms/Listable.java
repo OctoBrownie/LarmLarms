@@ -82,6 +82,13 @@ interface Listable {
 	Listable clone();
 
 	/**
+	 * Determines whether two objects are equal to each other or not.
+	 * @param other the other object to compare to
+	 * @return whether the two objects are equal or not
+	 */
+	boolean equals(Object other);
+
+	/**
 	 * Outputs a string for editing purposes.
 	 * @return an edit string, cannot be null 
 	 */
