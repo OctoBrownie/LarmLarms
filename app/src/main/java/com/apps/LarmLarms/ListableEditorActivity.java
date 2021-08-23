@@ -210,6 +210,11 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 	 */
 	@NotNull
 	private DataServiceConnection dataConn;
+	/**
+	 * asdf
+	 */
+	@Nullable
+	private Messenger dataService;
 
 	/* *********************************  Lifecycle Methods  ******************************* */
 
@@ -351,15 +356,48 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 	public void saveButtonClicked(@NotNull View view) {
 		saveToListable();
 
+		Message msg;
+		ListableData data = new ListableData();
+		
 		if (isEditing) {
 			// check if the path was changed (make it a MSG_MOVE_LISTABLE)
+			if (listablePath != null && !listablePath.equals(originalPath)) {
+				msg = Message.obtain(null, AlarmDataService.MSG_MOVE_LISTABLE);
+				msg.arg1 = listableIndex;
+				
+				data.path = listablePath;
+				data.absIndex = -1;
+			}
+			
 			// check if the listable was changed (either make it a MSG_SET_LISTABLE or add to the
 			// MSG_MOVE_LISTABLE)
-			// if neither changed, then just exit
+			if (!workingListable.equals(originalListable)) {
+				if (msg == null) {
+					// path didn't change, use MSG_SET_LISTABLE
+					msg = Message.obtain(null, AlarmDataService.MSG_SET_LISTABLE);
+					msg.arg1 = listableIndex;
+				}
+				// for either MSG_SET_LISTABLE or MSG_MOVE_LISTABLE, it's the same 
+				data.listable = workingListable;
+			}
 		}
 		else {
 			// create MSG_ADD_LISTABLE
+			msg = Message.obtain(null, AlarmDataService.MSG_ADD_LISTABLE);
+			data.listable = workingListable; 
 		}
+		
+		// if there is no message to send, then just exit the activity
+		if (msg == null) {
+			// TODO: set result and exit
+		}
+
+		Bundle b = new Bundle();
+		b.putParcelable(AlarmDataService.BUNDLE_INFO_KEY, data);
+		msg.setData(b);
+		
+		// TODO: send message
+		
 		/*
 		// encoding into an intent
 		String editString = workingListable.toEditString();
@@ -1052,11 +1090,11 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 		public void onServiceConnected(@NotNull ComponentName className, @NotNull IBinder service) {
 			boundToDataService = true;
 
-			Messenger messenger = new Messenger(service);
+			dataService = new Messenger(service);
 			Message msg = Message.obtain(null, AlarmDataService.MSG_GET_FOLDERS);
 			msg.replyTo = new Messenger(new MsgHandler(ListableEditorActivity.this));
 			try {
-				messenger.send(msg);
+				dataService.send(msg);
 			}
 			catch (RemoteException e) {
 				e.printStackTrace();
