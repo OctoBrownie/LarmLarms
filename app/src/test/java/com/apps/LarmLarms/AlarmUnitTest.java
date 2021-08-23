@@ -92,4 +92,95 @@ public class AlarmUnitTest {
 		assert testAlarm != null;
 		assertEquals(initAlarm.getListableName(), testAlarm.getListableName());
 	}
+
+	/**
+	 * Tests whether two separately created Alarms are considered identical (via the equals method)
+	 * or not. Requires an instrumented test to test whether ringtone uri or context affect the
+	 * equals method.
+	 */
+	@Test
+	public void equalsTest() throws Exception {
+		Alarm alarm1 = new Alarm(null, "Title");
+		alarm1.setRepeatType(Alarm.REPEAT_OFFSET);
+		alarm1.setOffsetDays(10);
+		alarm1.setOffsetHours(5);
+		alarm1.setOffsetMins(2);
+		alarm1.setActive(false);
+		alarm1.setSoundOn(false);
+		alarm1.setVibrateOn(false);
+
+		Alarm alarm2 = new Alarm(null, "Title");
+		alarm2.setRepeatType(Alarm.REPEAT_OFFSET);
+		alarm2.setOffsetDays(10);
+		alarm2.setOffsetHours(5);
+		alarm2.setOffsetMins(2);
+		alarm2.setActive(false);
+		alarm2.setSoundOn(false);
+		alarm2.setVibrateOn(false);
+
+		// differences between the alarms that shouldn't throw off the equals method
+		alarm1.snooze();
+		alarm2.setRepeatDays(0, false);
+		alarm2.setRepeatDays(3, false);
+
+		alarm1.updateRingTime();
+		alarm2.updateRingTime();
+		assertEquals(alarm1, alarm2);
+	}
+
+	/**
+	 * Tests whether clones of an Alarm are considered identical (via the equals method) or not.
+	 */
+	@Test
+	public void cloneIdentityTest() throws Exception {
+		Alarm alarm = new Alarm(null, "Title");
+		alarm.setRepeatType(Alarm.REPEAT_OFFSET);
+		alarm.setOffsetDays(10);
+		alarm.setOffsetHours(5);
+		alarm.setOffsetMins(2);
+		alarm.setActive(false);
+		alarm.setSoundOn(false);
+		alarm.setVibrateOn(false);
+
+		Object clone = alarm.clone();
+		assertEquals(alarm, clone);
+	}
+
+	/**
+	 * Tests whether clones of an Alarm change each others' fields or not. Requires an instrumented
+	 * test to test for context or ringtone uri.
+	 */
+	@Test
+	public void cloneMutableTest() throws Exception {
+		Alarm alarm = new Alarm(null, "Title");
+		alarm.setRepeatType(Alarm.REPEAT_DAY_WEEKLY);
+		alarm.setRepeatDays(0, false);
+		alarm.setRepeatDays(2, false);
+		alarm.setRepeatDays(3, false);
+		alarm.setRepeatDays(5, false);
+		alarm.setActive(false);
+		alarm.setSoundOn(false);
+		alarm.setVibrateOn(false);
+
+		Alarm clone = (Alarm) alarm.clone();
+		assert clone != null;
+
+		clone.setListableName("Hello?");
+		clone.setRepeatDays(0, true);
+		clone.setRepeatDays(2, true);
+		clone.setRepeatDays(3, true);
+		clone.setRepeatDays(5, true);
+		clone.setAlarmTimeMillis(alarm.getAlarmTimeMillis() + 1);
+		clone.setActive(true);
+		clone.setSoundOn(true);
+
+		assertEquals(false, alarm.getListableName().equals(clone.getListableName()));
+		assertEquals(false, alarm.getAlarmTimeCalendar().equals(clone.getAlarmTimeCalendar()));
+		assertEquals(false, alarm.getRepeatDays(0));
+		assertEquals(false, alarm.getRepeatDays(2));
+		assertEquals(false, alarm.getRepeatDays(3));
+		assertEquals(false, alarm.getRepeatDays(5));
+		assertEquals(false, alarm.isActive());
+		assertEquals(false, alarm.isSoundOn());
+	}
 }

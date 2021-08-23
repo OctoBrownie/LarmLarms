@@ -388,6 +388,8 @@ public final class Alarm implements Listable, Cloneable {
 
 			// TODO: deep copies for other object fields
 			that.ringTime = (Calendar) this.ringTime.clone();
+			that.repeatDays = this.repeatDays.clone();
+			that.repeatMonths = this.repeatMonths.clone();
 		} catch (CloneNotSupportedException e) { e.printStackTrace(); }
 
 		return that;
@@ -405,7 +407,8 @@ public final class Alarm implements Listable, Cloneable {
 
 		Alarm that = (Alarm) other;
 		if (!this.name.equals(that.name) || this.repeatType != that.repeatType ||
-				!this.ringTime.equals(that.ringTime)) return false;
+				this.getUnsnoozedAlarmTimeMillis() != that.getUnsnoozedAlarmTimeMillis())
+			return false;
 
 		switch (this.repeatType) {
 			case REPEAT_ONCE_ABS:
@@ -551,6 +554,18 @@ public final class Alarm implements Listable, Cloneable {
 	 * Returns the next ring time of the alarm in a long.
 	 */
 	long getAlarmTimeMillis() { return ringTime.getTimeInMillis(); }
+
+	/**
+	 * Returns the next ring time of the alarm in a long and deletes any snooze periods that affect
+	 * the time.
+	 */
+	@Contract(pure = true)
+	private long getUnsnoozedAlarmTimeMillis() {
+		Calendar cal = (Calendar) ringTime.clone();
+		if (alarmSnoozed) cal.add(Calendar.MINUTE, -5*numSnoozes);
+
+		return cal.getTimeInMillis();
+	}
 
 	/**
 	 * Sets the next ring time of the alarm.
@@ -1158,6 +1173,7 @@ public final class Alarm implements Listable, Cloneable {
 		alarmSnoozed = true;
 		numSnoozes++;
 		// TODO: change number of minutes to snooze?
+		// if so, also gotta change unsnooze() and getUnsnoozedAlarmTimeMillis()
 		ringTime.add(Calendar.MINUTE, 5);
 	}
 
