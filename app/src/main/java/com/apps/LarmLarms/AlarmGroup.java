@@ -200,11 +200,11 @@ public final class AlarmGroup implements Listable, Cloneable {
 			that = (AlarmGroup) super.clone();
 
 			that.listables = new ArrayList<>();
-			for (int i = 0; i < this.listables.size(); i++) {
-				that.listables.add(this.listables.get(i).clone());
+			for (Listable l : this.listables) {
+				that.listables.add(l.clone());
 			}
-			// TODO: generate a new lookup or copy it?
-			that.lookup = generateLookup(that.listables);
+			that.lookup = new ArrayList<>();
+			that.lookup.addAll(this.lookup);
 			// TODO: deep copy any object fields (only copies the reference)
 		} catch (CloneNotSupportedException e) { e.printStackTrace(); }
 
