@@ -193,7 +193,9 @@ public class AlarmGroupUnitTest {
 		assertEquals("alarm 4", testListable.getListableName());
 	}
 
-	// tests whether the lookup tables are correct
+	/**
+	 * Tests whether the lookup tables are correct.
+	 */
 	@Test
 	public void lookupTest() throws Exception {
 		AlarmGroup folder = new AlarmGroup("test");
@@ -318,5 +320,76 @@ public class AlarmGroupUnitTest {
 		assertEquals("test/", paths.get(0));
 		assertEquals("test/inner/", paths.get(1));
 		assertEquals("test/inner/inner 2/", paths.get(2));
+	}
+
+	/**
+	 * Tests whether two separately created AlarmGroups are considered identical (via the equals
+	 * method) or not.
+	 */
+	@Test
+	public void equalsTest() throws Exception {
+		AlarmGroup folder1 = new AlarmGroup("Title");
+		folder1.setActive(false);
+
+		AlarmGroup folder2 = new AlarmGroup("Title");
+		folder2.setActive(false);
+
+		// differences between the alarms that shouldn't throw off the equals method
+		folder1.addListable(new AlarmGroup());
+		folder2.addListable(new Alarm());
+		folder2.addListable(new AlarmGroup());
+
+		assertEquals(folder1, folder2);
+	}
+
+	/**
+	 * Tests whether clones of an AlarmGroup are considered identical (via the equals method) or not.
+	 */
+	@Test
+	public void cloneIdentityTest() throws Exception {
+		AlarmGroup folder = new AlarmGroup("Title");
+		folder.setActive(false);
+
+		Object clone = folder.clone();
+		assertEquals(folder, clone);
+	}
+
+	/**
+	 * Tests whether clones of an Alarm change each others' fields or not. Requires an instrumented
+	 * test to test for context or ringtone uri.
+	 */
+	@Test
+	public void cloneMutableTest() throws Exception {
+		AlarmGroup folder = new AlarmGroup("Title");
+		folder.setActive(false);
+		folder.addListable(new AlarmGroup("Folder"));
+		folder.addListable(new Alarm(null, "Alarm"));
+
+		AlarmGroup clone = (AlarmGroup) folder.clone();
+		assert clone != null;
+
+		clone.setListableName("Talk");
+
+		Listable cloneL = clone.getListable(0);
+		assert cloneL != null;
+		cloneL.setListableName("Not a folder");
+
+		cloneL = clone.getListable(1);
+		assert cloneL != null;
+		cloneL.setActive(false);
+
+		assertEquals(false, folder.getListableName().equals(clone.getListableName()));
+
+		Listable folderL = folder.getListable(0);
+		cloneL = clone.getListable(0);
+		assert folderL != null;
+		assert cloneL != null;
+		assertEquals(false, folderL.getListableName().equals(cloneL.getListableName()));
+
+		folderL = folder.getListable(1);
+		cloneL = clone.getListable(1);
+		assert folderL != null;
+		assert cloneL != null;
+		assertEquals(false, folderL.isActive() == cloneL.isActive());
 	}
 }
