@@ -91,7 +91,8 @@ public class AlarmDataService extends Service {
 	/**
 	 * Inbound: the client wants to set a Listable to a certain index. The absolute index of the
 	 * Listable should be in the arg1 field and a ListableInfo in the data bundle (with
-	 * BUNDLE_INFO_KEY for its key). Triggers MSG_DATA_CHANGED messages to be sent.
+	 * BUNDLE_INFO_KEY for its key). Within the ListableInfo, there should be the new listable in 
+	 * the listable field. Triggers MSG_DATA_CHANGED messages to be sent.
 	 * <br/>
 	 * Outbound: N/A
 	 */
@@ -108,14 +109,16 @@ public class AlarmDataService extends Service {
 	 */
 	static final int MSG_ADD_LISTABLE = 3;
 	/**
-	 * Inbound: the client wants to move a Listable to a new index. A ListableInfo should be in the
-	 * data bundle (using BUNDLE_INFO_KEY for its key). To identify the new position of the listable,
-	 * either the path of the parent folder must be in the path field or the new absolute index of the
-	 * listable itself must be in the absIndex field. It can still be ambiguous if only the new
-	 * absolute index is filled, and in that case the path field will be checked for a valid path to
-	 * clear it up. arg1 should be filled with the old absolute index of the Listable. If the listable
-	 * field is not null, the listable will be replaced with the new one. Triggers MSG_DATA_CHANGED
-	 * messages to be sent.
+	 * Inbound: the client wants to move a Listable to a new index. arg1 should always be filled with 
+	 * the old absolute index of the Listable. A ListableInfo should be in the data bundle (using 
+	 * BUNDLE_INFO_KEY for its key). To identify the new position of the listable, either the path of 
+	 * the parent folder must be in the ListableInfo's path field or the new absolute index of the
+	 * listable itself must be in the absIndex field. Index will take precedence over path, since it's 
+	 * more specific. It can still be ambiguous if only the new absolute index is filled, and in that 
+	 * case the path field will be checked for a valid path to clear it up. To strictly specify there 
+	 * is no absolute index to use, the absIndex field in the ListableInfo must be filled with -1. If 
+	 * the listable field is not null, the listable will be replaced with the new one. Triggers 
+	 * MSG_DATA_CHANGED messages to be sent.
 	 * <br/>
 	 * Outbound: N/A
 	 */
