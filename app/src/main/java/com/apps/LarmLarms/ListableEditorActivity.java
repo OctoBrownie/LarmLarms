@@ -211,10 +211,14 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 	@NotNull
 	private DataServiceConnection dataConn;
 	/**
-	 * asdf
+	 * The messenger of the data service. 
 	 */
 	@Nullable
 	private Messenger dataService;
+	/**
+	 * A message that couldn't be sent before.
+	 */
+	private Message unsentMessage;
 
 	/* *********************************  Lifecycle Methods  ******************************* */
 
@@ -339,7 +343,7 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 
 	/**
 	 * An onclick callback for the back button. Closes the AlarmCreator and return
-	 * RESULT_CANCELLED and no intent.
+	 * RESULT_CANCELED and no intent.
 	 * @param view the back button (view that triggered the callback)
 	 */
 	public void backButtonClicked(@NotNull View view) {
@@ -396,22 +400,7 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 		b.putParcelable(AlarmDataService.BUNDLE_INFO_KEY, data);
 		msg.setData(b);
 		
-		// TODO: send message
-		
-		/*
-		// encoding into an intent
-		String editString = workingListable.toEditString();
-		Intent result_intent = new Intent();
-
-		result_intent.putExtra(EXTRA_LISTABLE, editString);
-		if (isEditing) {
-			result_intent.putExtra(EXTRA_LISTABLE_INDEX, listableIndex);
-		}
-
-		// exit with result
-		setResult(RESULT_OK, result_intent);
-		finish();
-		*/
+		sendMessage(msg);
 	}
 
 	/**
@@ -691,7 +680,7 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 	/* ************************************  Other Methods  ********************************* */
 
 	/**
-	 * Exits the current activity gracefully. Sets the result as RESULT_CANCELLED to ensure that
+	 * Exits the current activity gracefully. Sets the result as RESULT_CANCELED to ensure that
 	 * nothing is done to any data as a result of this exit.
 	 */
 	private void exitActivity() {
@@ -1073,6 +1062,29 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 			((Alarm) workingListable).updateRingTime();
 		}
 	}
+	
+	/**
+	 * Sends a message to the data service.
+	 * @param msg the message to send
+	 * @return whether the message was successfully sent or not
+	 */
+	private boolean sendMessage(@Nullable Message msg) {
+		if (dataService == null) {
+			if (DEBUG) Log.e(TAG, "Data service is unavailable. Caching the message.");
+			unsentMessage = msg;
+			return false;
+		}
+
+		try {
+			dataService.send(msg);
+			return true;
+		}
+		catch (RemoteException e) {
+			if (DEBUG) Log.e(TAG, "Data service is unavailable. Caching the message.");
+			unsentMessages = msg;
+			return false;
+		}
+	}
 
 	/* ***********************************  Inner Classes  ************************************* */
 
@@ -1082,7 +1094,8 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 	 */
 	private class DataServiceConnection implements ServiceConnection {
 		/**
-		 * Called when the service is connected. Sends the messenger to the adapter.
+		 * Called when the service is connected. Sends the messenger to the adapter. If there is an
+		 * unsent message, will send it and finish. 
 		 * @param className the name of the class that was bound to (unused)
 		 * @param service the binder that the service returned
 		 */
@@ -1095,6 +1108,11 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 			msg.replyTo = new Messenger(new MsgHandler(ListableEditorActivity.this));
 			try {
 				dataService.send(msg);
+				if (unsentMessage != null) {
+					dataService.send(unsentMessage);
+					setResult(RESULT_OK);
+					finish();
+				}
 			}
 			catch (RemoteException e) {
 				e.printStackTrace();
