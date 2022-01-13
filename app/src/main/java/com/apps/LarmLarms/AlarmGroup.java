@@ -531,7 +531,7 @@ public final class AlarmGroup implements Listable, Cloneable {
 
 		// the current path of the Listable
 		@NotNull
-		StringBuilder pathBuilder = new StringBuilder();
+		StringBuilder pathBuilder = new StringBuilder(root.getListableName());
 
 		while (index != -1) {
 			// builds the path, must run on ALL iterations, so must run before we check whether this
