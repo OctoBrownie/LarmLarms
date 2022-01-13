@@ -13,6 +13,15 @@ public class AlarmGroupUnitTest {
 	/* **********************************  Searching Tests  ********************************* */
 	@Test
 	public void findOuterIndexTest() throws Exception {
+		/*
+		 * FOLDER STRUCTURE:
+		 * test
+		 * 	alarm 1
+		 * 	alarm 2
+		 * 	inner
+		 * 		alarm 3
+		 * 	alarm 4
+		 */
 		AlarmGroup folder = new AlarmGroup("test");
 		folder.addListable(new Alarm(null, "alarm 1"));
 		folder.addListable(new Alarm(null, "alarm 2"));
@@ -34,6 +43,15 @@ public class AlarmGroupUnitTest {
 
 	@Test
 	public void absIndexTest() throws Exception {
+		/*
+		 * FOLDER STRUCTURE:
+		 * test
+		 * 	alarm 1
+		 * 	alarm 2
+		 * 	inner
+		 * 		alarm 3
+		 * 	alarm 4
+		 */
 		AlarmGroup folder = new AlarmGroup("test");
 		folder.addListable(new Alarm(null, "alarm 1"));
 		folder.addListable(new Alarm(null, "alarm 2"));
@@ -75,9 +93,20 @@ public class AlarmGroupUnitTest {
 
 	@Test
 	public void findIndentsTest() throws Exception {
-		// within folder, the lookup should be [0, 1, 2, 9] and length 11 (includes itself)
-		// within innerFolder, the lookup should be [0, 1, 2] and length 7 (includes itself)
-		// within doubleInner, the lookup should be [0, 1, 2] and length 4 (includes itself)
+		/*
+		 * FOLDER STRUCTURE:
+		 * test
+		 * 	alarm 1
+		 * 	alarm 2
+		 * 	inner
+		 * 		alarm 3
+		 * 		alarm 4
+		 * 		double double
+		 * 			alarm 5
+		 *	 		alarm 6
+		 * 			alarm 7
+		 * 	alarm 8
+		 */
 		AlarmGroup folder = new AlarmGroup("test");
 		folder.addListable(new Alarm(null, "alarm 1"));
 		folder.addListable(new Alarm(null, "alarm 2"));
