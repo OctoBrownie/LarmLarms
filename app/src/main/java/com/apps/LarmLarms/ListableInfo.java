@@ -27,7 +27,7 @@ class ListableInfo implements Parcelable {
 	int numIndents;
 
 	/**
-	 * The absolute index of a Listable's parent.
+	 * The absolute index of a Listable's parent. Should be -1 if there is no parent.
 	 */
 	int absParentIndex;
 
