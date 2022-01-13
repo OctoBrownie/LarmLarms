@@ -536,8 +536,8 @@ public final class AlarmGroup implements Listable, Cloneable {
 		while (index != -1) {
 			// builds the path, must run on ALL iterations, so must run before we check whether this
 			// is the index we were searching for
-			if (pathBuilder.length() != 0) pathBuilder.append('/');
 			if (currFolder != null) pathBuilder.append(currFolder);
+			pathBuilder.append('/');
 
 			// must be the element itself in the current folder
 			if (lookup.get(index) == absIndex) {
