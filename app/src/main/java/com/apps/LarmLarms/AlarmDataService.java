@@ -42,7 +42,7 @@ public class AlarmDataService extends Service {
 	/**
 	 * Debug constant, enables/disables log messages.
 	 */
-	private final static boolean DEBUG = false;
+	private final static boolean DEBUG = true;
 
 	/**
 	 * Tag of the class for logging purposes.
@@ -483,6 +483,13 @@ public class AlarmDataService extends Service {
 	}
 
 	/**
+	 * Responds to an inbound MSG_MOVE_LISTABLE message. Doesn't do anything right now.
+	 */
+	private void handleMoveListable(@NotNull Message inMsg) {
+		// TODO: actually move the listable
+	}
+
+	/**
 	 * Responds to an inbound MSG_DELETE_LISTABLE message. Deletes the listable at the absolute index
 	 * specified by inMsg.arg1
 	 * @param inMsg the inbound MSG_DELETE_LISTABLE message
@@ -897,11 +904,15 @@ public class AlarmDataService extends Service {
 					break;
 				case MSG_SET_LISTABLE:
 					service.handleSetListable(msg);
-					if (DEBUG) Log.d(TAG, "Set an absolute index to a new listable.");
+					if (DEBUG) Log.d(TAG, "Set a listable to a specific index.");
 					break;
 				case MSG_ADD_LISTABLE:
 					service.handleAddListable(msg);
 					if (DEBUG) Log.d(TAG, "Added a listable to the end of the rootFolder.");
+					break;
+				case MSG_MOVE_LISTABLE:
+					service.handleMoveListable(msg);
+					if (DEBUG) Log.d(TAG, "Moved a listable.");
 					break;
 				case MSG_DELETE_LISTABLE:
 					service.handleDeleteListable(msg);

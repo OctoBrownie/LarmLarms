@@ -51,7 +51,7 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 	/**
 	 * Static flag to enable/disable all logging. 
 	 */
-	private static final boolean DEBUG = false;
+	private static final boolean DEBUG = true;
 	
 	/**
 	 * Tag of the class for logging purposes.
@@ -356,8 +356,9 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 	public void saveButtonClicked(@NotNull View view) {
 		saveToListable();
 
-		Message msg;
-		ListableData data = new ListableData();
+		Message msg = null;
+		ListableInfo data = new ListableInfo();
+		data.listable = workingListable;
 		
 		if (isEditing) {
 			// check if the path was changed (make it a MSG_MOVE_LISTABLE)
@@ -369,49 +370,47 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 				data.absIndex = -1;
 			}
 			
-			// check if the listable was changed (either make it a MSG_SET_LISTABLE or add to the
-			// MSG_MOVE_LISTABLE)
-			if (!workingListable.equals(originalListable)) {
-				if (msg == null) {
-					// path didn't change, use MSG_SET_LISTABLE
-					msg = Message.obtain(null, AlarmDataService.MSG_SET_LISTABLE);
-					msg.arg1 = listableIndex;
-				}
-				// for either MSG_SET_LISTABLE or MSG_MOVE_LISTABLE, it's the same 
-				data.listable = workingListable;
+			// check if the listable itself was changed
+			if (msg == null && !workingListable.equals(originalListable)) {
+				// path didn't change but Listable did, so use MSG_SET_LISTABLE
+				msg = Message.obtain(null, AlarmDataService.MSG_SET_LISTABLE);
+				msg.arg1 = listableIndex;
 			}
+			// TODO: What if path AND listable change?
 		}
 		else {
 			// create MSG_ADD_LISTABLE
 			msg = Message.obtain(null, AlarmDataService.MSG_ADD_LISTABLE);
-			data.listable = workingListable; 
 		}
 		
 		// if there is no message to send, then just exit the activity
 		if (msg == null) {
-			// TODO: set result and exit
+			if (DEBUG) Log.i(TAG, "Nothing changed, so just exiting...");
+			exitActivity();
+			return;
 		}
 
 		Bundle b = new Bundle();
 		b.putParcelable(AlarmDataService.BUNDLE_INFO_KEY, data);
 		msg.setData(b);
-		
-		// TODO: send message
-		
-		/*
-		// encoding into an intent
-		String editString = workingListable.toEditString();
-		Intent result_intent = new Intent();
 
-		result_intent.putExtra(EXTRA_LISTABLE, editString);
-		if (isEditing) {
-			result_intent.putExtra(EXTRA_LISTABLE_INDEX, listableIndex);
+		if (dataService == null) {
+			if (DEBUG) Log.e(TAG, "Data service is unavailable. Cancelling...");
+			exitActivity();
+			return;
+		}
+
+		try {
+			dataService.send(msg);
+		} catch (RemoteException e) {
+			if (DEBUG) Log.e(TAG, "Data service is unavailable. Cancelling...");
+			exitActivity();
 		}
 
 		// exit with result
-		setResult(RESULT_OK, result_intent);
-		finish();
-		*/
+		// setResult(RESULT_OK);
+		// finish();
+		exitActivity();
 	}
 
 	/**
@@ -683,9 +682,6 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 		}
 
 		spinner.setOnItemSelectedListener(this);
-
-		unbindService(dataConn);
-		boundToDataService = false;
 	}
 
 	/* ************************************  Other Methods  ********************************* */
@@ -1089,8 +1085,8 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 		@Override
 		public void onServiceConnected(@NotNull ComponentName className, @NotNull IBinder service) {
 			boundToDataService = true;
-
 			dataService = new Messenger(service);
+
 			Message msg = Message.obtain(null, AlarmDataService.MSG_GET_FOLDERS);
 			msg.replyTo = new Messenger(new MsgHandler(ListableEditorActivity.this));
 			try {
