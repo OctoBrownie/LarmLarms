@@ -128,9 +128,9 @@ public class MainActivity extends AppCompatActivity {
 	public void addNewAlarm(@NotNull View view) {
 		// start AlarmCreator activity
 		Intent intent = new Intent(this, ListableEditorActivity.class);
-		intent.putExtra(ListableEditorActivity.EXTRA_REQ_ID, ListableEditorActivity.REQ_NEW_ALARM);
+		intent.setAction(ListableEditorActivity.ACTION_CREATE_ALARM);
 
-		startActivityForResult(intent, ListableEditorActivity.REQ_NEW_ALARM);
+		startActivity(intent);
 	}
 
 	/**
@@ -140,9 +140,9 @@ public class MainActivity extends AppCompatActivity {
 	public void addNewFolder(@NotNull View view) {
 		// start AlarmCreator activity
 		Intent intent = new Intent(this, ListableEditorActivity.class);
-		intent.putExtra(ListableEditorActivity.EXTRA_REQ_ID, ListableEditorActivity.REQ_NEW_FOLDER);
+		intent.setAction(ListableEditorActivity.ACTION_CREATE_FOLDER);
 
-		startActivityForResult(intent, ListableEditorActivity.REQ_NEW_FOLDER);
+		startActivity(intent);
 	}
 
 	/* ************************************  Other Methods  ************************************* */

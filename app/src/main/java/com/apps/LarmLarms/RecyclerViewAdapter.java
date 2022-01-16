@@ -24,7 +24,6 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.RecyclerView;
 
 /**
@@ -213,16 +212,15 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 			return;
 		}
 
-		// add extras (ListableInfo, req id)
 		intent.putExtra(ListableEditorActivity.EXTRA_LISTABLE_INFO, info);
 
-		int req;
-		if (info.listable.isAlarm()) { req = ListableEditorActivity.REQ_EDIT_ALARM; }
-		else { req = ListableEditorActivity.REQ_EDIT_FOLDER; }
+		String action;
+		if (info.listable.isAlarm()) { action = ListableEditorActivity.ACTION_EDIT_ALARM; }
+		else { action = ListableEditorActivity.ACTION_EDIT_FOLDER; }
 
-		intent.putExtra(ListableEditorActivity.EXTRA_REQ_ID, req);
+		intent.setAction(action);
 
-		((AppCompatActivity)context).startActivityForResult(intent, req);
+		context.startActivity(intent);
 	}
 
 	/**

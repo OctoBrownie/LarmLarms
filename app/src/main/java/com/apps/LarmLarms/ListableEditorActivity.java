@@ -43,6 +43,10 @@ import androidx.appcompat.app.AppCompatActivity;
 
 /**
  * Activity used for creating new Listables or editing existing ones.
+ *
+ * Requirements for calling intents:
+ * Must have an action defined in this class
+ * For specific actions, see the action documentation for extra requirements
  */
 public class ListableEditorActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
 
@@ -61,33 +65,27 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 	/**
 	 * An extra used for carrying a ListableInfo.
 	 */
-	final static String EXTRA_LISTABLE_INFO = "com.apps.AlarmsButBetter.INFO";
-	/**
-	 * An extra with the request ID the activity is being called for. The editor does something
-	 * different based on what ID is received.
-	 */
-	final static String EXTRA_REQ_ID = "com.apps.AlarmsButBetter.REQ_ID";
+	final static String EXTRA_LISTABLE_INFO = "com.apps.LarmLarms.extra.INFO";
 
 	// for inbound intents
 	/**
-	 * Request code to create a new alarm. 
-	 * TODO: could possibly make into an intent action instead 
+	 * Intent action for creating a new alarm. Requires nothing else.
 	 */
-	final static int REQ_NEW_ALARM = 0;
+	final static String ACTION_CREATE_ALARM = "com.apps.LarmLarms.action.CREATE_ALARM";
 	/**
-	 * Request code to edit an existing Alarm. Assumes that EXTRA_LISTABLE, EXTRA_LISTABLE_INDEX, 
-	 * and EXTRA_FOLDERS are filled out. 
+	 * Intent action for editing an existing Alarm. Requires that EXTRA_LISTABLE_INFO contain a
+	 * ListableInfo with absIndex, listable, and path filled out.
 	 */
-	final static int REQ_EDIT_ALARM = 1;
+	final static String ACTION_EDIT_ALARM = "com.apps.LarmLarms.action.EDIT_ALARM";
 	/**
-	 * Request code to create a new folder.
+	 * Request code to create a new folder. Requires nothing else.
 	 */
-	final static int REQ_NEW_FOLDER = 2;
+	final static String ACTION_CREATE_FOLDER = "com.apps.LarmLarms.action.CREATE_FOLDER";
 	/**
-	 * Request code to edit an existing AlarmGroup. Assumes that EXTRA_LISTABLE, EXTRA_LISTABLE_INDEX, 
-	 * and EXTRA_FOLDERS are filled out. 
+	 * Request code to edit an existing AlarmGroup. Requires that EXTRA_LISTABLE_INFO contain a
+	 * ListableInfo with absIndex, listable, and path filled out.
 	 */
-	final static int REQ_EDIT_FOLDER = 3;
+	final static String ACTION_EDIT_FOLDER = "com.apps.LarmLarms.action.EDIT_FOLDER";
 
 	// for outbound intents
 	/**
@@ -226,32 +224,31 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 	protected void onCreate(@Nullable Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		Bundle extras = getIntent().getExtras();
-		if (extras == null) {
-			if (DEBUG) Log.e(TAG, "Extras passed to ListableEditor are null.");
+		String action = getIntent().getAction();
+		if (action == null) {
+			if (DEBUG) Log.e(TAG, "Action passed to ListableEditor is null.");
 			finish();
 			return;
 		}
-		int startedState = extras.getInt(EXTRA_REQ_ID, -1);
 
 		// NOTE: this switch statement is only for setting up activity variables, NOT queuing any UI
 		// changes, since the content view hasn't been set up yet.
-		switch(startedState) {
-			case REQ_NEW_ALARM:
+		switch(action) {
+			case ACTION_CREATE_ALARM:
 				isEditingAlarm = true;
 				isEditing = false;
 				workingListable = new Alarm(this);
 				break;
-			case REQ_EDIT_ALARM:
+			case ACTION_EDIT_ALARM:
 				isEditingAlarm = true;
 				isEditing = true;
 				break;
-			case REQ_NEW_FOLDER:
+			case ACTION_CREATE_FOLDER:
 				isEditingAlarm = false;
 				isEditing = false;
 				// new AlarmGroup already created in constructor
 				break;
-			case REQ_EDIT_FOLDER:
+			case ACTION_EDIT_FOLDER:
 				isEditingAlarm = false;
 				isEditing = true;
 				break;
@@ -262,6 +259,13 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 		}
 
 		if (isEditing) {
+			Bundle extras = getIntent().getExtras();
+			if (extras == null) {
+				if (DEBUG) Log.e(TAG, "Extras passed to ListableEditor are null.");
+				finish();
+				return;
+			}
+
 			ListableInfo info = extras.getParcelable(EXTRA_LISTABLE_INFO);
 
 			if (info == null || info.listable == null || info.path == null) {
@@ -279,10 +283,10 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 		if (isEditingAlarm) { alarmUISetup(); }
 		else { folderUISetup(); }
 
-		// switch statement is used for any REQ-specific UI changes
-		switch(startedState) {
-			case REQ_EDIT_ALARM:
-			case REQ_EDIT_FOLDER:
+		// used for any REQ-specific UI changes
+		switch(action) {
+			case ACTION_EDIT_ALARM:
+			case ACTION_EDIT_FOLDER:
 				((EditText) findViewById(R.id.nameInput)).setText(workingListable.getListableName());
 				break;
 		}
