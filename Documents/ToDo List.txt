@@ -46,5 +46,4 @@ if you click on the buttons presented by the heads up notification (when an alar
 	might also not stop ringing (though the notification is removed)
 vibration only occurs right when the alarm starts ringing (doesn't loop)
 alarms won't ring if app isn't in the "recent" bar (process has been killed, I think?)
-editor doesn't show the name of the ringtone when editing alarms (says context is null)
 says "folder name" when creating/editing an alarm

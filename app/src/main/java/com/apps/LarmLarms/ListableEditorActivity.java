@@ -279,6 +279,8 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 			}
 			listableIndex = info.absIndex;
 			workingListable = info.listable;
+			if (workingListable instanceof Alarm) ((Alarm)workingListable).setContext(this);
+
 			originalPath = info.path;
 
 			originalListable = workingListable.clone();
