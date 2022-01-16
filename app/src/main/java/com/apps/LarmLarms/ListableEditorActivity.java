@@ -398,19 +398,7 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 		b.putParcelable(AlarmDataService.BUNDLE_INFO_KEY, data);
 		msg.setData(b);
 
-		if (dataService == null) {
-			if (DEBUG) Log.e(TAG, "Data service is unavailable. Cancelling...");
-			finish();
-			return;
-		}
-
-		try {
-			dataService.send(msg);
-		} catch (RemoteException e) {
-			if (DEBUG) Log.e(TAG, "Data service is unavailable. Cancelling...");
-			finish();
-		}
-
+		if (!sendMessage(msg)) return;
 		finish();
 	}
 
@@ -1097,7 +1085,7 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 	private class DataServiceConnection implements ServiceConnection {
 		/**
 		 * Called when the service is connected. Sends the messenger to the adapter. If there is an
-		 * unsent message, will send it and finish.
+		 * unsent message (the result of the activity), will send it instead and finish.
 		 * @param className the name of the class that was bound to (unused)
 		 * @param service the binder that the service returned
 		 */
@@ -1106,14 +1094,15 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 			boundToDataService = true;
 			dataService = new Messenger(service);
 
-			Message msg = Message.obtain(null, AlarmDataService.MSG_GET_FOLDERS);
-			msg.replyTo = new Messenger(new MsgHandler(ListableEditorActivity.this));
 			try {
-				dataService.send(msg);
 				if (unsentMessage != null) {
 					dataService.send(unsentMessage);
-					setResult(RESULT_OK);
 					finish();
+				}
+				else {
+					Message msg = Message.obtain(null, AlarmDataService.MSG_GET_FOLDERS);
+					msg.replyTo = new Messenger(new MsgHandler(ListableEditorActivity.this));
+					dataService.send(msg);
 				}
 			}
 			catch (RemoteException e) {
