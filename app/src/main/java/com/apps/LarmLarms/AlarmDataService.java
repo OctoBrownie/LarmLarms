@@ -112,7 +112,8 @@ public class AlarmDataService extends Service {
 	 * Inbound: the client wants to move a Listable to a new index. arg1 should always be filled with 
 	 * the old absolute index of the Listable. A ListableInfo should be in the data bundle (using 
 	 * BUNDLE_INFO_KEY for its key). To identify the new position of the listable, the path of
-	 * the parent folder must be in the ListableInfo's path field. If the listable field is not null,
+	 * the parent folder must be in the ListableInfo's path field. Will assume that the new path is
+	 * not inside the listable being moved (if it's an AlarmGroup). If the listable field is not null,
 	 * the listable will be replaced with the new one. Triggers MSG_DATA_CHANGED messages to be sent.
 	 * <br/>
 	 * Outbound: N/A
@@ -492,16 +493,6 @@ public class AlarmDataService extends Service {
 			return;
 		}
 
-		Listable newListable = info.listable;
-		if (newListable == null) {
-			// replace with what's currently at the abs index
-			newListable = rootFolder.deleteListableAbs(inMsg.arg1);
-		}
-		else {
-			// replace with the new listable
-			rootFolder.deleteListableAbs(inMsg.arg1);
-		}
-
 		String[] folders = info.path.split("/");	// ignore the first one (root folder name)
 		AlarmGroup currFolder = rootFolder;
 		for (int i = 1; i < folders.length; i++) {
@@ -510,6 +501,16 @@ public class AlarmDataService extends Service {
 				if (DEBUG) Log.e(TAG, "MSG_MOVE_LISTABLE: Couldn't find the specified path.");
 				return;
 			}
+		}
+
+		Listable newListable = info.listable;
+		if (newListable == null) {
+			// replace with what's currently at the abs index
+			newListable = rootFolder.deleteListableAbs(inMsg.arg1);
+		}
+		else {
+			// replace with the new listable
+			rootFolder.deleteListableAbs(inMsg.arg1);
 		}
 
 		currFolder.addListable(newListable);
