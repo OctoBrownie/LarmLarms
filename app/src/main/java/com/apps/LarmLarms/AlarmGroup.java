@@ -663,7 +663,7 @@ public final class AlarmGroup implements Listable, Cloneable {
 	/**
 	 * Gets the Listable at the given relative index.
 	 * @param relIndex the relative index of the Listable required
-	 * @return returns the Listable at the relative index, or null if not found
+	 * @return the Listable at the relative index, or null if not found
 	 */
 	@Nullable @Contract(pure = true)
 	Listable getListable(final int relIndex) {
@@ -672,6 +672,21 @@ public final class AlarmGroup implements Listable, Cloneable {
 			return null;
 		}
 		return listables.get(relIndex);
+	}
+
+	/**
+	 * Gets the first AlarmGroup with the given name (should be the only one) within the current
+	 * folder.
+	 * @param name the name to search for, shouldn't be null
+	 * @return the folder with the given name, or null if not found
+	 */
+	@Nullable @Contract(pure = true)
+	AlarmGroup getFolder(@NotNull final String name) {
+		for (Listable l : listables) {
+			if (l instanceof AlarmGroup && l.getListableName().equals(name))
+				return (AlarmGroup) l;
+		}
+		return null;
 	}
 
 	/**
@@ -716,14 +731,17 @@ public final class AlarmGroup implements Listable, Cloneable {
 	/**
 	 * Deletes a listable at the specified relative index.
 	 * @param relIndex the relative index of the Listable to delete
+	 * @return the listable deleted, or null
 	 */
-	private void deleteListable(final int relIndex) {
+	@Nullable
+	private Listable deleteListable(final int relIndex) {
 		if (relIndex < 0 || relIndex >= listables.size()) {
 			if (DEBUG) Log.e(TAG, "Couldn't delete Listable. Index is out of bounds.");
-			return;
+			return null;
 		}
-		listables.remove(relIndex);
+		Listable l = listables.remove(relIndex);
 		refreshLookup();
+		return l;
 	}
 
 	/* **************************  Manipulating Listables (Absolute)  *************************** */
@@ -769,21 +787,25 @@ public final class AlarmGroup implements Listable, Cloneable {
 	/**
 	 * Deletes the listable at the specified absolute index.
 	 * @param absIndex the absolute index of the Listable to delete
+	 * @return the listable that was deleted or null if there was an error
 	 */
-	void deleteListableAbs(final int absIndex) {
+	@Nullable
+	Listable deleteListableAbs(final int absIndex) {
 		ListableInfo i = getListableInfo(absIndex);
 		if (i == null) {
 			if (DEBUG) Log.e(TAG, "Listable at absolute index " + absIndex + " was not found.");
-			return;
+			return null;
 		}
 
+		Listable l;
 		if (i.parent == null) {
-			deleteListable(i.relIndex);
+			l = deleteListable(i.relIndex);
 		}
 		else {
-			i.parent.deleteListable(i.relIndex);
+			l = i.parent.deleteListable(i.relIndex);
 		}
 		refreshLookup();
+		return l;
 	}
 
 	/* ***********************************  Other Methods  ************************************** */

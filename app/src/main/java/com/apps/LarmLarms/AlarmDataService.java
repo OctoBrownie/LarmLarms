@@ -47,7 +47,7 @@ public class AlarmDataService extends Service {
 	/**
 	 * Tag of the class for logging purposes.
 	 */
-	private static final String TAG = "AlarmDataService";
+	private static final String TAG = "DataService";
 	/**
 	 * Name of the handler thread.
 	 */
@@ -111,14 +111,9 @@ public class AlarmDataService extends Service {
 	/**
 	 * Inbound: the client wants to move a Listable to a new index. arg1 should always be filled with 
 	 * the old absolute index of the Listable. A ListableInfo should be in the data bundle (using 
-	 * BUNDLE_INFO_KEY for its key). To identify the new position of the listable, either the path of 
-	 * the parent folder must be in the ListableInfo's path field or the new absolute index of the
-	 * listable itself must be in the absIndex field. Index will take precedence over path, since it's 
-	 * more specific. It can still be ambiguous if only the new absolute index is filled, and in that 
-	 * case the path field will be checked for a valid path to clear it up. To strictly specify there 
-	 * is no absolute index to use, the absIndex field in the ListableInfo must be filled with -1. If 
-	 * the listable field is not null, the listable will be replaced with the new one. Triggers 
-	 * MSG_DATA_CHANGED messages to be sent.
+	 * BUNDLE_INFO_KEY for its key). To identify the new position of the listable, the path of
+	 * the parent folder must be in the ListableInfo's path field. If the listable field is not null,
+	 * the listable will be replaced with the new one. Triggers MSG_DATA_CHANGED messages to be sent.
 	 * <br/>
 	 * Outbound: N/A
 	 */
@@ -383,7 +378,7 @@ public class AlarmDataService extends Service {
 	 */
 	private void handleGetListable(@NotNull Message inMsg) {
 		if (inMsg.replyTo == null && inMsg.getTarget() == null) {
-			if (DEBUG) Log.e(TAG, "Inbound MSG_GET_LISTABLE message had a null reply to field and no target.");
+			if (DEBUG) Log.e(TAG, "MSG_GET_LISTABLE: Message had a null reply to field and no target.");
 			return;
 		}
 
@@ -416,7 +411,7 @@ public class AlarmDataService extends Service {
 	 */
 	private void handleGetFolders(@NotNull Message inMsg) {
 		if (inMsg.replyTo == null && inMsg.getTarget() == null) {
-			if (DEBUG) Log.e(TAG, "Inbound MSG_GET_FOLDERS message had a null reply to field and no target.");
+			if (DEBUG) Log.e(TAG, "MSG_GET_FOLDERS: Message had a null reply to field and no target.");
 			return;
 		}
 
@@ -467,7 +462,7 @@ public class AlarmDataService extends Service {
 	private void handleAddListable(@NotNull Message inMsg) {
 		ListableInfo info = inMsg.getData().getParcelable(BUNDLE_INFO_KEY);
 		if (info == null) {
-			if (DEBUG) Log.e(TAG, "Listable passed through MSG_ADD_LISTABLE message was null.");
+			if (DEBUG) Log.e(TAG, "MSG_ADD_LISTABLE: Listable was null.");
 			return;
 		}
 
@@ -486,7 +481,41 @@ public class AlarmDataService extends Service {
 	 * Responds to an inbound MSG_MOVE_LISTABLE message. Doesn't do anything right now.
 	 */
 	private void handleMoveListable(@NotNull Message inMsg) {
-		// TODO: actually move the listable
+		ListableInfo info = inMsg.getData().getParcelable(BUNDLE_INFO_KEY);
+		if (info == null) {
+			if (DEBUG) Log.e(TAG, "MSG_MOVE_LISTABLE: Listable was null.");
+			return;
+		}
+
+		if (info.path == null) {
+			if (DEBUG) Log.e(TAG, "MSG_MOVE_LISTABLE: Path was not specified.");
+			return;
+		}
+
+		Listable newListable = info.listable;
+		if (newListable == null) {
+			// replace with what's currently at the abs index
+			newListable = rootFolder.deleteListableAbs(inMsg.arg1);
+		}
+		else {
+			// replace with the new listable
+			rootFolder.deleteListableAbs(inMsg.arg1);
+		}
+
+		String[] folders = info.path.split("/");	// ignore the first one (root folder name)
+		AlarmGroup currFolder = rootFolder;
+		for (int i = 1; i < folders.length; i++) {
+			currFolder = currFolder.getFolder(folders[i]);
+			if (currFolder == null) {
+				if (DEBUG) Log.e(TAG, "MSG_MOVE_LISTABLE: Couldn't find the specified path.");
+				return;
+			}
+		}
+
+		currFolder.addListable(newListable);
+		rootFolder.refreshLookup();
+		setNextAlarmToRing();
+		sendDataChanged();
 	}
 
 	/**
@@ -514,7 +543,7 @@ public class AlarmDataService extends Service {
 	private void handleToggleActive(@NotNull Message inMsg) {
 		Listable l = rootFolder.getListableAbs(inMsg.arg1);
 		if (l == null) {
-			if (DEBUG) Log.e(TAG, "Index of listable to toggle active was out of bounds.");
+			if (DEBUG) Log.e(TAG, "MSG_TOGGLE_ACTIVE: Index of listable was out of bounds.");
 			return;
 		}
 		l.toggleActive();
@@ -531,11 +560,11 @@ public class AlarmDataService extends Service {
 	private void handleToggleOpen(@NotNull Message inMsg) {
 		Listable l = rootFolder.getListableAbs(inMsg.arg1);
 		if (l == null) {
-			if (DEBUG) Log.e(TAG, "Listable index to toggle open state of was out of bounds.");
+			if (DEBUG) Log.e(TAG, "MSG_TOGGLE_OPEN_FOLDER: Listable index was out of bounds.");
 			return;
 		}
 		else if (l.isAlarm()) {
-			if (DEBUG) Log.e(TAG, "Listable to toggle open state of was an alarm.");
+			if (DEBUG) Log.e(TAG, "MSG_TOGGLE_OPEN_FOLDER: Listable was an alarm.");
 			return;
 		}
 		((AlarmGroup) l).toggleOpen();
@@ -553,11 +582,11 @@ public class AlarmDataService extends Service {
 	private void handleSnoozeAlarm(@NotNull Message inMsg) {
 		Listable l = rootFolder.getListableAbs(inMsg.arg1);
 		if (l == null) {
-			if (DEBUG) Log.e(TAG, "Listable index to snooze was out of bounds.");
+			if (DEBUG) Log.e(TAG, "MSG_SNOOZE_ALARM: Listable index was out of bounds.");
 			return;
 		}
 		else if (l.isAlarm()) {
-			if (DEBUG) Log.e(TAG, "Listable to snooze was a folder.");
+			if (DEBUG) Log.e(TAG, "MSG_SNOOZE_ALARM: Listable was a folder.");
 			return;
 		}
 		((Alarm) l).snooze();
@@ -575,11 +604,11 @@ public class AlarmDataService extends Service {
 	private void handleUnsnoozeAlarm(@NotNull Message inMsg) {
 		Listable l = rootFolder.getListableAbs(inMsg.arg1);
 		if (l == null) {
-			if (DEBUG) Log.e(TAG, "Listable index to unsnooze was out of bounds.");
+			if (DEBUG) Log.e(TAG, "MSG_UNSNOOZE_ALARM: Listable index was out of bounds.");
 			return;
 		}
 		else if (!l.isAlarm()) {
-			if (DEBUG) Log.e(TAG, "Listable to unsnooze was a folder.");
+			if (DEBUG) Log.e(TAG, "MSG_UNSNOOZE_ALARM: Listable was a folder.");
 			return;
 		}
 		((Alarm) l).unsnooze();
@@ -597,11 +626,11 @@ public class AlarmDataService extends Service {
 	private void handleDismissAlarm(@NotNull Message inMsg) {
 		Listable l = rootFolder.getListableAbs(inMsg.arg1);
 		if (l == null) {
-			if (DEBUG) Log.e(TAG, "Listable index to dismiss was out of bounds.");
+			if (DEBUG) Log.e(TAG, "MSG_DISMISS_ALARM: Listable index was out of bounds.");
 			return;
 		}
 		else if (!l.isAlarm()) {
-			if (DEBUG) Log.e(TAG, "Listable to dismiss was a folder.");
+			if (DEBUG) Log.e(TAG, "MSG_DISMISS_ALARM: Listable was a folder.");
 			return;
 		}
 
@@ -620,7 +649,7 @@ public class AlarmDataService extends Service {
 				((Alarm) l).updateRingTime();
 				break;
 			default:
-				if (DEBUG) Log.wtf(TAG, "The repeat type of the alarm was invalid...?");
+				if (DEBUG) Log.wtf(TAG, "MSG_DISMISS_ALARM: The alarm repeat type was invalid...?");
 				break;
 		}
 
@@ -638,7 +667,7 @@ public class AlarmDataService extends Service {
 	private void handleDataChanged(@NotNull Message inMsg) {
 		if (inMsg.replyTo == null) {
 			// invalid message
-			if (DEBUG) Log.e(TAG, "Inbound MSG_DATA_CHANGED message didn't have a Messenger to reply to.");
+			if (DEBUG) Log.e(TAG, "MSG_DATA_CHANGED: Message didn't have a Messenger to reply to.");
 		}
 		else {
 			int index = dataChangeListeners.indexOf(inMsg.replyTo);
@@ -668,7 +697,7 @@ public class AlarmDataService extends Service {
 	private void handleDataEmpty(@NotNull Message inMsg) {
 		if (inMsg.replyTo == null) {
 			// invalid message
-			if (DEBUG) Log.e(TAG, "Inbound MSG_DATA_EMPTY_LISTENER message didn't have a Messenger to reply to.");
+			if (DEBUG) Log.e(TAG, "MSG_DATA_EMPTY_LISTENER: Message didn't have a Messenger to reply to.");
 		}
 		else {
 			int index = emptyListeners.indexOf(inMsg.replyTo);
