@@ -58,15 +58,6 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 	 */
 	private final static String TAG = "ListableEditor";
 
-	// extras for intents carrying alarms
-	/**
-	 * An extra used for carrying a Listable in edit string form. 
-	 */
-	final static String EXTRA_LISTABLE = "com.apps.AlarmsButBetter.LISTABLE";
-	/**
-	 * An extra used for carrying a Listable's absolute index within the data. 
-	 */
-	final static String EXTRA_LISTABLE_INDEX = "com.apps.AlarmsButBetter.ABS_INDEX";
 	/**
 	 * An extra used for carrying a ListableInfo.
 	 */

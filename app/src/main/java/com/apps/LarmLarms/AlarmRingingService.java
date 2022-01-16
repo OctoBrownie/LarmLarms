@@ -40,6 +40,18 @@ public class AlarmRingingService extends Service implements MediaPlayer.OnPrepar
 	 */
 	private static final String TAG = "AlarmRingingService";
 
+	/* ***********************************  Intent extras *************************************** */
+	/**
+	 * An extra used for carrying a Listable in edit string form.
+	 */
+	final static String EXTRA_LISTABLE = "com.apps.AlarmsButBetter.LISTABLE";
+	/**
+	 * An extra used for carrying a Listable's absolute index within the data.
+	 */
+	final static String EXTRA_LISTABLE_INDEX = "com.apps.AlarmsButBetter.ABS_INDEX";
+
+	/* *********************************  Other static fields  ********************************** */
+
 	/**
 	 * String ID for the notification channel the foreground notifications are posted in.
 	 */
@@ -49,6 +61,8 @@ public class AlarmRingingService extends Service implements MediaPlayer.OnPrepar
 	 * so using the same ID should be fine.
 	 */
 	static final int NOTIFICATION_ID = 42;
+
+	/* ***********************************  Non-static fields ********************************* */
 
 	/**
 	 * Plays the ringtone of the alarm. Can be null if the alarm is silent.
@@ -101,19 +115,19 @@ public class AlarmRingingService extends Service implements MediaPlayer.OnPrepar
 		bindService(new Intent(this, AlarmDataService.class), dataConn, Context.BIND_AUTO_CREATE);
 
 		Alarm currAlarm = Alarm.fromEditString(this,
-				inIntent.getStringExtra(ListableEditorActivity.EXTRA_LISTABLE));
+				inIntent.getStringExtra(EXTRA_LISTABLE));
 		if (currAlarm == null) {
 			if (DEBUG) Log.e(TAG, "Alarm was invalid.");
 			stopSelf();
 			return Service.START_NOT_STICKY;
 		}
 
-		alarmAbsIndex = inIntent.getIntExtra(ListableEditorActivity.EXTRA_LISTABLE_INDEX, -1);
+		alarmAbsIndex = inIntent.getIntExtra(EXTRA_LISTABLE_INDEX, -1);
 
 		// setting up custom foreground notification
 		Intent fullScreenIntent = new Intent(this, AlarmRingingActivity.class);
 		fullScreenIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-		fullScreenIntent.putExtra(ListableEditorActivity.EXTRA_LISTABLE, currAlarm.toEditString());
+		fullScreenIntent.putExtra(EXTRA_LISTABLE, currAlarm.toEditString());
 		PendingIntent fullScreenPendingIntent = PendingIntent.getActivity(this, 0, fullScreenIntent,
 				PendingIntent.FLAG_UPDATE_CURRENT);
 

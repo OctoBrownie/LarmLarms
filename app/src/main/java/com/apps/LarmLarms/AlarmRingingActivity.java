@@ -101,7 +101,7 @@ public class AlarmRingingActivity extends AppCompatActivity {
 
 		// setting fields
 		Alarm currAlarm = Alarm.fromEditString(this,
-				getIntent().getStringExtra(ListableEditorActivity.EXTRA_LISTABLE));
+				getIntent().getStringExtra(AlarmRingingService.EXTRA_LISTABLE));
 		if (currAlarm == null) {
 			if (DEBUG) Log.e(TAG, "The alarm given was invalid...?");
 			finish();

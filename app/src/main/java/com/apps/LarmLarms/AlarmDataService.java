@@ -760,8 +760,8 @@ public class AlarmDataService extends Service {
 
 		Intent intent = new Intent(this, AlarmRingingService.class);
 		if (next.listable != null) {
-			intent.putExtra(ListableEditorActivity.EXTRA_LISTABLE, next.listable.toEditString());
-			intent.putExtra(ListableEditorActivity.EXTRA_LISTABLE_INDEX, next.absIndex);
+			intent.putExtra(AlarmRingingService.EXTRA_LISTABLE, next.listable.toEditString());
+			intent.putExtra(AlarmRingingService.EXTRA_LISTABLE_INDEX, next.absIndex);
 		}
 
 		AlarmManager manager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
