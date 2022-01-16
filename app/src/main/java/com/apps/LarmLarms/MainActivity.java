@@ -145,40 +145,6 @@ public class MainActivity extends AppCompatActivity {
 		startActivityForResult(intent, ListableEditorActivity.REQ_NEW_FOLDER);
 	}
 
-	/**
-	 * Callback for when Activities finish with a result. Deals with the output of each Activity.
-	 *
-	 * For AlarmCreators: adds the newly-made or edited alarm into the RecyclerView
-	 *
-	 * @param requestCode the request code the closed Activity was started with
-	 * @param resultCode the result code the closed Activity returned
-	 * @param data the intent returned by the closed Activity
-	 */
-	@Override
-	protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-		// TODO: if this isn't true for some other activity we come back from, change
-		if (resultCode == RESULT_CANCELED) {
-			return;
-		}
-		if (resultCode != RESULT_OK || data == null ||
-				data.getStringExtra(ListableEditorActivity.EXTRA_LISTABLE) == null) {
-			if (DEBUG) Log.e(TAG, "Data from ListableEditorActivity was invalid.");
-			return;
-		}
-
-		switch(requestCode) {
-			case ListableEditorActivity.REQ_NEW_ALARM:
-			case ListableEditorActivity.REQ_EDIT_ALARM:
-			case ListableEditorActivity.REQ_NEW_FOLDER:
-			case ListableEditorActivity.REQ_EDIT_FOLDER:
-				myRecyclerFrag.onListableCreatorResult(requestCode, data);
-				break;
-			default:
-				if (DEBUG) Log.e(TAG, "Unknown request code returned.");
-		}
-
-	}
-
 	/* ************************************  Other Methods  ************************************* */
 
 	/**

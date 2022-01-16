@@ -238,7 +238,7 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 		Bundle extras = getIntent().getExtras();
 		if (extras == null) {
 			if (DEBUG) Log.e(TAG, "Extras passed to ListableEditor are null.");
-			exitActivity();
+			finish();
 			return;
 		}
 		int startedState = extras.getInt(EXTRA_REQ_ID, -1);
@@ -266,7 +266,7 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 				break;
 			default:
 				if (DEBUG) Log.e(TAG, "Unknown request code!");
-				exitActivity();
+				finish();
 				return;
 		}
 
@@ -275,7 +275,7 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 
 			if (info == null || info.listable == null || info.path == null) {
 				if (DEBUG) Log.e(TAG, "Listable info is invalid.");
-				exitActivity();
+				finish();
 				return;
 			}
 			listableIndex = info.absIndex;
@@ -344,7 +344,7 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 	 */
 	public void backButtonClicked(@NotNull View view) {
 		// TODO: ask user if they REALLY want to exit?
-		exitActivity();
+		finish();
 	}
 
 	/**
@@ -392,7 +392,7 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 		// if there is no message to send, then just exit the activity
 		if (msg == null) {
 			if (DEBUG) Log.i(TAG, "Nothing changed, so just exiting...");
-			exitActivity();
+			finish();
 			return;
 		}
 
@@ -402,7 +402,7 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 
 		if (dataService == null) {
 			if (DEBUG) Log.e(TAG, "Data service is unavailable. Cancelling...");
-			exitActivity();
+			finish();
 			return;
 		}
 
@@ -410,10 +410,10 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 			dataService.send(msg);
 		} catch (RemoteException e) {
 			if (DEBUG) Log.e(TAG, "Data service is unavailable. Cancelling...");
-			exitActivity();
+			finish();
 		}
 
-		exitActivity();
+		finish();
 	}
 
 	/**
@@ -502,7 +502,7 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 				break;
 			default:
 				if (DEBUG) Log.e(TAG, "Unknown AdapterView selected an item.");
-				exitActivity();
+				finish();
 		}
 	}
 
@@ -690,15 +690,6 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 	/* ************************************  Other Methods  ********************************* */
 
 	/**
-	 * Exits the current activity gracefully. Sets the result as RESULT_CANCELLED to ensure that
-	 * nothing is done to any data as a result of this exit.
-	 */
-	private void exitActivity() {
-		setResult(RESULT_CANCELED);
-		finish();
-	}
-
-	/**
 	 * Changes repeat type to the new specified type. Changes both the working alarm type and the UI
 	 * layouts. For alarms only.
 	 * @param type new type to set it to, should be one of the Alarm constants
@@ -713,7 +704,7 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 					// requires: time picker, date picker
 					if (alarmTimePicker == null || alarmDatePicker == null) {
 						if (DEBUG) Log.wtf(TAG, "The alarm date/time pickers are null.");
-						exitActivity();
+						finish();
 						return;
 					}
 					alarmTimePicker.setVisibility(View.GONE);
@@ -725,7 +716,7 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 					if (alarmOffsetDaysLayout == null || alarmOffsetHoursLayout == null ||
 							alarmOffsetMinsLayout == null) {
 						if (DEBUG) Log.wtf(TAG, "The alarm offsets layouts are null.");
-						exitActivity();
+						finish();
 						return;
 					}
 					alarmOffsetDaysLayout.setVisibility(View.GONE);
@@ -736,7 +727,7 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 					// requires: time picker, list of days (clickable text)
 					if (alarmTimePicker == null || alarmDaysLayout == null) {
 						if (DEBUG) Log.wtf(TAG, "The alarm time picker or days of week layout is null.");
-						exitActivity();
+						finish();
 						return;
 					}
 					alarmTimePicker.setVisibility(View.GONE);
@@ -747,7 +738,7 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 					if (alarmTimePicker == null || alarmMonthsLayout == null ||
 							alarmDateOfMonthLayout == null) {
 						if (DEBUG) Log.wtf(TAG, "The alarm time picker, months layout, or date of month layout is null.");
-						exitActivity();
+						finish();
 						return;
 					}
 					alarmTimePicker.setVisibility(View.GONE);
@@ -759,7 +750,7 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 					if (alarmTimePicker == null || alarmDayMonthlyLayout == null ||
 							alarmMonthsLayout == null) {
 						if (DEBUG) Log.wtf(TAG, "The alarm time picker, day of the month, or months layout is null.");
-						exitActivity();
+						finish();
 						return;
 					}
 					alarmTimePicker.setVisibility(View.GONE);
@@ -768,7 +759,7 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 					break;
 				default:
 					if (DEBUG) Log.e(TAG, "Invalid previous alarm type selected.");
-					exitActivity();
+					finish();
 			}
 		}
 
@@ -846,7 +837,7 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 				break;
 			default:
 				if (DEBUG) Log.e(TAG, "Invalid alarm type selected.");
-				exitActivity();
+				finish();
 		}
 		((Alarm) workingListable).setRepeatType(type);
 	}
@@ -943,7 +934,7 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 				default:
 					// error: unknown request code!
 					if (DEBUG) Log.e(TAG, "Unknown setListableName() request code! Exiting activity...");
-					exitActivity();
+					finish();
 					return false;
 			}
 
@@ -975,7 +966,7 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 				case Alarm.REPEAT_DATE_YEARLY:
 					if (alarmDatePicker == null || alarmTimePicker == null) {
 						if (DEBUG) Log.wtf(TAG, "The alarm date/time pickers are null.");
-						exitActivity();
+						finish();
 						return false;
 					}
 
@@ -991,7 +982,7 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 					if (alarmOffsetDaysLayout == null || alarmOffsetHoursLayout == null ||
 							alarmOffsetMinsLayout == null) {
 						if (DEBUG) Log.wtf(TAG, "The alarm offset layouts are null.");
-						exitActivity();
+						finish();
 						return false;
 					}
 
@@ -1046,7 +1037,7 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 				case Alarm.REPEAT_DATE_MONTHLY:
 					if (alarmDateOfMonthLayout == null) {
 						if (DEBUG) Log.wtf(TAG, "The alarm date of month is null.");
-						exitActivity();
+						finish();
 						return false;
 					}
 
@@ -1057,7 +1048,7 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 				case Alarm.REPEAT_DAY_MONTHLY:
 					if (alarmTimePicker == null) {
 						if (DEBUG) Log.wtf(TAG, "The alarm time picker is null.");
-						exitActivity();
+						finish();
 						return false;
 					}
 
@@ -1066,7 +1057,7 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 					break;
 				default:
 					if (DEBUG) Log.e(TAG, "The alarm has an invalid repeat type.");
-					exitActivity();
+					finish();
 					return false;
 			}
 

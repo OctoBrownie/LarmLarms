@@ -109,69 +109,6 @@ public class RecyclerViewFrag extends Fragment {
 		}
 	}
 
-	/* ************************************  Callbacks  ************************************** */
-
-	/**
-	 * Should be called when ListableEditor returns with a Listable. Deals with the listables based
-	 * on request code.
-	 * @param requestCode the code that we requested with
-	 * @param data the intent containing the returned Listable, shouldn't be null
-	 */
-	void onListableCreatorResult(int requestCode, @NotNull Intent data) {
-		Listable new_listable;
-		int index = data.getIntExtra(ListableEditorActivity.EXTRA_LISTABLE_INDEX, -1);
-
-		switch(requestCode) {
-			case ListableEditorActivity.REQ_NEW_ALARM:
-				new_listable = Alarm.fromEditString(getContext(),
-						data.getStringExtra(ListableEditorActivity.EXTRA_LISTABLE));
-				if (new_listable == null) {
-					if (DEBUG) Log.e(TAG, "ListableEditor returned with an invalid alarm edit string.");
-					return;
-				}
-				// TODO: add new alarm where its supposed to be nested
-				myAdapter.addListable(new_listable);
-				break;
-			case ListableEditorActivity.REQ_EDIT_ALARM:
-				new_listable = Alarm.fromEditString(getContext(),
-						data.getStringExtra(ListableEditorActivity.EXTRA_LISTABLE));
-				if (new_listable == null) {
-					if (DEBUG) Log.e(TAG, "ListableEditor returned with an invalid alarm edit string.");
-					return;
-				}
-				myAdapter.setListableAbs(index, new_listable);
-				break;
-			case ListableEditorActivity.REQ_NEW_FOLDER:
-				new_listable = AlarmGroup.fromEditString(
-						data.getStringExtra(ListableEditorActivity.EXTRA_LISTABLE));
-				if (new_listable == null) {
-					if (DEBUG) Log.e(TAG, "ListableEditor returned with an invalid folder edit string.");
-					return;
-				}
-				// TODO: add new folder where its supposed to be nested
-				myAdapter.addListable(new_listable);
-				break;
-			case ListableEditorActivity.REQ_EDIT_FOLDER:
-				// will not delete children Listables of original AlarmGroup
-				new_listable = AlarmGroup.fromEditString(
-						data.getStringExtra(ListableEditorActivity.EXTRA_LISTABLE));
-				if (new_listable == null) {
-					if (DEBUG) Log.e(TAG, "ListableEditor returned with an invalid folder edit string.");
-					return;
-				}
-
-				Listable old_listable = myAdapter.getListableAbs(index);
-				if (old_listable == null || old_listable.isAlarm()) {
-					if (DEBUG) Log.e(TAG, "ListableEditor returned with an invalid index.");
-					return;
-				}
-				((AlarmGroup) new_listable).setListables(((AlarmGroup) old_listable).getListables());
-
-				myAdapter.setListableAbs(index, new_listable);
-				break;
-		}
-	}
-
 	/* ************************************  Inner Classes  ********************************** */
 
 	/**

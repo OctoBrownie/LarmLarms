@@ -5,7 +5,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.drawable.Animatable;
 import android.graphics.drawable.Drawable;
-import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -194,69 +193,6 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 		}
 
 		dataService = messenger;
-	}
-
-	// used mostly because it's synchronous and (should be) up to date
-
-	/**
-	 * Gets the listable at the specified absolute index
-	 * @param absIndex absolute index of the Listable
-	 * @return the Listable that you asked for, or null if the index is out of bounds
-	 */
-	@Nullable
-	Listable getListableAbs(int absIndex) {
-		if (absIndex < 0 || absIndex >= data.size()) {
-			if (DEBUG) Log.v(TAG, "Absolute index to get listable for is out of bounds.");
-			return null;
-		}
-
-		return data.get(absIndex).listable;
-	}
-
-	/**
-	 * Sends a message to AlarmDataService to add a new listable to the end of the list, not nested.
-	 * @param item the Listable to add to the list
-	 */
-	void addListable(@Nullable Listable item) {
-		Message msg = Message.obtain(null, AlarmDataService.MSG_ADD_LISTABLE);
-
-		ListableInfo info = new ListableInfo();
-		info.listable = item;
-
-		Bundle b = new Bundle();
-		b.putParcelable(AlarmDataService.BUNDLE_INFO_KEY, info);
-		msg.setData(b);
-
-		sendMessage(msg);
-	}
-
-	/**
-	 * Sends a message to AlarmDataService to set the absolute index to the specified listable.
-	 * @param absIndex the absolute index of the Listable to set
-	 * @param item the new Listable to set it to
-	 */
-	void setListableAbs(int absIndex, @Nullable Listable item) {
-		Message msg = Message.obtain(null, AlarmDataService.MSG_SET_LISTABLE);
-
-		ListableInfo info = new ListableInfo();
-		info.listable = item;
-
-		Bundle b = new Bundle();
-		b.putParcelable(AlarmDataService.BUNDLE_INFO_KEY, info);
-		msg.setData(b);
-
-		msg.arg1 = absIndex;
-		sendMessage(msg);
-	}
-
-	/**
-	 * Sends a message to AlarmDataService to delete the listable at the specified index
-	 * @param absIndex the absolute index of the Listable to set
-	 */
-	private void deleteListableAbs(int absIndex) {
-		Message msg = Message.obtain(null, AlarmDataService.MSG_DELETE_LISTABLE);
-		msg.arg1 = absIndex;
-		sendMessage(msg);
 	}
 
 	/* **********************************  Other Methods  ********************************* */
@@ -505,7 +441,9 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 			switch (which) {
 				case 0:
 					// delete the current listable
-					adapter.deleteListableAbs(getLayoutPosition());
+					Message msg = Message.obtain(null, AlarmDataService.MSG_DELETE_LISTABLE);
+					msg.arg1 = getLayoutPosition();
+					adapter.sendMessage(msg);
 					break;
 				default:
 					if (DEBUG) Log.e(TAG, "There was an invalid choice in the Listable dialog.");
