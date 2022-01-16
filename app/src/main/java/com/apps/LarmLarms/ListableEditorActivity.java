@@ -200,10 +200,14 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 	@NotNull
 	private DataServiceConnection dataConn;
 	/**
-	 * asdf
+	 * The messenger of the data service.
 	 */
 	@Nullable
 	private Messenger dataService;
+	/**
+	 * A message that couldn't be sent before.
+	 */
+	private Message unsentMessage;
 
 	/* *********************************  Lifecycle Methods  ******************************* */
 
@@ -333,8 +337,7 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 	/* ************************************  Callbacks  ************************************* */
 
 	/**
-	 * An onclick callback for the back button. Closes the AlarmCreator and return
-	 * RESULT_CANCELLED and no intent.
+	 * An onclick callback for the back button. Closes the ListableEditor.
 	 * @param view the back button (view that triggered the callback)
 	 */
 	public void backButtonClicked(@NotNull View view) {
@@ -360,7 +363,7 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 			if (listablePath != null && !listablePath.equals(originalPath)) {
 				msg = Message.obtain(null, AlarmDataService.MSG_MOVE_LISTABLE);
 				msg.arg1 = listableIndex;
-
+				
 				data.path = listablePath;
 				data.absIndex = -1;
 			}
@@ -1062,6 +1065,29 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 		return true;
 	}
 
+	/**
+	 * Sends a message to the data service.
+	 * @param msg the message to send
+	 * @return whether the message was successfully sent or not
+	 */
+	private boolean sendMessage(@Nullable Message msg) {
+		if (dataService == null) {
+			if (DEBUG) Log.e(TAG, "Data service is unavailable. Caching the message.");
+			unsentMessage = msg;
+			return false;
+		}
+
+		try {
+			dataService.send(msg);
+			return true;
+		}
+		catch (RemoteException e) {
+			if (DEBUG) Log.e(TAG, "Data service is unavailable. Caching the message.");
+			unsentMessage = msg;
+			return false;
+		}
+	}
+
 	/* ***********************************  Inner Classes  ************************************* */
 
 	/**
@@ -1070,7 +1096,8 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 	 */
 	private class DataServiceConnection implements ServiceConnection {
 		/**
-		 * Called when the service is connected. Sends the messenger to the adapter.
+		 * Called when the service is connected. Sends the messenger to the adapter. If there is an
+		 * unsent message, will send it and finish.
 		 * @param className the name of the class that was bound to (unused)
 		 * @param service the binder that the service returned
 		 */
@@ -1083,6 +1110,11 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 			msg.replyTo = new Messenger(new MsgHandler(ListableEditorActivity.this));
 			try {
 				dataService.send(msg);
+				if (unsentMessage != null) {
+					dataService.send(unsentMessage);
+					setResult(RESULT_OK);
+					finish();
+				}
 			}
 			catch (RemoteException e) {
 				e.printStackTrace();
