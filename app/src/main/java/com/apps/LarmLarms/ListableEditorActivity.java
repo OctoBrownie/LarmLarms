@@ -375,16 +375,16 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 					msg = Message.obtain(null, AlarmDataService.MSG_SET_LISTABLE);
 					msg.arg1 = listableIndex;
 				}
-				else {
-					// path and listable changed, so add listable to ListableInfo
-					workingListable.turnOn();
-					data.listable = workingListable;
-				}
+
+				// listable changed, so add to the bundle
+				workingListable.turnOn();
+				data.listable = workingListable;
 			}
 		}
 		else {
 			// create MSG_ADD_LISTABLE
 			msg = Message.obtain(null, AlarmDataService.MSG_ADD_LISTABLE);
+			data.listable = workingListable;
 		}
 
 		// if there is no message to send, then just exit the activity
