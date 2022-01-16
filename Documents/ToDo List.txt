@@ -47,3 +47,5 @@ if you click on the buttons presented by the heads up notification (when an alar
 vibration only occurs right when the alarm starts ringing (doesn't loop)
 alarms won't ring if app isn't in the "recent" bar (process has been killed, I think?)
 says "folder name" when creating/editing an alarm
+changing from a different alarm repeat type to one with a time picker makes it a 12 hour time picker (not 24 hour)
+
