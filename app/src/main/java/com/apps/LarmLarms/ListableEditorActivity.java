@@ -348,41 +348,47 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 	}
 
 	/**
-	 * An onclick callback for the save button. If there is no error, will return RESULT_OK and the
-	 * Listable (in string form) in the intent. If there is an error, either the user is given the
-	 * chance to fix it (name error) or the activity exits through exitActivity().
+	 * An onclick callback for the save button. Turns workingListable on and sends it back to the
+	 * DataService to be saved. Exits the activity if the listable was saved correctly or if some
+	 * fatal error has been encountered.
 	 * @param view the save button (view that triggered the callback)
 	 */
 	public void saveButtonClicked(@NotNull View view) {
-		saveToListable();
+		if (!saveToListable()) return;
 
 		Message msg = null;
 		ListableInfo data = new ListableInfo();
-		data.listable = workingListable;
-		
+
 		if (isEditing) {
 			// check if the path was changed (make it a MSG_MOVE_LISTABLE)
+			// would be a MSG_MOVE_LISTABLE whether or not the listable itself changes
 			if (listablePath != null && !listablePath.equals(originalPath)) {
 				msg = Message.obtain(null, AlarmDataService.MSG_MOVE_LISTABLE);
 				msg.arg1 = listableIndex;
-				
+
 				data.path = listablePath;
 				data.absIndex = -1;
 			}
-			
+
 			// check if the listable itself was changed
-			if (msg == null && !workingListable.equals(originalListable)) {
-				// path didn't change but Listable did, so use MSG_SET_LISTABLE
-				msg = Message.obtain(null, AlarmDataService.MSG_SET_LISTABLE);
-				msg.arg1 = listableIndex;
+			if (!workingListable.equals(originalListable)) {
+				if (msg == null) {
+					// path didn't change but Listable did, so use MSG_SET_LISTABLE
+					msg = Message.obtain(null, AlarmDataService.MSG_SET_LISTABLE);
+					msg.arg1 = listableIndex;
+				}
+				else {
+					// path and listable changed, so add listable to ListableInfo
+					workingListable.turnOn();
+					data.listable = workingListable;
+				}
 			}
-			// TODO: What if path AND listable change?
 		}
 		else {
 			// create MSG_ADD_LISTABLE
 			msg = Message.obtain(null, AlarmDataService.MSG_ADD_LISTABLE);
 		}
-		
+
 		// if there is no message to send, then just exit the activity
 		if (msg == null) {
 			if (DEBUG) Log.i(TAG, "Nothing changed, so just exiting...");
@@ -407,9 +413,6 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 			exitActivity();
 		}
 
-		// exit with result
-		// setResult(RESULT_OK);
-		// finish();
 		exitActivity();
 	}
 
@@ -914,11 +917,12 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 	}
 
 	/**
-	 * Saves information from activity fields to workingListable. If an error is encountered, will
-	 * either create a Toast to tell the user how to fix it or close the activity using exitActivity(),
-	 * based on severity of the error.
+	 * Saves information from activity fields to workingListable. Does NOT turn workingListable on
+	 * if it was originally off. If an error is encountered, will ither create a Toast to tell the
+	 * user how to fix it or close the activity using exitActivity(), based on error severity.
+	 * @return whether the listable was saved without error
 	 */
-	public void saveToListable() {
+	public boolean saveToListable() {
 		// common fields
 		String newName = ((EditText) findViewById(R.id.nameInput)).getText().toString();
 		int errorCode = workingListable.setListableName(newName);
@@ -940,11 +944,11 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 					// error: unknown request code!
 					if (DEBUG) Log.e(TAG, "Unknown setListableName() request code! Exiting activity...");
 					exitActivity();
-					return;
+					return false;
 			}
 
 			Toast.makeText(this, toastErrorText, Toast.LENGTH_SHORT).show();
-			return;		// don't exit, let the user fix it
+			return false;		// don't exit, let the user fix it
 		}
 
 		// checking for folders of the same name
@@ -957,11 +961,9 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 			if (paths == null || paths.indexOf(newPath) != -1) {
 				Toast.makeText(this, getResources().getString(R.string.folder_editor_toast_duplicate),
 						Toast.LENGTH_SHORT).show();
-				return;		// don't exit, let the user fix it
+				return false;		// don't exit, let the user fix it
 			}
 		}
-
-		workingListable.turnOn();
 
 		// saving alarm time data
 		if (isEditingAlarm) {
@@ -974,7 +976,7 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 					if (alarmDatePicker == null || alarmTimePicker == null) {
 						if (DEBUG) Log.wtf(TAG, "The alarm date/time pickers are null.");
 						exitActivity();
-						return;
+						return false;
 					}
 
 					alarmCalendar.set(Calendar.YEAR, alarmDatePicker.getYear());
@@ -990,7 +992,7 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 							alarmOffsetMinsLayout == null) {
 						if (DEBUG) Log.wtf(TAG, "The alarm offset layouts are null.");
 						exitActivity();
-						return;
+						return false;
 					}
 
 					EditText currEditText;
@@ -1045,7 +1047,7 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 					if (alarmDateOfMonthLayout == null) {
 						if (DEBUG) Log.wtf(TAG, "The alarm date of month is null.");
 						exitActivity();
-						return;
+						return false;
 					}
 
 					NumberPicker picker = alarmDateOfMonthLayout.findViewById(R.id.alarmDateOfMonthInput);
@@ -1056,6 +1058,7 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 					if (alarmTimePicker == null) {
 						if (DEBUG) Log.wtf(TAG, "The alarm time picker is null.");
 						exitActivity();
+						return false;
 					}
 
 					alarmCalendar.set(Calendar.HOUR_OF_DAY, alarmTimePicker.getCurrentHour());
@@ -1064,10 +1067,13 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 				default:
 					if (DEBUG) Log.e(TAG, "The alarm has an invalid repeat type.");
 					exitActivity();
+					return false;
 			}
 
 			((Alarm) workingListable).updateRingTime();
 		}
+
+		return true;
 	}
 
 	/* ***********************************  Inner Classes  ************************************* */

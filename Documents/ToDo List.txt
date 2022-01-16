@@ -46,4 +46,3 @@ if you click on the buttons presented by the heads up notification (when an alar
 vibration only occurs right when the alarm starts ringing (doesn't loop)
 alarms won't ring if app isn't in the "recent" bar (process has been killed, I think?)
 editor doesn't show the name of the ringtone (says context is null)
-issues with equals methods (Alarm and AlarmGroup)
