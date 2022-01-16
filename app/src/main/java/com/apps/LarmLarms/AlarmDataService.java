@@ -514,6 +514,8 @@ public class AlarmDataService extends Service {
 
 		currFolder.addListable(newListable);
 		rootFolder.refreshLookup();
+
+		writeAlarmsToDisk(this, rootFolder);
 		setNextAlarmToRing();
 		sendDataChanged();
 	}
