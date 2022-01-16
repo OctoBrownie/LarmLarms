@@ -533,12 +533,6 @@ public final class Alarm implements Listable, Cloneable {
 	/* ******************************  Getter and Setter Methods  ******************************* */
 
 	/**
-	 * Returns the context stored within the Alarm.
-	 */
-	@Nullable @Contract(pure = true)
-	public Context getContext() { return context; }
-
-	/**
 	 * Sets the context.
 	 * @param context the new context to set it to, can be null
 	 */
