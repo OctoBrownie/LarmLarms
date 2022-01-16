@@ -60,11 +60,11 @@ public class AlarmDataService extends Service {
 	/**
 	 * In a bundle, this is the key used to store a ListableInfo.
 	 */
-	static final String BUNDLE_INFO_KEY = "listableInfoKey";
+	static final String BUNDLE_INFO_KEY = "com.apps.LarmLarms.bundleKey.INFO";
 	/**
 	 * In a bundle, this is the key used to store a reduced folder structure (a String ArrayList).
 	 */
-	static final String BUNDLE_LIST_KEY = "reducedFolderKey";
+	static final String BUNDLE_LIST_KEY = "com.apps.LarmLarms.bundleKey.FOLDERS";
 
 	/* *****************************  Message what field constants  **************************** */
 
