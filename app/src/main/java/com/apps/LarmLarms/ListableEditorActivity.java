@@ -365,9 +365,7 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 			if (listablePath != null && !listablePath.equals(originalPath)) {
 				msg = Message.obtain(null, AlarmDataService.MSG_MOVE_LISTABLE);
 				msg.arg1 = listableIndex;
-				
 				data.path = listablePath;
-				data.absIndex = -1;
 			}
 
 			// check if the listable itself was changed
@@ -653,6 +651,17 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 		if (paths == null) {
 			if (DEBUG) Log.e(TAG, "Message from alarm service had a null folder structure.");
 			return;
+		}
+
+		if (isEditing && !isEditingAlarm) {
+			if (originalListable == null) {
+				if (DEBUG) Log.e(TAG, "Can't setup folder structure without the original listable being valid.");
+				return;
+			}
+			String folderPath = originalPath + originalListable.getListableName() + '/';
+			for (int i = paths.size() - 1; i > 0; i--) {
+				if (paths.get(i).startsWith(folderPath)) paths.remove(i);
+			}
 		}
 
 		Spinner spinner = findViewById(R.id.parentFolderInput);
