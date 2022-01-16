@@ -54,13 +54,13 @@ class ListableInfo implements Parcelable {
 	String path;
 
 	/**
-	 * Initializes dummy data in the struct variables.
+	 * Initializes dummy data in the struct variables, all invalid data in case it isn't filled out.
 	 */
 	ListableInfo() {
-		relIndex = 0;
-		absIndex = 0;
-		numIndents = 0;
-		absParentIndex = 0;
+		relIndex = -1;
+		absIndex = -1;
+		numIndents = -1;
+		absParentIndex = -1;
 		listable = null;
 		parent = null;
 		path = null;
