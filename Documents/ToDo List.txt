@@ -6,12 +6,13 @@ moving existing Listables around (ListableEditor)
 	could send the entire database in the intent, wouldn't be that fast though
 	could send a reduced version of the database, with only folders (major problem: how do you get the folder to add it to after returning?)
 make the UI look prettier
-	some repeat strings don't really look nice (ex: offset strings are always plural + sound funky, exception months are shorthand and don't have an "and" between the last two exception months)
+	some repeat strings don't really look nice (ex: offset strings are always plural + sound funky, exception months are shorthand and don't have an "and" between the last two months)
 new ListableEditor features 
 	switches for ringtone and vibration (?) 
 	slider for ringtone volume 
 	customizable vibrations? 
 		if we do this, probably want to manage our own Vibrator instead of relying on the NotificationChannel's (can't change per alarm, is editable by user in settings)
+	make it faster to boot
 add a settings activity (?)
 use a (color) selector to make disabled alarms more obvious (MainActivity)
 	see https://programmer.ink/think/a-detailed-explanation-of-the-use-of-selector-in-android.html
@@ -21,6 +22,7 @@ make documentation less... conversational?
 make snake_case and camelCase variables and stuff all consistent?
 make CardViews draggable (to reorder within folders??)
 	helpful Android documentation: https://developer.android.com/guide/topics/ui/drag-drop
+	dragging items would interfere with the dragging of the list view so maybe not
 perhaps make setter functions return a ref to the object (allow chain setting)
 remove superfluous methods and unnecessary fields 
 	same with styles or strings or colors or attr or dimens or...
@@ -38,7 +40,6 @@ could use DiffUtil perhaps for differences between versions of lists (minimal an
 could possibly make the distinction in Listable between viewable size and actual size (same for getting lookups or listables from folders)
 show multiple alarms if they ring near the same time (in a notification? together with the other alarm?)
 	what happens right now is that they will ring one after the other (kind of annoying, but I guess it's a feature, not a bug)
-use a toast if invalid data is entered into ListableEditor 
 
 BUGS
 if you click on the buttons presented by the heads up notification (when an alarm is ringing), the new activity it calls will flash for a brief moment while it's sending the message and closing
