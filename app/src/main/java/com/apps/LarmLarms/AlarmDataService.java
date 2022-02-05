@@ -797,8 +797,14 @@ public class AlarmDataService extends Service {
 		}
 
 		AlarmManager manager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-		PendingIntent pendingIntent = PendingIntent.getService(this, 0, intent,
-				PendingIntent.FLAG_UPDATE_CURRENT);
+		PendingIntent pendingIntent;
+
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+			pendingIntent = PendingIntent.getForegroundService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+		}
+		else {
+			pendingIntent = PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+		}
 
 		if (manager != null && pendingIntent != null) {
 			if (next.listable == null) {
@@ -807,7 +813,10 @@ public class AlarmDataService extends Service {
 				return;
 			}
 
-			manager.setExact(AlarmManager.RTC_WAKEUP, ((Alarm) next.listable).getAlarmTimeMillis(), pendingIntent);
+			manager.setAlarmClock(
+					new AlarmManager.AlarmClockInfo(((Alarm) next.listable).getAlarmTimeMillis(),
+							pendingIntent),
+					pendingIntent);
 			if (DEBUG) Log.i(TAG, "Sent an intent to AlarmManager.");
 		}
 	}
