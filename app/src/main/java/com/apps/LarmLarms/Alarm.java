@@ -1080,6 +1080,11 @@ public final class Alarm implements Listable, Cloneable {
 		workingClock.set(Calendar.HOUR_OF_DAY, ringTime.get(Calendar.HOUR_OF_DAY));
 		workingClock.set(Calendar.MINUTE, ringTime.get(Calendar.MINUTE));
 
+		if (repeatType != REPEAT_ONCE_REL && repeatType != REPEAT_OFFSET) {
+			workingClock.set(Calendar.SECOND, 0);
+			workingClock.set(Calendar.MILLISECOND, 0);
+		}
+
 		// use break to set workingClock to ringTime, return to not
 		switch(repeatType) {
 			case REPEAT_ONCE_ABS:

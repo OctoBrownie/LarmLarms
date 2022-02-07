@@ -973,6 +973,9 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 
 					alarmCalendar.set(Calendar.HOUR_OF_DAY, alarmTimePicker.getCurrentHour());
 					alarmCalendar.set(Calendar.MINUTE, alarmTimePicker.getCurrentMinute());
+
+					alarmCalendar.set(Calendar.SECOND, 0);
+					alarmCalendar.set(Calendar.MILLISECOND, 0);
 					break;
 				case Alarm.REPEAT_ONCE_REL:
 				case Alarm.REPEAT_OFFSET:
@@ -1051,6 +1054,9 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 
 					alarmCalendar.set(Calendar.HOUR_OF_DAY, alarmTimePicker.getCurrentHour());
 					alarmCalendar.set(Calendar.MINUTE, alarmTimePicker.getCurrentMinute());
+
+					alarmCalendar.set(Calendar.SECOND, 0);
+					alarmCalendar.set(Calendar.MILLISECOND, 0);
 					break;
 				default:
 					if (DEBUG) Log.e(TAG, "The alarm has an invalid repeat type.");
