@@ -2,9 +2,6 @@ To do list for new features or bugs to be fixed
 
 CURRENTLY WORKING ON: moving Listables 
 
-moving existing Listables around (ListableEditor) 
-	could send the entire database in the intent, wouldn't be that fast though
-	could send a reduced version of the database, with only folders (major problem: how do you get the folder to add it to after returning?)
 make the UI look prettier
 	some repeat strings don't really look nice (ex: offset strings are always plural + sound funky, exception months are shorthand and don't have an "and" between the last two months)
 new ListableEditor features 
@@ -53,4 +50,5 @@ leaving and quickly returning to the app sometimes crashes it (after moving stuf
 	ListableInfo listable field is null, trying to read from RecyclerViewAdapter's onBindViewHolder()
 can't close nested folders
 seems to be a max for nesting alarms & folders?
+rings twice for the same alarm sometimes and on the first time it rang, the ringtone cut out after a bit
 
