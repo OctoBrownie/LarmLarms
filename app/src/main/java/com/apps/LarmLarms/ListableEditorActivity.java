@@ -584,6 +584,8 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 
 		alarmTimePicker = findViewById(R.id.alarmTimeInput);
 
+		alarmTimePicker.setIs24HourView(DateFormat.is24HourFormat(this));
+
 		// editing alarmTimePicker to match hour/min
 		alarmTimePicker.setCurrentHour(timePickerHour);
 		alarmTimePicker.setCurrentMinute(timePickerMin);
