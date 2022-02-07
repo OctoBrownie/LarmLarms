@@ -25,11 +25,6 @@ import androidx.recyclerview.widget.RecyclerView;
  */
 public class RecyclerViewFrag extends Fragment {
 	/**
-	 * Static flag to enable/disable all logging. 
-	 */
-	private static final boolean DEBUG = false;
-	
-	/**
 	 * Tag of the class for logging purposes.
 	 */
 	private static final String TAG = "RecyclerViewFragment";
@@ -137,7 +132,7 @@ public class RecyclerViewFrag extends Fragment {
 		 */
 		@Override
 		public void onServiceDisconnected(@NotNull ComponentName className) {
-			if (DEBUG) Log.e(TAG, "The data service crashed.");
+			if (BuildConfig.DEBUG) Log.e(TAG, "The data service crashed.");
 			boundToDataService = false;
 			recyclerView.setAdapter(null);
 			myAdapter.setDataService(null);

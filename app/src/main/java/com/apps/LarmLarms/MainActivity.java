@@ -25,11 +25,6 @@ import androidx.fragment.app.FragmentTransaction;
  */
 public class MainActivity extends AppCompatActivity {
 	/**
-	 * Static flag to enable/disable all logging. 
-	 */
-	private static final boolean DEBUG = false;
-	
-	/**
 	 * Tag of the class for logging purposes.
 	 */
 	private final static String TAG = "MainActivity";
@@ -266,7 +261,7 @@ public class MainActivity extends AppCompatActivity {
 		@Override
 		public void handleMessage(@Nullable Message msg) {
 			if (msg == null) {
-				if (DEBUG) Log.e(TAG, "Message sent to the main activity was null. Ignoring...");
+				if (BuildConfig.DEBUG) Log.e(TAG, "Message sent to the main activity was null. Ignoring...");
 				return;
 			}
 
@@ -278,7 +273,7 @@ public class MainActivity extends AppCompatActivity {
 					activity.showFrag();
 					break;
 				default:
-					if (DEBUG) Log.e(TAG, "Unknown message type. Sending to Handler's handleMessage().");
+					if (BuildConfig.DEBUG) Log.e(TAG, "Unknown message type. Sending to Handler's handleMessage().");
 					super.handleMessage(msg);
 					break;
 			}

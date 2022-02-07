@@ -24,11 +24,6 @@ import androidx.appcompat.app.AppCompatActivity;
 
 public class AlarmRingingActivity extends AppCompatActivity {
 	/**
-	 * Static flag to enable/disable all logging. 
-	 */
-	private static final boolean DEBUG = false;
-	
-	/**
 	 * Tag of the class for logging purposes.
 	 */
 	private static final String TAG = "AlarmRingingActivity";
@@ -103,7 +98,7 @@ public class AlarmRingingActivity extends AppCompatActivity {
 		Alarm currAlarm = Alarm.fromEditString(this,
 				getIntent().getStringExtra(AlarmRingingService.EXTRA_LISTABLE));
 		if (currAlarm == null) {
-			if (DEBUG) Log.e(TAG, "The alarm given was invalid...?");
+			if (BuildConfig.DEBUG) Log.e(TAG, "The alarm given was invalid...?");
 			finish();
 			return;
 		}
@@ -208,13 +203,18 @@ public class AlarmRingingActivity extends AppCompatActivity {
 	@Contract("null -> true")
 	private boolean sendMessage(@Nullable Message msg) {
 		if (msg == null) return true;
+		if (ringingService == null) {
+			if (BuildConfig.DEBUG) Log.e(TAG, "Ringing service is null. Caching message.");
+			unsentMessage = msg;
+			return false;
+		}
 
 		try {
 			ringingService.send(msg);
 			return true;
 		}
-		catch (NullPointerException | RemoteException e) {
-			if (DEBUG) Log.e(TAG, "Ringing service is unavailable. Caching message.");
+		catch (RemoteException e) {
+			if (BuildConfig.DEBUG) Log.e(TAG, "Ringing service is unavailable. Caching message.");
 			unsentMessage = msg;
 			return false;
 		}
@@ -250,7 +250,7 @@ public class AlarmRingingActivity extends AppCompatActivity {
 		 */
 		@Override
 		public void onServiceDisconnected(@NotNull ComponentName className) {
-			if (DEBUG) Log.e(TAG, "The ringing service crashed.");
+			if (BuildConfig.DEBUG) Log.e(TAG, "The ringing service crashed.");
 			boundToRingingService = false;
 			ringingService = null;
 		}

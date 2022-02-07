@@ -31,11 +31,6 @@ import androidx.core.app.NotificationCompat;
 public class AlarmRingingService extends Service implements MediaPlayer.OnPreparedListener,
 		MediaPlayer.OnErrorListener {
 	/**
-	 * Static flag to enable/disable all logging. 
-	 */
-	private static final boolean DEBUG = false;
-	
-	/**
 	 * Tag of the class for logging purposes.
 	 */
 	private static final String TAG = "AlarmRingingService";
@@ -117,7 +112,7 @@ public class AlarmRingingService extends Service implements MediaPlayer.OnPrepar
 		Alarm currAlarm = Alarm.fromEditString(this,
 				inIntent.getStringExtra(EXTRA_LISTABLE));
 		if (currAlarm == null) {
-			if (DEBUG) Log.e(TAG, "Alarm was invalid.");
+			if (BuildConfig.DEBUG) Log.e(TAG, "Alarm was invalid.");
 			stopSelf();
 			return Service.START_NOT_STICKY;
 		}
@@ -182,7 +177,7 @@ public class AlarmRingingService extends Service implements MediaPlayer.OnPrepar
 				mediaPlayer.prepareAsync();
 			}
 			catch (Exception e) {
-				if (DEBUG) Log.e(TAG, "Something went wrong while initializing the alarm sounds.");
+				if (BuildConfig.DEBUG) Log.e(TAG, "Something went wrong while initializing the alarm sounds.");
 				stopSelf();
 				return Service.START_NOT_STICKY;
 			}
@@ -238,7 +233,7 @@ public class AlarmRingingService extends Service implements MediaPlayer.OnPrepar
 	 */
 	@Override
 	public boolean onError(@NotNull MediaPlayer mp, int what, int extra) {
-		if (DEBUG) Log.e(TAG, "Something went wrong while playing the alarm sounds.");
+		if (BuildConfig.DEBUG) Log.e(TAG, "Something went wrong while playing the alarm sounds.");
 		if (mediaPlayer != null)
 			mediaPlayer.release();
 		stopSelf();
@@ -254,7 +249,7 @@ public class AlarmRingingService extends Service implements MediaPlayer.OnPrepar
 	 */
 	private boolean sendMessage(@Nullable Message msg) {
 		if (dataService == null) {
-			if (DEBUG) Log.e(TAG, "Data service is null. Caching message.");
+			if (BuildConfig.DEBUG) Log.e(TAG, "Data service is null. Caching message.");
 			unsentMessage = msg;
 			return false;
 		}
@@ -263,7 +258,7 @@ public class AlarmRingingService extends Service implements MediaPlayer.OnPrepar
 			dataService.send(msg);
 		}
 		catch (RemoteException e) {
-			if (DEBUG) Log.e(TAG, "Data service is unavailable. Caching message.");
+			if (BuildConfig.DEBUG) Log.e(TAG, "Data service is unavailable. Caching message.");
 			unsentMessage = msg;
 			return false;
 		}
@@ -301,7 +296,7 @@ public class AlarmRingingService extends Service implements MediaPlayer.OnPrepar
 		@Override
 		public void handleMessage(@Nullable Message msg) {
 			if (msg == null) {
-				if (DEBUG) Log.e(TAG, "Message sent to the ringing service was null. Ignoring...");
+				if (BuildConfig.DEBUG) Log.e(TAG, "Message sent to the ringing service was null. Ignoring...");
 				return;
 			}
 
@@ -314,13 +309,13 @@ public class AlarmRingingService extends Service implements MediaPlayer.OnPrepar
 					outMsg = Message.obtain(null, AlarmDataService.MSG_DISMISS_ALARM, service.alarmAbsIndex, 0);
 					break;
 				default:
-					if (DEBUG) Log.e(TAG, "Unknown message type. Sending to Handler's handleMessage().");
+					if (BuildConfig.DEBUG) Log.e(TAG, "Unknown message type. Sending to Handler's handleMessage().");
 					super.handleMessage(msg);
 					return;
 			}
 
 			if (!service.sendMessage(outMsg)) {
-				if (DEBUG) Log.e(TAG, "Message couldn't be sent. Waiting for reconnection.");
+				if (BuildConfig.DEBUG) Log.e(TAG, "Message couldn't be sent. Waiting for reconnection.");
 				return;
 			}
 			service.stopForeground(true);
@@ -363,7 +358,7 @@ public class AlarmRingingService extends Service implements MediaPlayer.OnPrepar
 		 */
 		@Override
 		public void onServiceDisconnected(@NotNull ComponentName className) {
-			if (DEBUG) Log.e(TAG, "The data service crashed.");
+			if (BuildConfig.DEBUG) Log.e(TAG, "The data service crashed.");
 			boundToDataService = false;
 			dataService = null;
 

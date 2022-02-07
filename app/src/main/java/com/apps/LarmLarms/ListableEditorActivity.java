@@ -51,11 +51,6 @@ import androidx.appcompat.app.AppCompatActivity;
 public class ListableEditorActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
 
 	/* **************************************  Constants  *************************************** */
-
-	/**
-	 * Static flag to enable/disable all logging. 
-	 */
-	private static final boolean DEBUG = true;
 	
 	/**
 	 * Tag of the class for logging purposes.
@@ -230,7 +225,7 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 
 		String action = getIntent().getAction();
 		if (action == null) {
-			if (DEBUG) Log.e(TAG, "Action passed to ListableEditor is null.");
+			if (BuildConfig.DEBUG) Log.e(TAG, "Action passed to ListableEditor is null.");
 			finish();
 			return;
 		}
@@ -257,7 +252,7 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 				isEditing = true;
 				break;
 			default:
-				if (DEBUG) Log.e(TAG, "Unknown request code!");
+				if (BuildConfig.DEBUG) Log.e(TAG, "Unknown request code!");
 				finish();
 				return;
 		}
@@ -265,7 +260,7 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 		if (isEditing) {
 			Bundle extras = getIntent().getExtras();
 			if (extras == null) {
-				if (DEBUG) Log.e(TAG, "Extras passed to ListableEditor are null.");
+				if (BuildConfig.DEBUG) Log.e(TAG, "Extras passed to ListableEditor are null.");
 				finish();
 				return;
 			}
@@ -273,7 +268,7 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 			ListableInfo info = extras.getParcelable(EXTRA_LISTABLE_INFO);
 
 			if (info == null || info.listable == null || info.path == null) {
-				if (DEBUG) Log.e(TAG, "Listable info is invalid.");
+				if (BuildConfig.DEBUG) Log.e(TAG, "Listable info is invalid.");
 				finish();
 				return;
 			}
@@ -389,7 +384,7 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 
 		// if there is no message to send, then just exit the activity
 		if (msg == null) {
-			if (DEBUG) Log.i(TAG, "Nothing changed, so just exiting...");
+			if (BuildConfig.DEBUG) Log.i(TAG, "Nothing changed, so just exiting...");
 			finish();
 			return;
 		}
@@ -487,7 +482,7 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 					listablePath = paths.get(pos);
 				break;
 			default:
-				if (DEBUG) Log.e(TAG, "Unknown AdapterView selected an item.");
+				if (BuildConfig.DEBUG) Log.e(TAG, "Unknown AdapterView selected an item.");
 				finish();
 		}
 	}
@@ -643,19 +638,19 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 	private void setupFolderStructure(@NotNull Message msg) {
 		Bundle data = msg.getData();
 		if (data == null) {
-			if (DEBUG) Log.e(TAG, "Message from alarm service had a null bundle.");
+			if (BuildConfig.DEBUG) Log.e(TAG, "Message from alarm service had a null bundle.");
 			return;
 		}
 
 		paths = data.getStringArrayList(AlarmDataService.BUNDLE_LIST_KEY);
 		if (paths == null) {
-			if (DEBUG) Log.e(TAG, "Message from alarm service had a null folder structure.");
+			if (BuildConfig.DEBUG) Log.e(TAG, "Message from alarm service had a null folder structure.");
 			return;
 		}
 
 		if (isEditing && !isEditingAlarm) {
 			if (originalListable == null) {
-				if (DEBUG) Log.e(TAG, "Can't setup folder structure without the original listable being valid.");
+				if (BuildConfig.DEBUG) Log.e(TAG, "Can't setup folder structure without the original listable being valid.");
 				return;
 			}
 			String folderPath = originalPath + originalListable.getListableName() + '/';
@@ -700,7 +695,7 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 				case Alarm.REPEAT_ONCE_ABS:
 					// requires: time picker, date picker
 					if (alarmTimePicker == null || alarmDatePicker == null) {
-						if (DEBUG) Log.wtf(TAG, "The alarm date/time pickers are null.");
+						if (BuildConfig.DEBUG) Log.wtf(TAG, "The alarm date/time pickers are null.");
 						finish();
 						return;
 					}
@@ -712,7 +707,7 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 					// requires: offset fields (days, hours, minutes)
 					if (alarmOffsetDaysLayout == null || alarmOffsetHoursLayout == null ||
 							alarmOffsetMinsLayout == null) {
-						if (DEBUG) Log.wtf(TAG, "The alarm offsets layouts are null.");
+						if (BuildConfig.DEBUG) Log.wtf(TAG, "The alarm offsets layouts are null.");
 						finish();
 						return;
 					}
@@ -723,7 +718,7 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 				case Alarm.REPEAT_DAY_WEEKLY:
 					// requires: time picker, list of days (clickable text)
 					if (alarmTimePicker == null || alarmDaysLayout == null) {
-						if (DEBUG) Log.wtf(TAG, "The alarm time picker or days of week layout is null.");
+						if (BuildConfig.DEBUG) Log.wtf(TAG, "The alarm time picker or days of week layout is null.");
 						finish();
 						return;
 					}
@@ -734,7 +729,7 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 					// requires: time picker, date of month (number picker), list of months (clickable text)
 					if (alarmTimePicker == null || alarmMonthsLayout == null ||
 							alarmDateOfMonthLayout == null) {
-						if (DEBUG) Log.wtf(TAG, "The alarm time picker, months layout, or date of month layout is null.");
+						if (BuildConfig.DEBUG) Log.wtf(TAG, "The alarm time picker, months layout, or date of month layout is null.");
 						finish();
 						return;
 					}
@@ -746,7 +741,7 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 					// requires: time picker, list of months, date of month (number picker), spinner for the week #
 					if (alarmTimePicker == null || alarmDayMonthlyLayout == null ||
 							alarmMonthsLayout == null) {
-						if (DEBUG) Log.wtf(TAG, "The alarm time picker, day of the month, or months layout is null.");
+						if (BuildConfig.DEBUG) Log.wtf(TAG, "The alarm time picker, day of the month, or months layout is null.");
 						finish();
 						return;
 					}
@@ -755,7 +750,7 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 					alarmMonthsLayout.setVisibility(View.GONE);
 					break;
 				default:
-					if (DEBUG) Log.e(TAG, "Invalid previous alarm type selected.");
+					if (BuildConfig.DEBUG) Log.e(TAG, "Invalid previous alarm type selected.");
 					finish();
 			}
 		}
@@ -833,7 +828,7 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 				alarmMonthsLayout.setVisibility(View.VISIBLE);
 				break;
 			default:
-				if (DEBUG) Log.e(TAG, "Invalid alarm type selected.");
+				if (BuildConfig.DEBUG) Log.e(TAG, "Invalid alarm type selected.");
 				finish();
 		}
 		((Alarm) workingListable).setRepeatType(type);
@@ -930,7 +925,7 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 					break;
 				default:
 					// error: unknown request code!
-					if (DEBUG) Log.e(TAG, "Unknown setListableName() request code! Exiting activity...");
+					if (BuildConfig.DEBUG) Log.e(TAG, "Unknown setListableName() request code! Exiting activity...");
 					finish();
 					return false;
 			}
@@ -962,7 +957,7 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 				case Alarm.REPEAT_ONCE_ABS:
 				case Alarm.REPEAT_DATE_YEARLY:
 					if (alarmDatePicker == null || alarmTimePicker == null) {
-						if (DEBUG) Log.wtf(TAG, "The alarm date/time pickers are null.");
+						if (BuildConfig.DEBUG) Log.wtf(TAG, "The alarm date/time pickers are null.");
 						finish();
 						return false;
 					}
@@ -981,7 +976,7 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 				case Alarm.REPEAT_OFFSET:
 					if (alarmOffsetDaysLayout == null || alarmOffsetHoursLayout == null ||
 							alarmOffsetMinsLayout == null) {
-						if (DEBUG) Log.wtf(TAG, "The alarm offset layouts are null.");
+						if (BuildConfig.DEBUG) Log.wtf(TAG, "The alarm offset layouts are null.");
 						finish();
 						return false;
 					}
@@ -995,7 +990,7 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 					try {
 						days = format.parse(currEditText.getText().toString()).intValue();
 					} catch (ParseException e) {
-						if (DEBUG) Log.e(TAG, "Couldn't parse the days to offset.");
+						if (BuildConfig.DEBUG) Log.e(TAG, "Couldn't parse the days to offset.");
 						days = 0;
 					}
 
@@ -1003,7 +998,7 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 					try {
 						hours = format.parse(currEditText.getText().toString()).intValue();
 					} catch (ParseException e) {
-						if (DEBUG) Log.e(TAG, "Couldn't parse the hours to offset.");
+						if (BuildConfig.DEBUG) Log.e(TAG, "Couldn't parse the hours to offset.");
 						hours = 0;
 					}
 
@@ -1011,7 +1006,7 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 					try {
 						mins = format.parse(currEditText.getText().toString()).intValue();
 					} catch (ParseException e) {
-						if (DEBUG) Log.e(TAG, "Couldn't parse the minutes to offset.");
+						if (BuildConfig.DEBUG) Log.e(TAG, "Couldn't parse the minutes to offset.");
 						mins = 0;
 					}
 
@@ -1036,7 +1031,7 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 					break;
 				case Alarm.REPEAT_DATE_MONTHLY:
 					if (alarmDateOfMonthLayout == null) {
-						if (DEBUG) Log.wtf(TAG, "The alarm date of month is null.");
+						if (BuildConfig.DEBUG) Log.wtf(TAG, "The alarm date of month is null.");
 						finish();
 						return false;
 					}
@@ -1047,7 +1042,7 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 				case Alarm.REPEAT_DAY_WEEKLY:
 				case Alarm.REPEAT_DAY_MONTHLY:
 					if (alarmTimePicker == null) {
-						if (DEBUG) Log.wtf(TAG, "The alarm time picker is null.");
+						if (BuildConfig.DEBUG) Log.wtf(TAG, "The alarm time picker is null.");
 						finish();
 						return false;
 					}
@@ -1059,7 +1054,7 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 					alarmCalendar.set(Calendar.MILLISECOND, 0);
 					break;
 				default:
-					if (DEBUG) Log.e(TAG, "The alarm has an invalid repeat type.");
+					if (BuildConfig.DEBUG) Log.e(TAG, "The alarm has an invalid repeat type.");
 					finish();
 					return false;
 			}
@@ -1077,7 +1072,7 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 	 */
 	private boolean sendMessage(@Nullable Message msg) {
 		if (dataService == null) {
-			if (DEBUG) Log.e(TAG, "Data service is unavailable. Caching the message.");
+			if (BuildConfig.DEBUG) Log.e(TAG, "Data service is unavailable. Caching the message.");
 			unsentMessage = msg;
 			return false;
 		}
@@ -1087,7 +1082,7 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 			return true;
 		}
 		catch (RemoteException e) {
-			if (DEBUG) Log.e(TAG, "Data service is unavailable. Caching the message.");
+			if (BuildConfig.DEBUG) Log.e(TAG, "Data service is unavailable. Caching the message.");
 			unsentMessage = msg;
 			return false;
 		}
@@ -1133,7 +1128,7 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 		 */
 		@Override
 		public void onServiceDisconnected(@NotNull ComponentName className) {
-			if (DEBUG) Log.e(TAG, "The data service crashed.");
+			if (BuildConfig.DEBUG) Log.e(TAG, "The data service crashed.");
 			boundToDataService = false;
 		}
 	}
@@ -1166,7 +1161,7 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 		@Override
 		public void handleMessage(@Nullable Message msg) {
 			if (msg == null || msg.what != AlarmDataService.MSG_GET_FOLDERS) {
-				if (DEBUG) Log.e(TAG, "Message to handle is invalid. Ignoring...");
+				if (BuildConfig.DEBUG) Log.e(TAG, "Message to handle is invalid. Ignoring...");
 				return;
 			}
 

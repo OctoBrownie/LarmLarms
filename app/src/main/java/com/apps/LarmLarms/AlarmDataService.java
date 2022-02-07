@@ -40,11 +40,6 @@ import java.util.List;
  */
 public class AlarmDataService extends Service {
 	/**
-	 * Debug constant, enables/disables log messages.
-	 */
-	private final static boolean DEBUG = true;
-
-	/**
 	 * Tag of the class for logging purposes.
 	 */
 	private static final String TAG = "DataService";
@@ -318,7 +313,7 @@ public class AlarmDataService extends Service {
 					currFolder.append('\n').append(currLine);
 				}
 				else {
-					if (DEBUG) Log.e(TAG, "Invalid line in alarms.txt: " + currLine);
+					if (BuildConfig.DEBUG) Log.e(TAG, "Invalid line in alarms.txt: " + currLine);
 					return new ArrayList<>();
 				}
 				currLine = bReader.readLine();
@@ -332,11 +327,11 @@ public class AlarmDataService extends Service {
 			is.close();
 		}
 		catch (IOException e) {
-			if (DEBUG) Log.e(TAG, e.getMessage());
+			if (BuildConfig.DEBUG) Log.e(TAG, e.getMessage());
 			return new ArrayList<>();
 		}
 
-		if (DEBUG) Log.i(TAG, "Alarm list retrieved successfully.");
+		if (BuildConfig.DEBUG) Log.i(TAG, "Alarm list retrieved successfully.");
 		return data;
 	}
 
@@ -365,7 +360,7 @@ public class AlarmDataService extends Service {
 			os.close();
 		}
 		catch (IOException e) {
-			if (DEBUG) Log.e(TAG, e.getMessage());
+			if (BuildConfig.DEBUG) Log.e(TAG, e.getMessage());
 		}
 	}
 
@@ -379,7 +374,7 @@ public class AlarmDataService extends Service {
 	 */
 	private void handleGetListable(@NotNull Message inMsg) {
 		if (inMsg.replyTo == null && inMsg.getTarget() == null) {
-			if (DEBUG) Log.e(TAG, "MSG_GET_LISTABLE: Message had a null reply to field and no target.");
+			if (BuildConfig.DEBUG) Log.e(TAG, "MSG_GET_LISTABLE: Message had a null reply to field and no target.");
 			return;
 		}
 
@@ -412,7 +407,7 @@ public class AlarmDataService extends Service {
 	 */
 	private void handleGetFolders(@NotNull Message inMsg) {
 		if (inMsg.replyTo == null && inMsg.getTarget() == null) {
-			if (DEBUG) Log.e(TAG, "MSG_GET_FOLDERS: Message had a null reply to field and no target.");
+			if (BuildConfig.DEBUG) Log.e(TAG, "MSG_GET_FOLDERS: Message had a null reply to field and no target.");
 			return;
 		}
 
@@ -463,7 +458,7 @@ public class AlarmDataService extends Service {
 	private void handleAddListable(@NotNull Message inMsg) {
 		ListableInfo info = inMsg.getData().getParcelable(BUNDLE_INFO_KEY);
 		if (info == null) {
-			if (DEBUG) Log.e(TAG, "MSG_ADD_LISTABLE: Listable was null.");
+			if (BuildConfig.DEBUG) Log.e(TAG, "MSG_ADD_LISTABLE: Listable was null.");
 			return;
 		}
 
@@ -484,12 +479,12 @@ public class AlarmDataService extends Service {
 	private void handleMoveListable(@NotNull Message inMsg) {
 		ListableInfo info = inMsg.getData().getParcelable(BUNDLE_INFO_KEY);
 		if (info == null) {
-			if (DEBUG) Log.e(TAG, "MSG_MOVE_LISTABLE: Listable was null.");
+			if (BuildConfig.DEBUG) Log.e(TAG, "MSG_MOVE_LISTABLE: Listable was null.");
 			return;
 		}
 
 		if (info.path == null) {
-			if (DEBUG) Log.e(TAG, "MSG_MOVE_LISTABLE: Path was not specified.");
+			if (BuildConfig.DEBUG) Log.e(TAG, "MSG_MOVE_LISTABLE: Path was not specified.");
 			return;
 		}
 
@@ -498,7 +493,7 @@ public class AlarmDataService extends Service {
 		for (int i = 1; i < folders.length; i++) {
 			currFolder = currFolder.getFolder(folders[i]);
 			if (currFolder == null) {
-				if (DEBUG) Log.e(TAG, "MSG_MOVE_LISTABLE: Couldn't find the specified path.");
+				if (BuildConfig.DEBUG) Log.e(TAG, "MSG_MOVE_LISTABLE: Couldn't find the specified path.");
 				return;
 			}
 		}
@@ -546,7 +541,7 @@ public class AlarmDataService extends Service {
 	private void handleToggleActive(@NotNull Message inMsg) {
 		Listable l = rootFolder.getListableAbs(inMsg.arg1);
 		if (l == null) {
-			if (DEBUG) Log.e(TAG, "MSG_TOGGLE_ACTIVE: Index of listable was out of bounds.");
+			if (BuildConfig.DEBUG) Log.e(TAG, "MSG_TOGGLE_ACTIVE: Index of listable was out of bounds.");
 			return;
 		}
 		l.toggleActive();
@@ -563,11 +558,11 @@ public class AlarmDataService extends Service {
 	private void handleToggleOpen(@NotNull Message inMsg) {
 		Listable l = rootFolder.getListableAbs(inMsg.arg1);
 		if (l == null) {
-			if (DEBUG) Log.e(TAG, "MSG_TOGGLE_OPEN_FOLDER: Listable index was out of bounds.");
+			if (BuildConfig.DEBUG) Log.e(TAG, "MSG_TOGGLE_OPEN_FOLDER: Listable index was out of bounds.");
 			return;
 		}
 		else if (l.isAlarm()) {
-			if (DEBUG) Log.e(TAG, "MSG_TOGGLE_OPEN_FOLDER: Listable was an alarm.");
+			if (BuildConfig.DEBUG) Log.e(TAG, "MSG_TOGGLE_OPEN_FOLDER: Listable was an alarm.");
 			return;
 		}
 		((AlarmGroup) l).toggleOpen();
@@ -585,11 +580,11 @@ public class AlarmDataService extends Service {
 	private void handleSnoozeAlarm(@NotNull Message inMsg) {
 		Listable l = rootFolder.getListableAbs(inMsg.arg1);
 		if (l == null) {
-			if (DEBUG) Log.e(TAG, "MSG_SNOOZE_ALARM: Listable index was out of bounds.");
+			if (BuildConfig.DEBUG) Log.e(TAG, "MSG_SNOOZE_ALARM: Listable index was out of bounds.");
 			return;
 		}
 		else if (l.isAlarm()) {
-			if (DEBUG) Log.e(TAG, "MSG_SNOOZE_ALARM: Listable was a folder.");
+			if (BuildConfig.DEBUG) Log.e(TAG, "MSG_SNOOZE_ALARM: Listable was a folder.");
 			return;
 		}
 		((Alarm) l).snooze();
@@ -607,11 +602,11 @@ public class AlarmDataService extends Service {
 	private void handleUnsnoozeAlarm(@NotNull Message inMsg) {
 		Listable l = rootFolder.getListableAbs(inMsg.arg1);
 		if (l == null) {
-			if (DEBUG) Log.e(TAG, "MSG_UNSNOOZE_ALARM: Listable index was out of bounds.");
+			if (BuildConfig.DEBUG) Log.e(TAG, "MSG_UNSNOOZE_ALARM: Listable index was out of bounds.");
 			return;
 		}
 		else if (!l.isAlarm()) {
-			if (DEBUG) Log.e(TAG, "MSG_UNSNOOZE_ALARM: Listable was a folder.");
+			if (BuildConfig.DEBUG) Log.e(TAG, "MSG_UNSNOOZE_ALARM: Listable was a folder.");
 			return;
 		}
 		((Alarm) l).unsnooze();
@@ -629,11 +624,11 @@ public class AlarmDataService extends Service {
 	private void handleDismissAlarm(@NotNull Message inMsg) {
 		Listable l = rootFolder.getListableAbs(inMsg.arg1);
 		if (l == null) {
-			if (DEBUG) Log.e(TAG, "MSG_DISMISS_ALARM: Listable index was out of bounds.");
+			if (BuildConfig.DEBUG) Log.e(TAG, "MSG_DISMISS_ALARM: Listable index was out of bounds.");
 			return;
 		}
 		else if (!l.isAlarm()) {
-			if (DEBUG) Log.e(TAG, "MSG_DISMISS_ALARM: Listable was a folder.");
+			if (BuildConfig.DEBUG) Log.e(TAG, "MSG_DISMISS_ALARM: Listable was a folder.");
 			return;
 		}
 
@@ -652,7 +647,7 @@ public class AlarmDataService extends Service {
 				((Alarm) l).updateRingTime();
 				break;
 			default:
-				if (DEBUG) Log.wtf(TAG, "MSG_DISMISS_ALARM: The alarm repeat type was invalid...?");
+				if (BuildConfig.DEBUG) Log.wtf(TAG, "MSG_DISMISS_ALARM: The alarm repeat type was invalid...?");
 				break;
 		}
 
@@ -670,7 +665,7 @@ public class AlarmDataService extends Service {
 	private void handleDataChanged(@NotNull Message inMsg) {
 		if (inMsg.replyTo == null) {
 			// invalid message
-			if (DEBUG) Log.e(TAG, "MSG_DATA_CHANGED: Message didn't have a Messenger to reply to.");
+			if (BuildConfig.DEBUG) Log.e(TAG, "MSG_DATA_CHANGED: Message didn't have a Messenger to reply to.");
 		}
 		else {
 			int index = dataChangeListeners.indexOf(inMsg.replyTo);
@@ -700,7 +695,7 @@ public class AlarmDataService extends Service {
 	private void handleDataEmpty(@NotNull Message inMsg) {
 		if (inMsg.replyTo == null) {
 			// invalid message
-			if (DEBUG) Log.e(TAG, "MSG_DATA_EMPTY_LISTENER: Message didn't have a Messenger to reply to.");
+			if (BuildConfig.DEBUG) Log.e(TAG, "MSG_DATA_EMPTY_LISTENER: Message didn't have a Messenger to reply to.");
 		}
 		else {
 			int index = emptyListeners.indexOf(inMsg.replyTo);
@@ -808,7 +803,7 @@ public class AlarmDataService extends Service {
 
 		if (manager != null && pendingIntent != null) {
 			if (next.listable == null) {
-				if (DEBUG) Log.i(TAG, "No next listable to register to ring.");
+				if (BuildConfig.DEBUG) Log.i(TAG, "No next listable to register to ring.");
 				manager.cancel(pendingIntent);
 				return;
 			}
@@ -817,7 +812,7 @@ public class AlarmDataService extends Service {
 					new AlarmManager.AlarmClockInfo(((Alarm) next.listable).getAlarmTimeMillis(),
 							pendingIntent),
 					pendingIntent);
-			if (DEBUG) Log.i(TAG, "Sent an intent to AlarmManager.");
+			if (BuildConfig.DEBUG) Log.i(TAG, "Sent an intent to AlarmManager.");
 		}
 	}
 
@@ -893,7 +888,7 @@ public class AlarmDataService extends Service {
 			// Register the channel with the system; can't change the importance or behaviors after this
 			NotificationManager notificationManager = getSystemService(NotificationManager.class);
 			if (notificationManager == null) {
-				if (DEBUG) Log.e(TAG, "System returned a null notification manager.");
+				if (BuildConfig.DEBUG) Log.e(TAG, "System returned a null notification manager.");
 				return;
 			}
 			notificationManager.createNotificationChannel(channel);
@@ -930,65 +925,65 @@ public class AlarmDataService extends Service {
 		@Override
 		public void handleMessage(@Nullable Message msg) {
 			if (msg == null) {
-				if (DEBUG) Log.e(TAG, "Message sent to the data service was null. Ignoring...");
+				if (BuildConfig.DEBUG) Log.e(TAG, "Message sent to the data service was null. Ignoring...");
 				return;
 			}
 
 			switch(msg.what) {
 				case MSG_GET_LISTABLE:
 					service.handleGetListable(msg);
-					if (DEBUG) Log.d(TAG, "Got a listable for a client.");
+					if (BuildConfig.DEBUG) Log.d(TAG, "Got a listable for a client.");
 					break;
 				case MSG_GET_FOLDERS:
 					service.handleGetFolders(msg);
-					if (DEBUG) Log.d(TAG, "Got folder structure for a client.");
+					if (BuildConfig.DEBUG) Log.d(TAG, "Got folder structure for a client.");
 					break;
 				case MSG_SET_LISTABLE:
 					service.handleSetListable(msg);
-					if (DEBUG) Log.d(TAG, "Set a listable to a specific index.");
+					if (BuildConfig.DEBUG) Log.d(TAG, "Set a listable to a specific index.");
 					break;
 				case MSG_ADD_LISTABLE:
 					service.handleAddListable(msg);
-					if (DEBUG) Log.d(TAG, "Added a listable to the end of the rootFolder.");
+					if (BuildConfig.DEBUG) Log.d(TAG, "Added a listable to the end of the rootFolder.");
 					break;
 				case MSG_MOVE_LISTABLE:
 					service.handleMoveListable(msg);
-					if (DEBUG) Log.d(TAG, "Moved a listable.");
+					if (BuildConfig.DEBUG) Log.d(TAG, "Moved a listable.");
 					break;
 				case MSG_DELETE_LISTABLE:
 					service.handleDeleteListable(msg);
-					if (DEBUG) Log.d(TAG, "Deleted the listable at the specified absolute index.");
+					if (BuildConfig.DEBUG) Log.d(TAG, "Deleted the listable at the specified absolute index.");
 					break;
 				case MSG_TOGGLE_ACTIVE:
 					service.handleToggleActive(msg);
-					if (DEBUG) Log.d(TAG, "Toggled a listable's active state.");
+					if (BuildConfig.DEBUG) Log.d(TAG, "Toggled a listable's active state.");
 					break;
 				case MSG_TOGGLE_OPEN_FOLDER:
 					service.handleToggleOpen(msg);
-					if (DEBUG) Log.d(TAG, "Toggled a folder's open state.");
+					if (BuildConfig.DEBUG) Log.d(TAG, "Toggled a folder's open state.");
 					break;
 				case MSG_SNOOZE_ALARM:
 					service.handleSnoozeAlarm(msg);
-					if (DEBUG) Log.d(TAG, "Snoozed an alarm.");
+					if (BuildConfig.DEBUG) Log.d(TAG, "Snoozed an alarm.");
 					break;
 				case MSG_UNSNOOZE_ALARM:
 					service.handleUnsnoozeAlarm(msg);
-					if (DEBUG) Log.d(TAG, "Unsnoozed an alarm.");
+					if (BuildConfig.DEBUG) Log.d(TAG, "Unsnoozed an alarm.");
 					break;
 				case MSG_DISMISS_ALARM:
 					service.handleDismissAlarm(msg);
-					if (DEBUG) Log.d(TAG, "Dismissed an alarm.");
+					if (BuildConfig.DEBUG) Log.d(TAG, "Dismissed an alarm.");
 					break;
 				case MSG_DATA_CHANGED:
 					service.handleDataChanged(msg);
-					if (DEBUG) Log.d(TAG, "Added or removed a data changed listener.");
+					if (BuildConfig.DEBUG) Log.d(TAG, "Added or removed a data changed listener.");
 					break;
 				case MSG_DATA_EMPTY_LISTENER:
 					service.handleDataEmpty(msg);
-					if (DEBUG) Log.d(TAG, "Added or removed a data empty listener.");
+					if (BuildConfig.DEBUG) Log.d(TAG, "Added or removed a data empty listener.");
 					break;
 				default:
-					if (DEBUG) Log.e(TAG, "Unknown message type. Sending to Handler's handleMessage().");
+					if (BuildConfig.DEBUG) Log.e(TAG, "Unknown message type. Sending to Handler's handleMessage().");
 					super.handleMessage(msg);
 					break;
 			}
