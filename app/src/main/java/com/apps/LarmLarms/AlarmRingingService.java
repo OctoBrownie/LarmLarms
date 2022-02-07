@@ -250,12 +250,13 @@ public class AlarmRingingService extends Service implements MediaPlayer.OnPrepar
 	/**
 	 * Sends a message to the data service using the service's messenger.
 	 * @param msg the message to send, can be null
+	 * @return whether the message was sent successfully or not
 	 */
-	private void sendMessage(@Nullable Message msg) {
+	private boolean sendMessage(@Nullable Message msg) {
 		if (dataService == null) {
 			if (DEBUG) Log.e(TAG, "Data service is null. Caching message.");
 			unsentMessage = msg;
-			return;
+			return false;
 		}
 
 		try {
@@ -264,7 +265,9 @@ public class AlarmRingingService extends Service implements MediaPlayer.OnPrepar
 		catch (RemoteException e) {
 			if (DEBUG) Log.e(TAG, "Data service is unavailable. Caching message.");
 			unsentMessage = msg;
+			return false;
 		}
+		return true;
 	}
 
 	/* *************************************  Inner Classes  *********************************** */
@@ -305,24 +308,30 @@ public class AlarmRingingService extends Service implements MediaPlayer.OnPrepar
 			Message outMsg;
 			switch(msg.what) {
 				case AlarmDataService.MSG_SNOOZE_ALARM:
-					service.stopForeground(true);
-					if (service.mediaPlayer != null)
-						service.mediaPlayer.stop();
 					outMsg = Message.obtain(null, AlarmDataService.MSG_SNOOZE_ALARM, service.alarmAbsIndex, 0);
-					service.sendMessage(outMsg);
 					break;
 				case AlarmDataService.MSG_DISMISS_ALARM:
-					service.stopForeground(true);
-					if (service.mediaPlayer != null)
-						service.mediaPlayer.stop();
 					outMsg = Message.obtain(null, AlarmDataService.MSG_DISMISS_ALARM, service.alarmAbsIndex, 0);
-					service.sendMessage(outMsg);
 					break;
 				default:
 					if (DEBUG) Log.e(TAG, "Unknown message type. Sending to Handler's handleMessage().");
 					super.handleMessage(msg);
-					break;
+					return;
 			}
+
+			if (!service.sendMessage(outMsg)) {
+				if (DEBUG) Log.e(TAG, "Message couldn't be sent. Waiting for reconnection.");
+				return;
+			}
+			service.stopForeground(true);
+
+			if (service.mediaPlayer != null) {
+				service.mediaPlayer.stop();
+				service.mediaPlayer.release();
+				service.mediaPlayer = null;
+			}
+
+			service.stopSelf();
 		}
 	}
 
