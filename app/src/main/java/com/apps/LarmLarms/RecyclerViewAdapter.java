@@ -471,10 +471,15 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 		/* **********************************  Other Methods  ********************************** */
 
 		/**
-		 * Binds a new Listable to the current ViewHolder.
-		 * @param l the new Listable to bind
+		 * Binds a new Listable to the current ViewHolder. If the new listable is null, will not
+		 * change anything.
+		 * @param l the new Listable to bind, can be null
 		 */
-		private void changeListable(Listable l) {
+		private void changeListable(@Nullable Listable l) {
+			if (l == null) {
+				if (DEBUG) Log.e(TAG, "The new listable to swap into the view holder was null.");
+				return;
+			}
 			getTitleText().setText(l.getListableName());
 			getRepeatText().setText(l.getRepeatString());
 			getTimeText().setText(l.getNextRingTime());
