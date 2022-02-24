@@ -107,7 +107,8 @@ public class AlarmRingingService extends Service implements MediaPlayer.OnPrepar
 	 */
 	@Override
 	public int onStartCommand(@NotNull Intent inIntent, int flags, int startId) {
-		bindService(new Intent(this, AlarmDataService.class), dataConn, Context.BIND_AUTO_CREATE);
+		bindService(new Intent(this, AlarmDataService.class).putExtra(AlarmDataService.EXTRA_NO_UPDATE, true),
+				dataConn, Context.BIND_AUTO_CREATE);
 
 		Alarm currAlarm = Alarm.fromEditString(this,
 				inIntent.getStringExtra(EXTRA_LISTABLE));

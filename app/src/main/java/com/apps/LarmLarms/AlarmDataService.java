@@ -61,6 +61,12 @@ public class AlarmDataService extends Service {
 	 */
 	static final String BUNDLE_LIST_KEY = "com.apps.LarmLarms.bundleKey.FOLDERS";
 
+	/**
+	 * Flag to set if the calling intent doesn't want the service to immediately update the alarm
+	 * pending intent when first created. Used with a boolean extra in incoming intents.
+	 */
+	static final String EXTRA_NO_UPDATE = "com.apps.LarmLarms.extra.NO_UPDATE";
+
 	/* *****************************  Message what field constants  **************************** */
 
 	/**
@@ -256,7 +262,7 @@ public class AlarmDataService extends Service {
 		rootFolder = new AlarmGroup(getResources().getString(R.string.root_folder), getAlarmsFromDisk(this));
 
 		createNotificationChannel();
-		setNextAlarmToRing();
+		if (!intent.getBooleanExtra(EXTRA_NO_UPDATE, false)) setNextAlarmToRing();
 
 		handlerThread.start();
 		Messenger messenger = new Messenger(new MsgHandler(this, handlerThread));
