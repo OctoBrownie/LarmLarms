@@ -449,7 +449,7 @@ public final class AlarmGroup implements Listable, Cloneable {
 
 	/**
 	 * Generates a lookup list for a given set of Listables. Lookup list contains the first absolute
-	 * index for each Listable in the list.
+	 * index for each Listable in the list. Also updates all listables within the group.
 	 * @param data the list of Listables to read, can be null
 	 * @return the lookup list, can be empty but never null
 	 */
@@ -466,12 +466,12 @@ public final class AlarmGroup implements Listable, Cloneable {
 		if (data.size() == 0)
 			return res;
 
-		res.add(currIndex);		// for first listable
-
 		Listable l;
 
 		// iterates over all Listables except the last one (we don't care how many it has)
-		for (int i = 0; i < data.size() - 1; i++) {
+		for (int i = 0; i < data.size(); i++) {
+			res.add(currIndex);
+
 			l = data.get(i);
 			if (l == null) {
 				if (BuildConfig.DEBUG) Log.e(TAG, "Listable within given data was null.");
@@ -480,7 +480,6 @@ public final class AlarmGroup implements Listable, Cloneable {
 			if (!l.isAlarm()) { ((AlarmGroup) l).refreshLookup(); }
 
 			currIndex += l.size();
-			res.add(currIndex);
 		}
 
 		return res;
