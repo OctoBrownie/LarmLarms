@@ -34,18 +34,14 @@ can maybe use FlexboxLayout for alarm editor (similar to FlowLayout in Java Swin
 make more tests
 could make Alarm and AlarmGroup into Parcelables
 could use DiffUtil perhaps for differences between versions of lists (minimal animations)
-could possibly make the distinction in Listable between viewable size and actual size (same for getting lookups or listables from folders)
 show multiple alarms if they ring near the same time (in a notification? together with the other alarm?)
 	what happens right now is that they will ring one after the other (kind of annoying, but I guess it's a feature, not a bug)
 confirm permissions haven't been revoked?
+could use created time as a key for listables
 
 BUGS
 if you click on the buttons presented by the heads up notification (when an alarm is ringing), the new activity it calls will flash for a brief moment while it's sending the message and closing
 	might also not stop ringing (though the notification is removed)
 vibration only occurs right when the alarm starts ringing (doesn't loop)
-leaving and quickly returning to the app sometimes crashes it (after moving stuff?)
-	ListableInfo listable field is null, trying to read from RecyclerViewAdapter's onBindViewHolder()
-can't close nested folders
-seems to be a max for nesting alarms & folders?
 rings twice for the same alarm sometimes and on the first time it rang, the ringtone cut out after a bit
 
