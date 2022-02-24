@@ -543,7 +543,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 					adapter.refreshListables();
 					break;
 				default:
-					if (BuildConfig.DEBUG) Log.e(TAG, "Delivered message iswas of an unrecognized type. Sending to Handler.");
+					if (BuildConfig.DEBUG) Log.e(TAG, "Delivered message was of an unrecognized type. Sending to Handler.");
 					super.handleMessage(msg);
 					break;
 			}
