@@ -39,11 +39,11 @@ public class RingingService extends Service implements MediaPlayer.OnPreparedLis
 	/**
 	 * An extra used for carrying a Listable in edit string form.
 	 */
-	final static String EXTRA_LISTABLE = "com.apps.AlarmsButBetter.LISTABLE";
+	final static String EXTRA_LISTABLE = "com.apps.LarmLarms.extra.LISTABLE";
 	/**
 	 * An extra used for carrying a Listable's absolute index within the data.
 	 */
-	final static String EXTRA_LISTABLE_INDEX = "com.apps.AlarmsButBetter.ABS_INDEX";
+	final static String EXTRA_LISTABLE_INDEX = "com.apps.LarmLarms.extra.ABS_INDEX";
 
 	/* *********************************  Other static fields  ********************************** */
 
@@ -122,19 +122,21 @@ public class RingingService extends Service implements MediaPlayer.OnPreparedLis
 
 		// setting up custom foreground notification
 		Intent fullScreenIntent = new Intent(this, RingingActivity.class);
+		fullScreenIntent.putExtra(EXTRA_LISTABLE_INDEX, alarmAbsIndex);
 		fullScreenIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
 		fullScreenIntent.putExtra(EXTRA_LISTABLE, currAlarm.toEditString());
 		PendingIntent fullScreenPendingIntent = PendingIntent.getActivity(this, 0, fullScreenIntent,
 				PendingIntent.FLAG_UPDATE_CURRENT);
 
-		Intent dismissIntent = new Intent(fullScreenIntent);
-		dismissIntent.setAction(RingingActivity.ACTION_DISMISS);
-		PendingIntent dismissPendingIntent = PendingIntent.getActivity(this, 0, dismissIntent,
+		Intent dismissIntent = new Intent(this, AfterRingingService.class);
+		dismissIntent.putExtra(EXTRA_LISTABLE_INDEX, alarmAbsIndex);
+		dismissIntent.setAction(AfterRingingService.ACTION_DISMISS);
+		PendingIntent dismissPendingIntent = PendingIntent.getService(this, 0, dismissIntent,
 				PendingIntent.FLAG_UPDATE_CURRENT);
 
-		Intent snoozeIntent = new Intent(fullScreenIntent);
-		snoozeIntent.setAction(RingingActivity.ACTION_SNOOZE);
-		PendingIntent snoozePendingIntent = PendingIntent.getActivity(this, 0, snoozeIntent,
+		Intent snoozeIntent = new Intent(dismissIntent);
+		snoozeIntent.setAction(AfterRingingService.ACTION_SNOOZE);
+		PendingIntent snoozePendingIntent = PendingIntent.getService(this, 0, snoozeIntent,
 				PendingIntent.FLAG_UPDATE_CURRENT);
 
 		RemoteViews notifView = new RemoteViews(getPackageName(), R.layout.alarm_notification);
