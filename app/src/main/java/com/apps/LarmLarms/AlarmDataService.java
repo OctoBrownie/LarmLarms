@@ -589,7 +589,7 @@ public class AlarmDataService extends Service {
 			if (BuildConfig.DEBUG) Log.e(TAG, "MSG_SNOOZE_ALARM: Listable index was out of bounds.");
 			return;
 		}
-		else if (l.isAlarm()) {
+		else if (!l.isAlarm()) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "MSG_SNOOZE_ALARM: Listable was a folder.");
 			return;
 		}
