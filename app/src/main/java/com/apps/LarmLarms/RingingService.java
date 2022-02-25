@@ -28,7 +28,7 @@ import androidx.core.app.NotificationCompat;
  * A very short-term service that runs in the background of a currently ringing alarm. Manages the
  * notification for the alarm and playing the alarm sounds.
  */
-public class AlarmRingingService extends Service implements MediaPlayer.OnPreparedListener,
+public class RingingService extends Service implements MediaPlayer.OnPreparedListener,
 		MediaPlayer.OnErrorListener {
 	/**
 	 * Tag of the class for logging purposes.
@@ -94,7 +94,7 @@ public class AlarmRingingService extends Service implements MediaPlayer.OnPrepar
 	/**
 	 * Creates a new AlarmRingingService and initializes a connection to the data service.
 	 */
-	public AlarmRingingService() {
+	public RingingService() {
 		dataConn = new DataServiceConnection();
 	}
 
@@ -121,19 +121,19 @@ public class AlarmRingingService extends Service implements MediaPlayer.OnPrepar
 		alarmAbsIndex = inIntent.getIntExtra(EXTRA_LISTABLE_INDEX, -1);
 
 		// setting up custom foreground notification
-		Intent fullScreenIntent = new Intent(this, AlarmRingingActivity.class);
+		Intent fullScreenIntent = new Intent(this, RingingActivity.class);
 		fullScreenIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
 		fullScreenIntent.putExtra(EXTRA_LISTABLE, currAlarm.toEditString());
 		PendingIntent fullScreenPendingIntent = PendingIntent.getActivity(this, 0, fullScreenIntent,
 				PendingIntent.FLAG_UPDATE_CURRENT);
 
 		Intent dismissIntent = new Intent(fullScreenIntent);
-		dismissIntent.setAction(AlarmRingingActivity.ACTION_DISMISS);
+		dismissIntent.setAction(RingingActivity.ACTION_DISMISS);
 		PendingIntent dismissPendingIntent = PendingIntent.getActivity(this, 0, dismissIntent,
 				PendingIntent.FLAG_UPDATE_CURRENT);
 
 		Intent snoozeIntent = new Intent(fullScreenIntent);
-		snoozeIntent.setAction(AlarmRingingActivity.ACTION_SNOOZE);
+		snoozeIntent.setAction(RingingActivity.ACTION_SNOOZE);
 		PendingIntent snoozePendingIntent = PendingIntent.getActivity(this, 0, snoozeIntent,
 				PendingIntent.FLAG_UPDATE_CURRENT);
 
@@ -278,13 +278,13 @@ public class AlarmRingingService extends Service implements MediaPlayer.OnPrepar
 		 * The service that owns this handler.
 		 */
 		@NotNull
-		AlarmRingingService service;
+		RingingService service;
 
 		/**
 		 * Creates a new handler and stores the service that called it.
 		 * @param service the service that created the handler
 		 */
-		private ActivityHandler(@NotNull AlarmRingingService service) {
+		private ActivityHandler(@NotNull RingingService service) {
 			super(Looper.getMainLooper());
 			this.service = service;
 		}

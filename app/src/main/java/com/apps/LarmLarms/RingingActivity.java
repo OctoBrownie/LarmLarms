@@ -22,7 +22,7 @@ import org.jetbrains.annotations.Nullable;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-public class AlarmRingingActivity extends AppCompatActivity {
+public class RingingActivity extends AppCompatActivity {
 	/**
 	 * Tag of the class for logging purposes.
 	 */
@@ -96,7 +96,7 @@ public class AlarmRingingActivity extends AppCompatActivity {
 
 		// setting fields
 		Alarm currAlarm = Alarm.fromEditString(this,
-				getIntent().getStringExtra(AlarmRingingService.EXTRA_LISTABLE));
+				getIntent().getStringExtra(RingingService.EXTRA_LISTABLE));
 		if (currAlarm == null) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "The alarm given was invalid...?");
 			finish();
@@ -136,7 +136,7 @@ public class AlarmRingingActivity extends AppCompatActivity {
 
 		// binding to AlarmDataService
 		ringingConn = new RingingServiceConnection();
-		bindService(new Intent(this, AlarmRingingService.class), ringingConn, Context.BIND_AUTO_CREATE);
+		bindService(new Intent(this, RingingService.class), ringingConn, Context.BIND_AUTO_CREATE);
 	}
 
 	/**
@@ -152,7 +152,7 @@ public class AlarmRingingActivity extends AppCompatActivity {
 			unbindService(ringingConn);
 		}
 
-		Intent serviceIntent = new Intent(this, AlarmRingingService.class);
+		Intent serviceIntent = new Intent(this, RingingService.class);
 		stopService(serviceIntent);
 	}
 

@@ -27,14 +27,14 @@
 		<!-- TODO: add intent filter for ACTION_SET_ALARM? -->
 		<activity android:name=".ListableEditorActivity" />
 		<activity
-			android:name=".AlarmRingingActivity"
+			android:name=".RingingActivity"
 			android:excludeFromRecents="true"
 			android:launchMode="singleTask"
 			android:showOnLockScreen="true"
 			android:taskAffinity="" />
 
 		<service
-			android:name=".AlarmRingingService"
+			android:name=".RingingService"
 			android:description="@string/notif_service_description"
 			android:enabled="true"
 			android:exported="false" />

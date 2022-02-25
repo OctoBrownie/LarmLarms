@@ -791,10 +791,10 @@ public class AlarmDataService extends Service {
 	private void setNextAlarmToRing() {
 		ListableInfo next = getNextRingingAlarm(rootFolder.getListables());
 
-		Intent intent = new Intent(this, AlarmRingingService.class);
+		Intent intent = new Intent(this, RingingService.class);
 		if (next.listable != null) {
-			intent.putExtra(AlarmRingingService.EXTRA_LISTABLE, next.listable.toEditString());
-			intent.putExtra(AlarmRingingService.EXTRA_LISTABLE_INDEX, next.absIndex);
+			intent.putExtra(RingingService.EXTRA_LISTABLE, next.listable.toEditString());
+			intent.putExtra(RingingService.EXTRA_LISTABLE_INDEX, next.absIndex);
 		}
 
 		AlarmManager manager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
@@ -884,7 +884,7 @@ public class AlarmDataService extends Service {
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 			CharSequence name = getString(R.string.notif_channel_name);
 			int importance = NotificationManager.IMPORTANCE_HIGH;
-			NotificationChannel channel = new NotificationChannel(AlarmRingingService.CHANNEL_ID, name, importance);
+			NotificationChannel channel = new NotificationChannel(RingingService.CHANNEL_ID, name, importance);
 			channel.setShowBadge(false);
 			channel.setBypassDnd(true);
 			channel.enableLights(true);
