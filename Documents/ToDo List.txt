@@ -1,6 +1,6 @@
 To do list for new features or bugs to be fixed
 
-CURRENTLY WORKING ON: moving Listables 
+CURRENTLY WORKING ON: adding an after-ringing service (to fix a bug)
 
 Make the UI look prettier
 	Some repeat strings don't really look nice (ex: offset strings are always plural + sound funky,
@@ -47,4 +47,10 @@ If you click on the buttons presented by the heads up notification (when an alar
 	new activity it calls will flash for a brief moment while it's sending the message and closing
 	Might also not stop ringing (though the notification is removed)
 Vibration only occurs right when the alarm starts ringing (doesn't loop)
+It is possible to duplicate an alarm notification if the user interacts with the app during an
+	active ringing alarm (like setting or deleting something)
+	Possible solution: make the dataService "silent" and have it not change the PendingIntent until
+		it is not silenced anymore (or it dies and restarts)
+		In that case, the flag would automatically set it to be "silent" from the start
+Animations for folder opening/closing should only be played when the folder in question is clicked
 
