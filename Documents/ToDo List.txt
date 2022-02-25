@@ -43,10 +43,8 @@ Confirm permissions haven't been revoked?
 Could use created time as a key for listables
 
 BUGS
-If you click on the buttons presented by the heads up notification (when an alarm is ringing), the
-	new activity it calls will flash for a brief moment while it's sending the message and closing
-	Might also not stop ringing (though the notification is removed)
 Vibration only occurs right when the alarm starts ringing (doesn't loop)
+Will stop ringing if the notification is clicked in the notifications bar (a feature, not a bug?)
 It is possible to duplicate an alarm notification if the user interacts with the app during an
 	active ringing alarm (like setting or deleting something)
 	Possible solution: make the dataService "silent" and have it not change the PendingIntent until
