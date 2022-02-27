@@ -748,7 +748,7 @@ public final class Alarm implements Listable, Cloneable {
 	 * Gets whether the offset is from the current time or not.
 	 */
 	@Contract(pure = true)
-	boolean getOffsetFromNow() { return offsetFromNow; }
+	boolean isOffsetFromNow() { return offsetFromNow; }
 
 	/**
 	 * Sets whether the offset is from the current time or not.
