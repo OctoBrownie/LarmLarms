@@ -30,10 +30,6 @@ public class MainActivity extends AppCompatActivity {
 	private final static String TAG = "MainActivity";
 
 	/**
-	 * The fragment that manages the recycler view.
-	 */
-	private RecyclerViewFrag myRecyclerFrag;
-	/**
 	 * The TextView that is shown when the list is empty.
 	 */
 	private View noAlarmsText;
@@ -83,8 +79,6 @@ public class MainActivity extends AppCompatActivity {
 		FragmentTransaction trans = getSupportFragmentManager().beginTransaction();
 		trans.replace(R.id.frag_frame, RecyclerViewFrag.class, null, "recycler_frag");
 		trans.commitNow();
-
-		myRecyclerFrag = (RecyclerViewFrag) getSupportFragmentManager().findFragmentByTag("recycler_frag");
 	}
 
 	/**
