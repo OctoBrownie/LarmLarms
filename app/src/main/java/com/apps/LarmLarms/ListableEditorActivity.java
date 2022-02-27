@@ -130,7 +130,7 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 	/**
 	 * Shows whether the current activity is editing an Alarm (true) or AlarmGroup (false).
 	 */
-	private boolean isEditingAlarm;
+	private boolean isAlarm;
 	/**
 	 * Shows whether the current activity is editing a Listable (true) or creating a new one (false).
 	 */
@@ -223,7 +223,8 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 	protected void onCreate(@Nullable Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		String action = getIntent().getAction();
+		Intent intent = getIntent();
+		String action = intent.getAction();
 		if (action == null) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "Action passed to ListableEditor is null.");
 			finish();
@@ -234,21 +235,21 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 		// changes, since the content view hasn't been set up yet.
 		switch(action) {
 			case ACTION_CREATE_ALARM:
-				isEditingAlarm = true;
+				isAlarm = true;
 				isEditing = false;
 				workingListable = new Alarm(this);
 				break;
 			case ACTION_EDIT_ALARM:
-				isEditingAlarm = true;
+				isAlarm = true;
 				isEditing = true;
 				break;
 			case ACTION_CREATE_FOLDER:
-				isEditingAlarm = false;
+				isAlarm = false;
 				isEditing = false;
 				// new AlarmGroup already created in constructor
 				break;
 			case ACTION_EDIT_FOLDER:
-				isEditingAlarm = false;
+				isAlarm = false;
 				isEditing = true;
 				break;
 			default:
@@ -258,7 +259,7 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 		}
 
 		if (isEditing) {
-			Bundle extras = getIntent().getExtras();
+			Bundle extras = intent.getExtras();
 			if (extras == null) {
 				if (BuildConfig.DEBUG) Log.e(TAG, "Extras passed to ListableEditor are null.");
 				finish();
@@ -274,17 +275,17 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 			}
 			listableIndex = info.absIndex;
 			workingListable = info.listable;
-			if (workingListable instanceof Alarm) ((Alarm)workingListable).setContext(this);
+			if (isAlarm) ((Alarm)workingListable).setContext(this);
 
 			originalPath = info.path;
 
 			originalListable = workingListable.clone();
 		}
 
-		if (isEditingAlarm) { alarmUISetup(); }
+		if (isAlarm) { alarmUISetup(); }
 		else { folderUISetup(); }
 
-		// used for any REQ-specific UI changes
+		// used for any action-specific UI changes
 		switch(action) {
 			case ACTION_EDIT_ALARM:
 			case ACTION_EDIT_FOLDER:
@@ -299,7 +300,6 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 	@Override
 	protected void onStart() {
 		super.onStart();
-
 		bindService(new Intent(this, AlarmDataService.class), dataConn, Context.BIND_AUTO_CREATE);
 	}
 
@@ -311,7 +311,7 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 	protected void onResume() {
 		super.onResume();
 
-		if (isEditingAlarm && alarmTimePicker != null) {
+		if (isAlarm && alarmTimePicker != null) {
 			// matches the TimePicker's display mode to current system config (12 hr or 24 hr)
 			alarmTimePicker.setIs24HourView(DateFormat.is24HourFormat(this));
 		}
@@ -583,7 +583,10 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 		}
 
 		alarmTimePicker = findViewById(R.id.alarmTimeInput);
-
+		if (alarmTimePicker == null) {
+			if (BuildConfig.DEBUG) Log.e(TAG, "Time picker couldn't be found.");
+			return;
+		}
 		alarmTimePicker.setIs24HourView(DateFormat.is24HourFormat(this));
 
 		// editing alarmTimePicker to match hour/min
@@ -650,7 +653,7 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 			return;
 		}
 
-		if (isEditing && !isEditingAlarm) {
+		if (isEditing && !isAlarm) {
 			if (originalListable == null) {
 				if (BuildConfig.DEBUG) Log.e(TAG, "Can't setup folder structure without the original listable being valid.");
 				return;
@@ -917,12 +920,12 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 			switch(errorCode) {
 				case 1:
 					// error: name is null/empty
-					if (isEditingAlarm) toastErrorText = getResources().getString(R.string.alarm_editor_toast_empty);
+					if (isAlarm) toastErrorText = getResources().getString(R.string.alarm_editor_toast_empty);
 					else toastErrorText = getResources().getString(R.string.folder_editor_toast_empty);
 					break;
 				case 2:
 					// error: name has tabs or slashes
-					if (isEditingAlarm) toastErrorText = getResources().getString(R.string.alarm_editor_toast_restricted);
+					if (isAlarm) toastErrorText = getResources().getString(R.string.alarm_editor_toast_restricted);
 					else toastErrorText = getResources().getString(R.string.folder_editor_toast_restricted);
 					break;
 				default:
@@ -937,7 +940,7 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 		}
 
 		// checking for folders of the same name
-		if (!isEditingAlarm) {
+		if (!isAlarm) {
 			// building future folder path
 			String newPath = listablePath;
 			if (listablePath == null) newPath = originalPath;
@@ -951,7 +954,7 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 		}
 
 		// saving alarm time data
-		if (isEditingAlarm) {
+		if (isAlarm) {
 			((Alarm) workingListable).unsnooze();
 			Calendar alarmCalendar = ((Alarm) workingListable).getAlarmTimeCalendar();
 
