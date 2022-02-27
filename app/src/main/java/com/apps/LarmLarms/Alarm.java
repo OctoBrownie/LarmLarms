@@ -140,6 +140,12 @@ public final class Alarm implements Listable, Cloneable {
 	 * and 59.
 	 */
 	private int offsetMins;
+	/**
+	 * Used for REPEAT_ONCE_REL and REPEAT_OFFSET. Stores whether the offset should be off of the
+	 * current time or some specified time. Doesn't actually affect any calculations in this class,
+	 * more for display purposes.
+	 */
+	private boolean offsetFromNow;
 
 	/**
 	 * The alarm's personal on/off button (NOT the sum total of folder masks).
@@ -215,6 +221,7 @@ public final class Alarm implements Listable, Cloneable {
 		offsetDays = 1;
 		offsetHours = 0;
 		offsetMins = 0;
+		offsetFromNow = false;
 
 		alarmVibrateIsOn = true;
 		alarmSoundIsOn = true;
@@ -442,24 +449,23 @@ public final class Alarm implements Listable, Cloneable {
 
 	/**
 	 * Creates an edit string from the current alarm. Often used to pass an Alarm between Activities
-	 * or threads.
+	 * or threads. To get an Alarm back from an edit string, use fromEditString(String).
 	 * <br/>
-	 * Current edit string format (separated by tabs):
-	 * [alarm title]	[active]	[repeat info]	[next ring time]	[ringtone uri]	[is snoozed]
-	 * [number of snoozes]
+	 * Current edit string format (separated by TABS):
+	 * [alarm title] [active] [repeat info] [next ring time] [ringtone uri] [is snoozed] [# of snoozes]
 	 * <br/>
-	 * Repeat type info format (separated by spaces): [type] [type-specific data]
+	 * Repeat type format (separated by SPACES): [type] [type-specific data]
 	 * <br/>
 	 * Type-specific data:
 	 * ONCE_ABS and DATE_YEARLY: none
-	 * ONCE_REL and OFFSET: [days] [hours] [mins]
+	 * ONCE_REL and OFFSET: [days] [hours] [mins] [is offset from time]
 	 * DAY_WEEKLY: [true/false for every day]
 	 * DAY_MONTHLY: [week to repeat] [true/false for every month]
 	 * DATE_MONTHLY: [true/false for every month]
 	 * <br/>
 	 * Note: for ringtone URI, if it is null (silent), it will be stored as "null"
 	 */
-	@NotNull @Override
+	@NotNull @Override @Contract(pure = true)
 	public String toEditString() {
 		StringBuilder alarmString = new StringBuilder(name).append('\t');
 		alarmString.append(alarmIsActive).append('\t');
@@ -473,6 +479,7 @@ public final class Alarm implements Listable, Cloneable {
 				alarmString.append(' ').append(offsetDays);
 				alarmString.append(' ').append(offsetHours);
 				alarmString.append(' ').append(offsetMins);
+				alarmString.append(' ').append(offsetFromNow);
 				break;
 			case REPEAT_DAY_WEEKLY:
 				alarmString.append(REPEAT_DAY_WEEKLY);
@@ -497,7 +504,6 @@ public final class Alarm implements Listable, Cloneable {
 				alarmString.append(' ').append(offsetMins);
 				break;
 			default:
-				// TODO: Any better ways to handle the invalid case? Throw an exception?
 				if (BuildConfig.DEBUG) Log.e(TAG, "Invalid alarm repeat type.");
 				return "";
 		}
@@ -511,7 +517,6 @@ public final class Alarm implements Listable, Cloneable {
 
 		alarmString.append('\t').append(alarmSnoozed);
 		alarmString.append('\t').append(numSnoozes);
-		// TODO: encode the other parts in here (don't forget to add a tab char before it)
 
 		return alarmString.toString();
 	}
@@ -522,7 +527,7 @@ public final class Alarm implements Listable, Cloneable {
 	 * Current store string format (separated by tabs):
 	 * a	[edit string]
 	 */
-	@NotNull @Override
+	@NotNull @Override @Contract(pure = true)
 	public String toStoreString() { return "a\t" + toEditString(); }
 
 	/* ******************************  Getter and Setter Methods  ******************************* */
@@ -740,6 +745,17 @@ public final class Alarm implements Listable, Cloneable {
 	}
 
 	/**
+	 * Gets whether the offset is from the current time or not.
+	 */
+	@Contract(pure = true)
+	boolean getOffsetFromNow() { return offsetFromNow; }
+
+	/**
+	 * Sets whether the offset is from the current time or not.
+	 */
+	void setOffsetFromNow(boolean offsetFromNow) { this.offsetFromNow = offsetFromNow; }
+
+	/**
 	 * Gets whether the current alarm is snoozed or not.
 	 */
 	@Contract(pure = true)
@@ -806,7 +822,8 @@ public final class Alarm implements Listable, Cloneable {
 	/* ************************************  Static Methods  ********************************** */
 
 	/**
-	 * Returns a new Alarm based on the given string. For edit string format, see toEditString().
+	 * Returns a new Alarm based on the given string. For edit string creation and format, see
+	 * toEditString().
 	 *
 	 * @param context current operating context, can be null
 	 * @param src edit string to build an Alarm out of, can be null
@@ -871,7 +888,7 @@ public final class Alarm implements Listable, Cloneable {
 				break;
 			case REPEAT_ONCE_REL:
 			case REPEAT_OFFSET:
-				if (repeatTypeInfo.length != 4) {
+				if (repeatTypeInfo.length != 5) {
 					if (BuildConfig.DEBUG) Log.e(TAG, "Edit string had the wrong number of repeat type fields.");
 					return null;
 				}
@@ -884,6 +901,8 @@ public final class Alarm implements Listable, Cloneable {
 					if (BuildConfig.DEBUG) Log.e(TAG, "Edit string has incorrectly formatted offsets.");
 					return null;
 				}
+
+				res.offsetFromNow = Boolean.parseBoolean(repeatTypeInfo[4]);
 				break;
 			case REPEAT_ONCE_ABS:
 			case REPEAT_DATE_YEARLY:
@@ -1087,10 +1106,10 @@ public final class Alarm implements Listable, Cloneable {
 			case REPEAT_ONCE_REL:
 				// only changes if the alarm is overdue
 				if (ringTime.after(sysClock)) { return; }
-				workingClock.add(Calendar.DAY_OF_MONTH, offsetDays);
-				workingClock.add(Calendar.HOUR_OF_DAY, offsetHours);
-				workingClock.add(Calendar.MINUTE, offsetMins);
-				break;
+				ringTime.add(Calendar.DAY_OF_MONTH, offsetDays);
+				ringTime.add(Calendar.HOUR_OF_DAY, offsetHours);
+				ringTime.add(Calendar.MINUTE, offsetMins);
+				return;
 			case REPEAT_DAY_WEEKLY:
 				// trying to avoid any namespace issues
 				{
@@ -1148,9 +1167,11 @@ public final class Alarm implements Listable, Cloneable {
 				}
 				break;
 			case REPEAT_OFFSET:
-				ringTime.add(Calendar.DAY_OF_MONTH, offsetDays);
-				ringTime.add(Calendar.HOUR_OF_DAY, offsetHours);
-				ringTime.add(Calendar.MINUTE, offsetMins);
+				while (ringTime.before(sysClock)) {
+					ringTime.add(Calendar.DAY_OF_MONTH, offsetDays);
+					ringTime.add(Calendar.HOUR_OF_DAY, offsetHours);
+					ringTime.add(Calendar.MINUTE, offsetMins);
+				}
 				return;
 			default:
 				if (BuildConfig.DEBUG) Log.wtf(TAG, "Somehow the repeat type within the Alarm is wrong.");
