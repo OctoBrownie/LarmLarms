@@ -78,7 +78,7 @@ public class AfterRingingService extends Service {
 	 * @param intent the intent used to bind to the service, unused in this implementation
 	 */
 	@Override
-	public IBinder onBind(@NotNull Intent intent) {
+	public IBinder onBind(@NotNull Intent intent) throws UnsupportedOperationException {
 		throw new UnsupportedOperationException();
 	}
 
@@ -107,7 +107,7 @@ public class AfterRingingService extends Service {
 				dataService.send(msg);
 			}
 			catch (RemoteException e) {
-				if (BuildConfig.DEBUG) Log.e(TAG, "Couldn't send the message. Exiting...");
+				if (BuildConfig.DEBUG) Log.e(TAG, "Couldn't send the message to the data service.");
 			}
 
 			unbindService(this);
