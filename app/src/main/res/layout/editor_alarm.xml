@@ -298,77 +298,89 @@
 				</LinearLayout>
 			</LinearLayout>
 
-			<!-- offset days layout -->
+			<!-- offset layout -->
 			<LinearLayout
-				android:id="@+id/alarmOffsetDays"
+				android:id="@+id/alarmOffsetLayout"
 				android:layout_width="match_parent"
 				android:layout_height="wrap_content"
-				android:orientation="horizontal"
+				android:orientation="vertical"
 				android:visibility="gone">
 
-				<TextView
+				<CheckBox
 					style="@style/EditorLabelStyle"
 
-					android:id="@+id/alarmOffsetDaysText"
-					android:layout_width="wrap_content"
+					android:id="@+id/alarmOffsetFromNowCheckbox"
+					android:layout_width="match_parent"
 					android:layout_height="wrap_content"
-					android:labelFor="@+id/alarmOffsetDaysInput"
-					android:text="@string/alarm_editor_offset_days_text" />
-				<EditText
-					style="@style/EditorOffsetInputStyle"
+					android:text="@string/alarm_editor_offset_from_now"
+					android:checked="true"
+					android:onClick="onCheckboxClicked"/>
 
-					android:id="@+id/alarmOffsetDaysInput"
-					android:inputType="number"
-					android:imeOptions="actionNext" />
+				<!-- days -->
+				<LinearLayout
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content"
+					android:orientation="horizontal">
+					<TextView
+						style="@style/EditorLabelStyle"
+
+						android:layout_width="wrap_content"
+						android:layout_height="wrap_content"
+						android:labelFor="@+id/alarmOffsetDaysInput"
+						android:text="@string/alarm_editor_offset_days_text" />
+					<EditText
+						style="@style/EditorOffsetInputStyle"
+
+						android:id="@+id/alarmOffsetDaysInput"
+						android:inputType="number"
+						android:imeOptions="actionNext" />
+				</LinearLayout>
+
+				<!-- hours -->
+				<LinearLayout
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content"
+					android:orientation="horizontal">
+
+					<TextView
+						style="@style/EditorLabelStyle"
+
+						android:layout_width="wrap_content"
+						android:layout_height="wrap_content"
+						android:labelFor="@+id/alarmOffsetHoursInput"
+						android:text="@string/alarm_editor_offset_hours_text" />
+					<EditText
+						style="@style/EditorOffsetInputStyle"
+
+						android:id="@+id/alarmOffsetHoursInput"
+						android:inputType="number"
+						android:imeOptions="actionNext" />
+				</LinearLayout>
+
+				<!-- mins -->
+				<LinearLayout
+					android:id="@+id/alarmOffsetMins"
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content"
+					android:orientation="horizontal">
+
+					<TextView
+						style="@style/EditorLabelStyle"
+
+						android:id="@+id/alarmOffsetMinsText"
+						android:layout_width="wrap_content"
+						android:layout_height="wrap_content"
+						android:labelFor="@+id/alarmOffsetMinsInput"
+						android:text="@string/alarm_editor_offset_mins_text" />
+					<EditText
+						style="@style/EditorOffsetInputStyle"
+
+						android:id="@+id/alarmOffsetMinsInput"
+						android:inputType="number"
+						android:imeOptions="actionDone" />
+				</LinearLayout>
 			</LinearLayout>
 
-			<!-- offset hours layout -->
-			<LinearLayout
-				android:id="@+id/alarmOffsetHours"
-				android:layout_width="match_parent"
-				android:layout_height="wrap_content"
-				android:orientation="horizontal"
-				android:visibility="gone">
-
-				<TextView
-					style="@style/EditorLabelStyle"
-
-					android:id="@+id/alarmOffsetHoursText"
-					android:layout_width="wrap_content"
-					android:layout_height="wrap_content"
-					android:labelFor="@+id/alarmOffsetHoursInput"
-					android:text="@string/alarm_editor_offset_hours_text" />
-				<EditText
-					style="@style/EditorOffsetInputStyle"
-
-					android:id="@+id/alarmOffsetHoursInput"
-					android:inputType="number"
-					android:imeOptions="actionNext" />
-			</LinearLayout>
-
-			<!-- offset mins layout -->
-			<LinearLayout
-				android:id="@+id/alarmOffsetMins"
-				android:layout_width="match_parent"
-				android:layout_height="wrap_content"
-				android:orientation="horizontal"
-				android:visibility="gone">
-
-				<TextView
-					style="@style/EditorLabelStyle"
-
-					android:id="@+id/alarmOffsetMinsText"
-					android:layout_width="wrap_content"
-					android:layout_height="wrap_content"
-					android:labelFor="@+id/alarmOffsetMinsInput"
-					android:text="@string/alarm_editor_offset_mins_text" />
-				<EditText
-					style="@style/EditorOffsetInputStyle"
-
-					android:id="@+id/alarmOffsetMinsInput"
-					android:inputType="number"
-					android:imeOptions="actionDone" />
-			</LinearLayout>
 
 			<!-- - - - - - - - - - - - - - - -  Other Input Fields  - - - - - - - - - - - - - - -->
 

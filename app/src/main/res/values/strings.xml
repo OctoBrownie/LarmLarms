@@ -65,13 +65,14 @@
 	<string name="main_add_folder_button_descrip">Add folder</string>
 	<string name="main_folder_icon_descrip">Folder icon</string>
 
-	<!-- AlarmCreator display strings, prefixed by "editor"
+	<!-- ListableEditor display strings, prefixed by "editor"
 		 if for Alarms specifically, prefixed by "alarm_editor"
 		 if for AlarmGroups specifically, prefixed by "folder_editor" -->
 	<string name="editor_back_button">back</string>
 	<string name="editor_save_button">save</string>
 	<string name="editor_name_text">"Title: "</string>
 	<string name="editor_parent_folder_text">"Parent folder: "</string>
+	<string name="alarm_editor_offset_from_now">Offset from current time?</string>
 
 	<!-- toasts for naming errors -->
 	<string name="alarm_editor_toast_empty">Please create a name for the alarm.</string>

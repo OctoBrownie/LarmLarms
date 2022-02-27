@@ -21,6 +21,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.CheckBox;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.NumberPicker;
@@ -153,20 +154,10 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 	@Nullable
 	private ViewGroup alarmDaysLayout;
 	/**
-	 * Layout for the offset days label and text field (for alarms only).
+	 * Layout for the all offset fields (for alarms only).
 	 */
 	@Nullable
-	private ViewGroup alarmOffsetDaysLayout;
-	/**
-	 * Layout for the offset hours label and text field (for alarms only).
-	 */
-	@Nullable
-	private ViewGroup alarmOffsetHoursLayout;
-	/**
-	 * Layout for the offset minutes label and text field (for alarms only).
-	 */
-	@Nullable
-	private ViewGroup alarmOffsetMinsLayout;
+	private ViewGroup alarmOffsetLayout;
 	/**
 	 * Layout for the day and week to ring on (label and two spinners for which week and which day,
 	 * for alarms only).
@@ -435,6 +426,33 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 	}
 
 	/**
+	 * Callback for when a checkbox is clicked.
+	 * @param view the checkbox that was clicked
+	 */
+	public void onCheckboxClicked(@NotNull View view) {
+		boolean checked = ((CheckBox) view).isChecked();
+		((Alarm) workingListable).setOffsetFromNow(checked);
+
+		// FOR NOW, no other checkboxes except offsetFromNowCheckbox
+		if (checked) {
+			// hide the time and date pickers
+			if (alarmTimePicker != null) alarmTimePicker.setVisibility(View.GONE);
+			if (alarmDatePicker != null) alarmDatePicker.setVisibility(View.GONE);
+		}
+		else {
+			// show the time and date pickers
+			if (alarmTimePicker == null) setupTimePicker();
+			alarmTimePicker.setVisibility(View.VISIBLE);
+
+			if (alarmDatePicker == null) {
+				setupDatePicker();
+				alarmDatePicker.setMinDate(0);		// in case the date picker hadn't been set up yet
+			}
+			alarmDatePicker.setVisibility(View.VISIBLE);
+		}
+	}
+
+	/**
 	 * Callback called after a ringtone is chosen.
 	 * @param requestCode the code we sent when creating the activity
 	 * @param resultCode the code the activity sent back after finishing
@@ -595,13 +613,19 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 	}
 
 	/**
-	 * Sets up the date pickerfor the first time. Sets up both the field and the UI. Does not check
+	 * Sets up the date picker for the first time. Sets up both the field and the UI. Does not check
 	 * whether the field is null or not. For alarms only.
 	 */
 	private void setupDatePicker() {
 		// used temp variable because otherwise the IDE says there's a possible null ptr exception
 		DatePicker picker = findViewById(R.id.alarmDateInput);
 		picker.setMinDate(new GregorianCalendar().getTimeInMillis());
+		// picker.updateDate();
+		Calendar c = ((Alarm) workingListable).getAlarmTimeCalendar();
+		if (isEditing) {
+			// sets it to the current alarm time first
+			picker.updateDate(c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH));
+		}
 
 		alarmDatePicker = picker;
 	}
@@ -707,18 +731,15 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 					alarmTimePicker.setVisibility(View.GONE);
 					alarmDatePicker.setVisibility(View.GONE);
 					break;
-				case Alarm.REPEAT_OFFSET:
 				case Alarm.REPEAT_ONCE_REL:
-					// requires: offset fields (days, hours, minutes)
-					if (alarmOffsetDaysLayout == null || alarmOffsetHoursLayout == null ||
-							alarmOffsetMinsLayout == null) {
+				case Alarm.REPEAT_OFFSET:
+					// requires: offset fields (days, hours, minutes), maybe date/time pickers
+					if (alarmOffsetLayout == null) {
 						if (BuildConfig.DEBUG) Log.wtf(TAG, "The alarm offsets layouts are null.");
 						finish();
 						return;
 					}
-					alarmOffsetDaysLayout.setVisibility(View.GONE);
-					alarmOffsetHoursLayout.setVisibility(View.GONE);
-					alarmOffsetMinsLayout.setVisibility(View.GONE);
+					alarmOffsetLayout.setVisibility(View.GONE);
 					break;
 				case Alarm.REPEAT_DAY_WEEKLY:
 					// requires: time picker, list of days (clickable text)
@@ -726,6 +747,10 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 						if (BuildConfig.DEBUG) Log.wtf(TAG, "The alarm time picker or days of week layout is null.");
 						finish();
 						return;
+					}
+					if (alarmDatePicker != null) {
+						// gotta set it back to the right minimum date
+						alarmDatePicker.setMinDate(new GregorianCalendar().getTimeInMillis());
 					}
 					alarmTimePicker.setVisibility(View.GONE);
 					alarmDaysLayout.setVisibility(View.GONE);
@@ -774,25 +799,49 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 			case Alarm.REPEAT_ONCE_REL:
 				// requires: offset fields (days, hours, minutes)
 				// only really need to check one offset field, since they essentially come as a set
-				if (alarmOffsetDaysLayout == null) {
+				if (alarmOffsetLayout == null) {
 					EditText curr;
 
-					alarmOffsetDaysLayout = findViewById(R.id.alarmOffsetDays);
-					curr = alarmOffsetDaysLayout.findViewById(R.id.alarmOffsetDaysInput);
+					alarmOffsetLayout = findViewById(R.id.alarmOffsetLayout);
+					curr = alarmOffsetLayout.findViewById(R.id.alarmOffsetDaysInput);
 					curr.setText(String.format("%d", ((Alarm) workingListable).getOffsetDays()));
 
-					alarmOffsetHoursLayout = findViewById(R.id.alarmOffsetHours);
-					curr = alarmOffsetHoursLayout.findViewById(R.id.alarmOffsetHoursInput);
+					curr = alarmOffsetLayout.findViewById(R.id.alarmOffsetHoursInput);
 					curr.setText(String.format("%d", ((Alarm) workingListable).getOffsetHours()));
 
-					alarmOffsetMinsLayout = findViewById(R.id.alarmOffsetMins);
-					curr = alarmOffsetMinsLayout.findViewById(R.id.alarmOffsetMinsInput);
+					curr = alarmOffsetLayout.findViewById(R.id.alarmOffsetMinsInput);
 					curr.setText(String.format("%d", ((Alarm) workingListable).getOffsetMins()));
+
+					if (!((Alarm) workingListable).isOffsetFromNow()) {
+						CheckBox checkBox = alarmOffsetLayout.findViewById(R.id.alarmOffsetFromNowCheckbox);
+						checkBox.setChecked(false);
+
+						// date/time picker setup
+						// calculate previous offset from time
+						Calendar c = (Calendar) ((Alarm) workingListable).getAlarmTimeCalendar().clone();
+						c.add(Calendar.DAY_OF_MONTH, -((Alarm) workingListable).getOffsetDays());
+						c.add(Calendar.HOUR_OF_DAY, -((Alarm) workingListable).getOffsetHours());
+						c.add(Calendar.MINUTE, -((Alarm) workingListable).getOffsetMins());
+
+						if (alarmTimePicker == null) setupTimePicker();
+						alarmTimePicker.setCurrentHour(c.get(Calendar.HOUR));
+						alarmTimePicker.setCurrentMinute(c.get(Calendar.MINUTE));
+
+						if (alarmDatePicker == null) setupDatePicker();
+						alarmDatePicker.updateDate(c.get(Calendar.YEAR), c.get(Calendar.MONTH),
+								c.get(Calendar.DAY_OF_MONTH));
+						alarmDatePicker.setMinDate(0);
+					}
 				}
 
-				alarmOffsetDaysLayout.setVisibility(View.VISIBLE);
-				alarmOffsetHoursLayout.setVisibility(View.VISIBLE);
-				alarmOffsetMinsLayout.setVisibility(View.VISIBLE);
+				if (!((Alarm) workingListable).isOffsetFromNow()) {
+					alarmTimePicker.setVisibility(View.VISIBLE);
+
+					alarmDatePicker.setMinDate(0);
+					alarmDatePicker.setVisibility(View.VISIBLE);
+				}
+
+				alarmOffsetLayout.setVisibility(View.VISIBLE);
 				break;
 			case Alarm.REPEAT_DAY_WEEKLY:
 				// requires: time picker, list of days (clickable text)
@@ -961,26 +1010,11 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 			switch(((Alarm) workingListable).getRepeatType()) {
 				case Alarm.REPEAT_ONCE_ABS:
 				case Alarm.REPEAT_DATE_YEARLY:
-					if (alarmDatePicker == null || alarmTimePicker == null) {
-						if (BuildConfig.DEBUG) Log.wtf(TAG, "The alarm date/time pickers are null.");
-						finish();
-						return false;
-					}
-
-					alarmCalendar.set(Calendar.YEAR, alarmDatePicker.getYear());
-					alarmCalendar.set(Calendar.MONTH, alarmDatePicker.getMonth());
-					alarmCalendar.set(Calendar.DAY_OF_MONTH, alarmDatePicker.getDayOfMonth());
-
-					alarmCalendar.set(Calendar.HOUR_OF_DAY, alarmTimePicker.getCurrentHour());
-					alarmCalendar.set(Calendar.MINUTE, alarmTimePicker.getCurrentMinute());
-
-					alarmCalendar.set(Calendar.SECOND, 0);
-					alarmCalendar.set(Calendar.MILLISECOND, 0);
+					if (!pickerToCalendar(alarmCalendar)) return false;
 					break;
 				case Alarm.REPEAT_ONCE_REL:
 				case Alarm.REPEAT_OFFSET:
-					if (alarmOffsetDaysLayout == null || alarmOffsetHoursLayout == null ||
-							alarmOffsetMinsLayout == null) {
+					if (alarmOffsetLayout == null) {
 						if (BuildConfig.DEBUG) Log.wtf(TAG, "The alarm offset layouts are null.");
 						finish();
 						return false;
@@ -991,32 +1025,35 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 					NumberFormat format = NumberFormat.getInstance();
 					format.setParseIntegerOnly(true);
 
-					currEditText = alarmOffsetDaysLayout.findViewById(R.id.alarmOffsetDaysInput);
+					currEditText = alarmOffsetLayout.findViewById(R.id.alarmOffsetDaysInput);
 					try {
 						days = format.parse(currEditText.getText().toString()).intValue();
 					} catch (ParseException e) {
-						if (BuildConfig.DEBUG) Log.e(TAG, "Couldn't parse the days to offset.");
+						if (BuildConfig.DEBUG) Log.e(TAG, "Couldn't parse the days to offset. Defaulting to 0.");
 						days = 0;
 					}
 
-					currEditText = alarmOffsetHoursLayout.findViewById(R.id.alarmOffsetHoursInput);
+					currEditText = alarmOffsetLayout.findViewById(R.id.alarmOffsetHoursInput);
 					try {
 						hours = format.parse(currEditText.getText().toString()).intValue();
 					} catch (ParseException e) {
-						if (BuildConfig.DEBUG) Log.e(TAG, "Couldn't parse the hours to offset.");
+						if (BuildConfig.DEBUG) Log.e(TAG, "Couldn't parse the hours to offset. Defaulting to 0.");
 						hours = 0;
 					}
 
-					currEditText = alarmOffsetMinsLayout.findViewById(R.id.alarmOffsetMinsInput);
+					currEditText = alarmOffsetLayout.findViewById(R.id.alarmOffsetMinsInput);
 					try {
 						mins = format.parse(currEditText.getText().toString()).intValue();
 					} catch (ParseException e) {
-						if (BuildConfig.DEBUG) Log.e(TAG, "Couldn't parse the minutes to offset.");
+						if (BuildConfig.DEBUG) Log.e(TAG, "Couldn't parse the minutes to offset. Defaulting to 0.");
 						mins = 0;
 					}
 
-					// starts with curr time/date
 					GregorianCalendar newCalendar = new GregorianCalendar();
+
+					// offset from the given date/time
+					if (!((Alarm) workingListable).isOffsetFromNow()) pickerToCalendar(newCalendar);
+
 					if (((Alarm) workingListable).getRepeatType() == Alarm.REPEAT_ONCE_REL) {
 						newCalendar.add(Calendar.DAY_OF_MONTH, days);
 						newCalendar.add(Calendar.HOUR_OF_DAY, hours);
@@ -1067,6 +1104,31 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 			((Alarm) workingListable).updateRingTime();
 		}
 
+		return true;
+	}
+
+	/**
+	 * Saves the current contents of the date/time pickers into the specified Calendar object. Will
+	 * also set the seconds and milliseconds to zero.
+	 * @param c the calendar to save the date/time to
+	 * @return whether the method successfully saved picker data to the calendar or not
+	 */
+	private boolean pickerToCalendar(Calendar c) {
+		if (alarmDatePicker == null || alarmTimePicker == null) {
+			if (BuildConfig.DEBUG) Log.wtf(TAG, "The alarm date/time pickers are null.");
+			finish();
+			return false;
+		}
+
+		c.set(Calendar.YEAR, alarmDatePicker.getYear());
+		c.set(Calendar.MONTH, alarmDatePicker.getMonth());
+		c.set(Calendar.DAY_OF_MONTH, alarmDatePicker.getDayOfMonth());
+
+		c.set(Calendar.HOUR_OF_DAY, alarmTimePicker.getCurrentHour());
+		c.set(Calendar.MINUTE, alarmTimePicker.getCurrentMinute());
+
+		c.set(Calendar.SECOND, 0);
+		c.set(Calendar.MILLISECOND, 0);
 		return true;
 	}
 

@@ -1,6 +1,6 @@
 To do list for new features or bugs to be fixed
 
-CURRENTLY WORKING ON: adding an after-ringing service (to fix a bug)
+CURRENTLY WORKING ON: dialogs and checkboxes in ListableEditor
 
 Make the UI look prettier
 	Some repeat strings don't really look nice (ex: offset strings are always plural + sound funky,
@@ -11,8 +11,8 @@ New ListableEditor features
 	Customizable vibrations?
 		If we do this, probably want to manage our own Vibrator instead of relying on the
 			NotificationChannel's (can't change per alarm, is editable by user in settings)
-	Make it faster to boot
-Add a settings activity (?)
+	dialog box + scrollview for days/months (don't have to worry about something similar to flow layout)
+Settings activity
 Use a (color) selector to make disabled alarms more obvious (MainActivity)
 	See https://programmer.ink/think/a-detailed-explanation-of-the-use-of-selector-in-android.html
 Style all components
@@ -35,12 +35,12 @@ Maybe use FlexboxLayout for alarm editor (similar to FlowLayout in Java Swing)
 	Google blog post: https://android-developers.googleblog.com/2017/02/build-flexible-layouts-with.html
 	GitHub: https://github.com/google/flexbox-layout
 Make more tests
-Could make Alarm and AlarmGroup into Parcelables
 Could use DiffUtil perhaps for differences between versions of lists (minimal animations)
 Show multiple alarms if they ring near the same time (in a notification? together with the other alarm?)
 	What happens right now is that they will ring one after the other (a feature, not a bug?)
 Confirm permissions haven't been revoked?
 Could use created time as a key for listables
+Between versions, transfer alarms list (so data isn't lost)
 
 BUGS
 Vibration only occurs right when the alarm starts ringing (doesn't loop)
@@ -51,4 +51,5 @@ It is possible to duplicate an alarm notification if the user interacts with the
 		it is not silenced anymore (or it dies and restarts)
 		In that case, the flag would automatically set it to be "silent" from the start
 Animations for folder opening/closing should only be played when the folder in question is clicked
+Sometimes requires you to unlock your phone to turn off the alarm (when off)
 
