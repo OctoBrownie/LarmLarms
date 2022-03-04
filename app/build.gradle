@@ -11,6 +11,9 @@ android {
 		testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
 	}
 	buildTypes {
+		junit {
+			debuggable false
+		}
 		release {
 			minifyEnabled true
 			proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
