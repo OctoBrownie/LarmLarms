@@ -41,6 +41,8 @@ Show multiple alarms if they ring near the same time (in a notification? togethe
 Confirm permissions haven't been revoked?
 Could use created time as a key for listables
 Between versions, transfer alarms list (so data isn't lost)
+Fade in alarm sounds
+Perhaps the folder animation looks a bit stiff because the folder itself doesn't move
 
 BUGS
 Vibration only occurs right when the alarm starts ringing (doesn't loop)
