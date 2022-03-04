@@ -221,7 +221,7 @@ public final class Alarm implements Listable, Cloneable {
 		offsetDays = 1;
 		offsetHours = 0;
 		offsetMins = 0;
-		offsetFromNow = false;
+		offsetFromNow = true;
 
 		alarmVibrateIsOn = true;
 		alarmSoundIsOn = true;
