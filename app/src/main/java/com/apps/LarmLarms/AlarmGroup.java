@@ -61,7 +61,7 @@ public final class AlarmGroup implements Listable, Cloneable {
 	/**
 	 * Initializes a new AlarmGroup with all dummy data.
 	 */
-	public AlarmGroup() { this("default name", new ArrayList<Listable>()); }
+	public AlarmGroup() { this("", new ArrayList<Listable>()); }
 
 	/**
 	 * Initializes a new AlarmGroup with a name.
@@ -112,8 +112,8 @@ public final class AlarmGroup implements Listable, Cloneable {
 	 */
 	@Override
 	public int setListableName(@Nullable String newName) {
-		if (newName == null || newName.equals("")) {
-			if (BuildConfig.DEBUG) Log.e(TAG, "New name is is null or empty.");
+		if (newName == null) {
+			if (BuildConfig.DEBUG) Log.e(TAG, "New name is null.");
 			return 1;
 		}
 

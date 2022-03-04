@@ -963,6 +963,8 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 		// common fields
 		String newName = ((EditText) findViewById(R.id.nameInput)).getText().toString();
 		int errorCode = workingListable.setListableName(newName);
+
+		if (newName.equals("")) errorCode = 1;
 		if (errorCode != 0) {
 			String toastErrorText;
 
