@@ -551,11 +551,11 @@ public final class AlarmGroup implements Listable, Cloneable {
 
 			// listable is within an AlarmGroup, so must find the new absolute index within that folder
 			// must subtract 1 to take into account the folder itself
-			absIndex = absIndex - 1 - index;
+			absIndex = absIndex - 1 - lookup.get(index);
 
 			// must add 1 to take into account the previous outer folder (initializes with -1 so that
 			// the root folder isn't actually accounted for, since index starts within the root folder)
-			currFolderIndex += index + 1;
+			currFolderIndex += lookup.get(index) + 1;
 
 			// new folder to look inside
 			currFolder = (AlarmGroup) data.get(index);

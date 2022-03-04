@@ -21,6 +21,8 @@ public class AlarmGroupUnitTest {
 		 * 	inner
 		 * 		alarm 3
 		 * 	alarm 4
+		 * 	another
+		 * 		alarm 5
 		 */
 		AlarmGroup folder = new AlarmGroup("test");
 		folder.addListable(new Alarm(null, "alarm 1"));
@@ -32,13 +34,19 @@ public class AlarmGroupUnitTest {
 		folder.addListable(innerFolder);
 		folder.addListable(new Alarm(null, "alarm 4"));
 
-		assertEquals(-1, AlarmGroup.findOuterListableIndex(folder.getLookup(), -1, 5));
-		assertEquals(0, AlarmGroup.findOuterListableIndex(folder.getLookup(), 0, 5));
-		assertEquals(1, AlarmGroup.findOuterListableIndex(folder.getLookup(), 1, 5));
-		assertEquals(2, AlarmGroup.findOuterListableIndex(folder.getLookup(), 2, 5));
-		assertEquals(2, AlarmGroup.findOuterListableIndex(folder.getLookup(), 3, 5));
-		assertEquals(3, AlarmGroup.findOuterListableIndex(folder.getLookup(), 4, 5));
-		assertEquals(-1, AlarmGroup.findOuterListableIndex(folder.getLookup(), 5, 5));
+		AlarmGroup anotherFolder = new AlarmGroup("another");
+		anotherFolder.addListable(new Alarm(null, "alarm 5"));
+		folder.addListable(anotherFolder);
+
+		assertEquals(-1, AlarmGroup.findOuterListableIndex(folder.getLookup(), -1, folder.size() - 1));
+		assertEquals(0, AlarmGroup.findOuterListableIndex(folder.getLookup(), 0, folder.size() - 1));
+		assertEquals(1, AlarmGroup.findOuterListableIndex(folder.getLookup(), 1, folder.size() - 1));
+		assertEquals(2, AlarmGroup.findOuterListableIndex(folder.getLookup(), 2, folder.size() - 1));
+		assertEquals(2, AlarmGroup.findOuterListableIndex(folder.getLookup(), 3, folder.size() - 1));
+		assertEquals(3, AlarmGroup.findOuterListableIndex(folder.getLookup(), 4, folder.size() - 1));
+		assertEquals(4, AlarmGroup.findOuterListableIndex(folder.getLookup(), 5, folder.size() - 1));
+		assertEquals(4, AlarmGroup.findOuterListableIndex(folder.getLookup(), 6, folder.size() - 1));
+		assertEquals(-1, AlarmGroup.findOuterListableIndex(folder.getLookup(), 7, folder.size() - 1));
 	}
 
 	@Test
