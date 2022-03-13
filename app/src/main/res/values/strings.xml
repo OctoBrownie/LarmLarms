@@ -16,6 +16,7 @@
 	<!-- alarm repeat type display strings, prefixed by "alarm" -->
 	<string name="alarm_no_repeats_string">none</string>
 
+	<string name="alarm_snooze">Snoozed for <xliff:g id="min" example="5">%d</xliff:g> minutes</string>
 	<string name="alarm_once_abs_rel">Once on <xliff:g id="date" example="2000/01/01">%s</xliff:g></string>
 	<string name="alarm_weekly">Weekly on <xliff:g id="days" example="Mon, Tue">%s</xliff:g></string>
 	<string name="alarm_weekly_everyday">Every day</string>
@@ -104,8 +105,6 @@
 		<item>ring once (pick a date/time)</item>
 		<item>ring once (offset of current date/time)</item>
 		<item>ring every week on certain days</item>
-
-		<!-- TODO: perhaps build the strings programmatically and/or give examples? -->
 		<item>ring monthly on a specific date</item>
 		<item>ring monthly on a specific day</item>
 		<item>ring yearly on a specific date</item>

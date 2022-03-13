@@ -204,7 +204,6 @@ public final class Alarm implements Listable, Cloneable {
 	 * @param title the name of the alarm, shouldn't be null
 	 */
 	public Alarm(@Nullable Context currContext, @Nullable String title) {
-		// TODO: Dummy data for other fields
 		context = currContext;
 		if (title == null) name = "default name";
 		else name = title;
@@ -288,45 +287,50 @@ public final class Alarm implements Listable, Cloneable {
 		
 		Resources res = context.getResources();
 
-		// TODO: show that the alarm is snoozed if it is
-
-		String repeatString = "";
+		StringBuilder repeatString = new StringBuilder();
 		String dateStr = DateFormat.getDateFormat(context).format(ringTime.getTime());
 		String[] ordinals = res.getStringArray(R.array.alarm_ordinals);
+
+		// snoozed or not
+		if (alarmSnoozed) {
+			// TODO: change number of minutes to snooze
+			repeatString.append(String.format(res.getString(R.string.alarm_snooze), numSnoozes*5));
+			repeatString.append('\n');
+		}
 
 		switch (repeatType) {
 			case REPEAT_ONCE_ABS:
 			case REPEAT_ONCE_REL:
-				repeatString = String.format(res.getString(R.string.alarm_once_abs_rel), dateStr);
+				repeatString.append(String.format(res.getString(R.string.alarm_once_abs_rel), dateStr));
 				break;
 			case REPEAT_DAY_WEEKLY:
-				repeatString = getWeeklyDisplayString();
+				repeatString.append(getWeeklyDisplayString());
 				break;
 			case REPEAT_DATE_MONTHLY:
 				int dateOfMonth = ringTime.get(Calendar.DATE);
-				repeatString = String.format(res.getString(R.string.alarm_date_monthly),
-						ordinals[dateOfMonth - 1], getExceptionMonthsString());
+				repeatString.append(String.format(res.getString(R.string.alarm_date_monthly),
+						ordinals[dateOfMonth - 1], getExceptionMonthsString()));
 				break;
 			case REPEAT_DAY_MONTHLY:
 				String[] weekdays = (new DateFormatSymbols()).getWeekdays();
-				repeatString = String.format(res.getString(R.string.alarm_day_monthly),
+				repeatString.append(String.format(res.getString(R.string.alarm_day_monthly),
 						res.getStringArray(R.array.alarm_week_strings)[repeatWeek],
 						weekdays[ringTime.get(Calendar.DAY_OF_WEEK)],
-						getExceptionMonthsString());
+						getExceptionMonthsString()));
 				break;
 			case REPEAT_DATE_YEARLY:
 				// TODO: don't show the year
-				repeatString = String.format(res.getString(R.string.alarm_date_yearly), dateStr);
+				repeatString.append(String.format(res.getString(R.string.alarm_date_yearly), dateStr));
 				break;
 			case REPEAT_OFFSET:
-				repeatString = String.format(res.getString(R.string.alarm_offset),
-						getOffsetString(), dateStr);
+				repeatString.append(String.format(res.getString(R.string.alarm_offset),
+						getOffsetString(), dateStr));
 				break;
 			default:
 				if (BuildConfig.DEBUG) Log.e(TAG, "Unknown repeat type!");
-				break;
+				return "";
 		}
-		return repeatString;
+		return repeatString.toString();
 	}
 
 	/**
@@ -337,7 +341,7 @@ public final class Alarm implements Listable, Cloneable {
 	public boolean isActive() { return alarmIsActive; }
 
 	/**
-	 * Changes the active state of the alarm to on (active). 
+	 * Changes the active state of the alarm to on (active).
 	 */
 	@Override
 	public void turnOn() { alarmIsActive = true; }
@@ -367,7 +371,6 @@ public final class Alarm implements Listable, Cloneable {
 	 */ 
 	@NotNull @Override
 	public String getNextRingTime() {
-		// TODO: uppercase/lowercase as a setting? I like lowercase.
 		if (context == null) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "Context was null when trying to get the next ring time.");
 			return "";
@@ -1086,8 +1089,6 @@ public final class Alarm implements Listable, Cloneable {
 	 *
 	 * NOTE: if the date doesn't exist (ex. April 31 for DATE_MONTHLY), it will simply skip it (will
 	 * not schedule an alarm for May 1)
-	 *
-	 * TODO: could perhaps do something if there are no repeat results found (when everything is unchecked?)
 	 */
 	void updateRingTime() {
 		if (!alarmIsActive || alarmSnoozed) { return; }
@@ -1231,7 +1232,6 @@ public final class Alarm implements Listable, Cloneable {
 
 	/**
 	 * Snoozes the alarm for 5 minutes. Sets ringTime to five minutes away from original ringTime.
-	 * TODO: take into account when the alarm was snoozed (don't just go off of ringTime)?
 	 */
 	void snooze() {
 		alarmSnoozed = true;
