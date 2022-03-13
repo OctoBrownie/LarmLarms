@@ -5,13 +5,13 @@ import android.content.res.Resources;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
+import android.text.format.DateFormat;
 import android.util.Log;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.text.DateFormat;
 import java.text.DateFormatSymbols;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
@@ -291,7 +291,7 @@ public final class Alarm implements Listable, Cloneable {
 		// TODO: show that the alarm is snoozed if it is
 
 		String repeatString = "";
-		String dateStr = DateFormat.getDateInstance(DateFormat.SHORT).format(ringTime.getTime());
+		String dateStr = DateFormat.getDateFormat(context).format(ringTime.getTime());
 		String[] ordinals = res.getStringArray(R.array.alarm_ordinals);
 
 		switch (repeatType) {
@@ -368,7 +368,11 @@ public final class Alarm implements Listable, Cloneable {
 	@NotNull @Override
 	public String getNextRingTime() {
 		// TODO: uppercase/lowercase as a setting? I like lowercase.
-		return DateFormat.getTimeInstance(DateFormat.SHORT).format(ringTime.getTime()).toLowerCase();
+		if (context == null) {
+			if (BuildConfig.DEBUG) Log.e(TAG, "Context was null when trying to get the next ring time.");
+			return "";
+		}
+		return DateFormat.getTimeFormat(context).format(ringTime.getTime()).toLowerCase();
 	}
 
 	/**
