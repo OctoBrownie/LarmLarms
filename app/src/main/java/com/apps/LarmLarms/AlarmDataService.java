@@ -104,13 +104,12 @@ public class AlarmDataService extends Service {
 	 * Listable field, the absolute index of the new parent in absParentIndex, and the new absolute
 	 * index in absIndex. Triggers MSG_DATA_CHANGED messages and may trigger MSG_DATA_FILLED messages
 	 * to be sent.
-	 * TODO: Figure out what information is needed for adding Listables anywhere in a list
 	 * <br/>
 	 * Outbound: N/A
 	 */
 	static final int MSG_ADD_LISTABLE = 3;
 	/**
-	 * Inbound: the client wants to move a Listable to a new index. arg1 should always be filled with 
+	 * Inbound: the client wants to move a Listable to a new folder. arg1 should always be filled with
 	 * the old absolute index of the Listable. A ListableInfo should be in the data bundle (using 
 	 * BUNDLE_INFO_KEY for its key). To identify the new position of the listable, the path of
 	 * the parent folder must be in the ListableInfo's path field. Will assume that the new path is
@@ -456,9 +455,7 @@ public class AlarmDataService extends Service {
 	}
 
 	/**
-	 * Responds to an inbound MSG_ADD_LISTABLE message. For now, just adds the listable to the end
-	 * of the rootFolder.
-	 * TODO: add the listable anywhere in the dataset
+	 * Responds to an inbound MSG_ADD_LISTABLE message. Adds the listable to the end of the rootFolder.
 	 * @param inMsg the inbound MSG_ADD_LISTABLE message
 	 */
 	private void handleAddListable(@NotNull Message inMsg) {
@@ -480,7 +477,7 @@ public class AlarmDataService extends Service {
 	}
 
 	/**
-	 * Responds to an inbound MSG_MOVE_LISTABLE message. Doesn't do anything right now.
+	 * Responds to an inbound MSG_MOVE_LISTABLE message. Moves a listable to a different folder.
 	 */
 	private void handleMoveListable(@NotNull Message inMsg) {
 		ListableInfo info = inMsg.getData().getParcelable(BUNDLE_INFO_KEY);
@@ -541,7 +538,8 @@ public class AlarmDataService extends Service {
 
 	/**
 	 * Responds to an inbound MSG_TOGGLE_ACTIVE message. Toggles the active state of the listable at
-	 * the absolute index specified by arg1.
+	 * the absolute index specified by arg1. Will also unsnooze the alarm if it was previously snoozed.
+	 * May send a MSG_DATA_CHANGED
 	 * @param inMsg the inbound MSG_TOGGLE_ACTIVE message
 	 */
 	private void handleToggleActive(@NotNull Message inMsg) {
@@ -552,8 +550,15 @@ public class AlarmDataService extends Service {
 		}
 		l.toggleActive();
 
+		boolean sendDataChanged = false;
+		if (l.isAlarm() && ((Alarm) l).getIsSnoozed()) {
+			((Alarm) l).unsnooze();
+			sendDataChanged = true;
+		}
+
 		writeAlarmsToDisk(this, rootFolder);
 		setNextAlarmToRing();
+		if (sendDataChanged) sendDataChanged();
 	}
 
 	/**
