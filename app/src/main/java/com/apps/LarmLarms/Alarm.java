@@ -502,6 +502,7 @@ public final class Alarm implements Listable, Cloneable {
 				alarmString.append(' ').append(offsetDays);
 				alarmString.append(' ').append(offsetHours);
 				alarmString.append(' ').append(offsetMins);
+				alarmString.append(' ').append(isOffsetFromNow());
 				break;
 			default:
 				if (BuildConfig.DEBUG) Log.e(TAG, "Invalid alarm repeat type.");
@@ -1087,14 +1088,15 @@ public final class Alarm implements Listable, Cloneable {
 	void updateRingTime() {
 		if (!alarmIsActive || alarmSnoozed) { return; }
 
-		GregorianCalendar sysClock = new GregorianCalendar(), workingClock = new GregorianCalendar();
-		int thisMonth = sysClock.get(Calendar.MONTH), currMonth = thisMonth;
+		GregorianCalendar workingClock = new GregorianCalendar();
+		int thisMonth = workingClock.get(Calendar.MONTH), currMonth = thisMonth;
 
-		// common to all the repeat types that change workingClock
-		workingClock.set(Calendar.HOUR_OF_DAY, ringTime.get(Calendar.HOUR_OF_DAY));
-		workingClock.set(Calendar.MINUTE, ringTime.get(Calendar.MINUTE));
+		boolean clockSet = false;	// whether or not workingClock has been set yet
 
 		if (repeatType != REPEAT_ONCE_REL && repeatType != REPEAT_OFFSET) {
+			// common to all the non-offset repeat types that use workingClock
+			workingClock.set(Calendar.HOUR_OF_DAY, ringTime.get(Calendar.HOUR_OF_DAY));
+			workingClock.set(Calendar.MINUTE, ringTime.get(Calendar.MINUTE));
 			workingClock.set(Calendar.SECOND, 0);
 			workingClock.set(Calendar.MILLISECOND, 0);
 		}
@@ -1105,33 +1107,62 @@ public final class Alarm implements Listable, Cloneable {
 				return;
 			case REPEAT_ONCE_REL:
 				// only changes if the alarm is overdue
-				if (ringTime.after(sysClock)) { return; }
-				ringTime.add(Calendar.DAY_OF_MONTH, offsetDays);
-				ringTime.add(Calendar.HOUR_OF_DAY, offsetHours);
-				ringTime.add(Calendar.MINUTE, offsetMins);
-				return;
+				if (ringTime.after(workingClock)) { return; }
+
+				workingClock.add(Calendar.DAY_OF_MONTH, offsetDays);
+				workingClock.add(Calendar.HOUR_OF_DAY, offsetHours);
+				workingClock.add(Calendar.MINUTE, offsetMins);
+				offsetFromNow = true;
+				break;
 			case REPEAT_DAY_WEEKLY:
 				// trying to avoid any namespace issues
 				{
-					int dayOfWeek = sysClock.get(Calendar.DAY_OF_WEEK), todayDayOfWeek = dayOfWeek;
+					// days of week follow Calendar constants
+					int dayOfWeek = workingClock.get(Calendar.DAY_OF_WEEK), todayDayOfWeek = dayOfWeek;
 
-					while (workingClock.before(sysClock) || !repeatDays[dayOfWeek - 1]) {
+					while (!clockSet) {
+						if (repeatDays[dayOfWeek - 1]) {
+							workingClock.set(Calendar.DAY_OF_WEEK, dayOfWeek);
+							clockSet = true;
+						}
+
+						// go to the next day of the week
 						dayOfWeek = dayOfWeek % 7 + 1;
-						workingClock.set(Calendar.DAY_OF_WEEK, dayOfWeek);
-						if (dayOfWeek == todayDayOfWeek) { return; }
+						if (dayOfWeek == Calendar.SUNDAY) workingClock.add(Calendar.WEEK_OF_MONTH, 1);
+
+						// we've wrapped all the way around
+						if (dayOfWeek == todayDayOfWeek) {
+							if (repeatDays[dayOfWeek - 1]) break;
+
+							if (BuildConfig.DEBUG) Log.i(TAG, "There are no repeat days to set the next alarm to.");
+							return;
+						}
 					}
 				}
 				break;
 			case REPEAT_DATE_MONTHLY:
-				workingClock.set(Calendar.DAY_OF_MONTH, ringTime.get(Calendar.DAY_OF_MONTH));
-
-				while (workingClock.before(sysClock) || !repeatMonths[currMonth] ||
+				// third condition is in case the day of the month (ex. 31st) doesn't exist
+				while (!clockSet ||
 						workingClock.get(Calendar.DAY_OF_MONTH) != ringTime.get(Calendar.DAY_OF_MONTH)) {
+					if (repeatMonths[currMonth]) {
+						workingClock.set(Calendar.MONTH, currMonth);
+						workingClock.set(Calendar.DAY_OF_MONTH, ringTime.get(Calendar.DAY_OF_MONTH));
+						clockSet = true;
+					}
+
 					// go to the next month
 					currMonth = (currMonth + 1) % 12;
-					workingClock.set(Calendar.MONTH, currMonth);
-					workingClock.set(Calendar.DAY_OF_MONTH, ringTime.get(Calendar.DAY_OF_MONTH));
-					if (currMonth == thisMonth) { return; }
+					if (currMonth == Calendar.JANUARY) workingClock.add(Calendar.YEAR, 1);
+
+					// we've wrapped all the way around
+					if (currMonth == thisMonth) {
+						if (repeatMonths[currMonth]) {
+							workingClock.set(Calendar.DAY_OF_MONTH, ringTime.get(Calendar.DAY_OF_MONTH));
+							break;
+						}
+						if (BuildConfig.DEBUG) Log.i(TAG, "There are no repeat months to set the next alarm to.");
+						return;
+					}
 				}
 				break;
 			case REPEAT_DAY_MONTHLY:
@@ -1145,21 +1176,35 @@ public final class Alarm implements Listable, Cloneable {
 
 				workingClock.set(Calendar.DAY_OF_WEEK, ringTime.get(Calendar.DAY_OF_WEEK));
 
-				while (workingClock.before(sysClock) || !repeatMonths[currMonth]) {
+				while (!clockSet) {
+					if (repeatMonths[currMonth]) {
+						workingClock.set(Calendar.MONTH, currMonth);
+						clockSet = true;
+					}
+
+					// go to the next month
 					currMonth = (currMonth + 1) % 12;
-					workingClock.set(Calendar.MONTH, currMonth);
-					if (currMonth == thisMonth) { return; }
+					if (currMonth == Calendar.JANUARY) workingClock.add(Calendar.YEAR, 1);
+
+					// we've wrapped all the way around
+					if (currMonth == thisMonth) {
+						if (repeatMonths[currMonth]) {
+							break;
+						}
+						if (BuildConfig.DEBUG) Log.i(TAG, "There are no repeat months to set the next alarm to.");
+						return;
+					}
 				}
 				break;
 			case REPEAT_DATE_YEARLY:
 				{
 					int day = ringTime.get(Calendar.DAY_OF_MONTH);
 					int month = ringTime.get(Calendar.MONTH);
+
 					workingClock.set(Calendar.DAY_OF_MONTH, day);
 					workingClock.set(Calendar.MONTH, month);
 
-					while (workingClock.before(sysClock) || workingClock.get(Calendar.DAY_OF_MONTH) != day ||
-							workingClock.get(Calendar.MONTH) != month) {
+					while (workingClock.get(Calendar.DAY_OF_MONTH) != day) {
 						workingClock.add(Calendar.YEAR, 1);
 						workingClock.set(Calendar.DAY_OF_MONTH, day);
 						workingClock.set(Calendar.MONTH, month);
@@ -1167,7 +1212,7 @@ public final class Alarm implements Listable, Cloneable {
 				}
 				break;
 			case REPEAT_OFFSET:
-				while (ringTime.before(sysClock)) {
+				while (ringTime.before(workingClock)) {
 					ringTime.add(Calendar.DAY_OF_MONTH, offsetDays);
 					ringTime.add(Calendar.HOUR_OF_DAY, offsetHours);
 					ringTime.add(Calendar.MINUTE, offsetMins);
