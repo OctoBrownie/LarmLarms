@@ -54,4 +54,15 @@ It is possible to duplicate an alarm notification if the user interacts with the
 		In that case, the flag would automatically set it to be "silent" from the start
 Animations for folder opening/closing should only be played when the folder in question is clicked
 Sometimes requires you to unlock your phone to turn off the alarm (when off)
+Dismissing a repeating alarm (wakeup alarm) closed it but it rang again immediately (on the last day
+it was supposed to ring, Friday)
+	Also rang again on Saturday??
+Snoozing seemed permanent in the case of a repeating alarm? No indications otherwise (in repeat string
+or in ListableEditor)
+For February 29 in particular, REPEAT_DATE_MONTHLY may fail if it's ONLY February for repeat months
+	Should repeat every 4 years, with some exceptions...
+	Currently it will repeat on March 1st every year (Feb 29 on the first month only)
+If the date doesn't currently exist, will use an incorrect date
+	Ex: trying to set an alarm (like a REPEAT_YEARLY) for Feb 29 on a non-leap year
+	Doesn't check if the date exists when saving to the alarm in the first place (Alarm.ringTime)
 
