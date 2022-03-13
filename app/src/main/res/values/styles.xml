@@ -6,14 +6,10 @@
 		<item name="android:textAlignment">center</item>
 	</style>
 
-	<!-- TODO: Perhaps make it a setting to choose whether timePickerMode is clock or spinner?
-	I personally like spinner better, but the clock aesthetic looks nice too. Need to test the
-	activity with both if this becomes a setting. -->
 	<style name="TimePickerStyle" parent="Widget.MaterialComponents.TimePicker">
 		<item name="android:timePickerMode">spinner</item>
 	</style>
 
-	<!-- TODO: could make it a setting to choose datePickerMode? -->
 	<style name="DatePickerStyle" parent="Widget.MaterialComponents.MaterialCalendar">
 		<item name="android:datePickerMode">spinner</item>
 		<item name="android:calendarViewShown">false</item>
