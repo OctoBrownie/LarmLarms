@@ -12,7 +12,10 @@ New ListableEditor features
 		If we do this, probably want to manage our own Vibrator instead of relying on the
 			NotificationChannel's (can't change per alarm, is editable by user in settings)
 	dialog box + scrollview for days/months (don't have to worry about something similar to flow layout)
-Settings activity
+Settings activity and some ideas for settings:
+	Uppercase/lowercase for time strings (PM vs pm, currently hardcoded to lowercase)
+	Theme changes
+	Clock or spinner for date or time pickers (see styles.xml)
 Use a (color) selector to make disabled alarms more obvious (MainActivity)
 	See https://programmer.ink/think/a-detailed-explanation-of-the-use-of-selector-in-android.html
 Style all components
@@ -43,6 +46,10 @@ Could use created time as a key for listables
 Between versions, transfer alarms list (so data isn't lost)
 Fade in alarm sounds
 Perhaps the folder animation looks a bit stiff because the folder itself doesn't move
+Reorder alarms within a folder
+Make "offset from now" only a thing in the Editor (the alarms are always offset from a specific time)
+	Makes it so that when you're trying to edit an alarm, it will KEEP the same offset if you don't
+	change the offset time
 
 BUGS
 Vibration only occurs right when the alarm starts ringing (doesn't loop)
