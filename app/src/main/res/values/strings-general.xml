@@ -1,0 +1,35 @@
+<resources>
+	<!-- general display strings, no prefixes -->
+	<string name="app_name">Larm Larms</string>
+	<string name="space">" "</string>
+	<string name="separator">", "</string>
+	<string name="final_separator">" and "</string>
+	<string name="root_folder">""</string>
+
+	<!-- notification display strings, prefixed by "notif" -->
+	<string name="notif_channel_name">Alarms</string>
+	<string name="notif_ticker">Ringing alarm</string>
+	<string name="notif_dismiss">dismiss</string>
+	<string name="notif_snooze">snooze</string>
+	<string name="notif_service_description">Starts alarms and plays alarm ringtones.</string>
+
+	<!-- RecyclerViewHolder context menu display strings, prefixed by "listable_menu"
+		 If you change the order of these, make sure to change it in RecyclerViewAdapter
+	-->
+	<string name="listable_menu_delete_alarm">Delete alarm</string>
+	<string name="listable_menu_delete_folder">Delete folder</string>
+	<string-array name="listable_menu_alarms">
+		<item>@string/listable_menu_delete_alarm</item>
+	</string-array>
+	<string-array name="listable_menu_folders">
+		<item>@string/listable_menu_delete_folder</item>
+	</string-array>
+
+	<!-- MainActivity display strings, prefixed by "main" -->
+	<string name="main_no_alarms_text">There\'s nothing here!</string>
+	<string name="main_add_alarm_button">+</string>
+
+	<!-- MainActivity description strings, prefixed by "main," suffixed by "descrip" -->
+	<string name="main_add_folder_button_descrip">Add folder</string>
+	<string name="main_folder_icon_descrip">Folder icon</string>
+</resources>
