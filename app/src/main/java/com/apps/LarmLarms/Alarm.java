@@ -13,8 +13,10 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.text.DateFormatSymbols;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
+import java.util.List;
 
 /**
  * Class managing alarms and their behavior.
@@ -298,6 +300,7 @@ public final class Alarm implements Listable, Cloneable {
 			repeatString.append('\n');
 		}
 
+		String months, exceptMonths;		// used for DATE_MONTHLY and DAY_MONTHLY
 		switch (repeatType) {
 			case REPEAT_ONCE_ABS:
 			case REPEAT_ONCE_REL:
@@ -308,15 +311,36 @@ public final class Alarm implements Listable, Cloneable {
 				break;
 			case REPEAT_DATE_MONTHLY:
 				int dateOfMonth = ringTime.get(Calendar.DATE);
-				repeatString.append(String.format(res.getString(R.string.alarm_date_monthly),
-						ordinals[dateOfMonth - 1], getExceptionMonthsString()));
+				months = getMonthsString();
+				exceptMonths = getExceptionMonthsString();
+				if (months.length() <= exceptMonths.length()) {
+					// use months
+					repeatString.append(String.format(res.getString(R.string.alarm_date_monthly),
+							months, ordinals[dateOfMonth - 1]));
+				}
+				else {
+					// use exception months
+					repeatString.append(String.format(res.getString(R.string.alarm_date_monthly_except),
+							ordinals[dateOfMonth - 1], exceptMonths));
+				}
 				break;
 			case REPEAT_DAY_MONTHLY:
 				String[] weekdays = (new DateFormatSymbols()).getWeekdays();
-				repeatString.append(String.format(res.getString(R.string.alarm_day_monthly),
-						res.getStringArray(R.array.alarm_week_strings)[repeatWeek],
-						weekdays[ringTime.get(Calendar.DAY_OF_WEEK)],
-						getExceptionMonthsString()));
+
+				months = getMonthsString();
+				exceptMonths = getExceptionMonthsString();
+				if (months.length() <= exceptMonths.length()) {
+					// use months
+					repeatString.append(String.format(res.getString(R.string.alarm_day_monthly),
+							res.getStringArray(R.array.alarm_week_strings)[repeatWeek],
+							weekdays[ringTime.get(Calendar.DAY_OF_WEEK)], months));
+				}
+				else {
+					// use exception months
+					repeatString.append(String.format(res.getString(R.string.alarm_day_monthly_except),
+							res.getStringArray(R.array.alarm_week_strings)[repeatWeek],
+							weekdays[ringTime.get(Calendar.DAY_OF_WEEK)], exceptMonths));
+				}
 				break;
 			case REPEAT_DATE_YEARLY:
 				// TODO: don't show the year
@@ -925,8 +949,9 @@ public final class Alarm implements Listable, Cloneable {
 	 * Gets the display string for REPEAT_WEEKLY, specifically representing which days the alarm
 	 * repeats on. Will return "Weekly on [days]" unless it's a special set of days (every day,
 	 * weekends, weekdays, or none).
+	 * @return formatted string resource alarm_weekly, special cases, or empty
 	 */
-	@NotNull
+	@NotNull @Contract(pure = true)
 	String getWeeklyDisplayString() {
 		if (context == null) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "Context is null, cannot get the weekly display string.");
@@ -961,10 +986,61 @@ public final class Alarm implements Listable, Cloneable {
 	}
 
 	/**
-	 * Returns the exception months string, or empty string if no exceptions.
-	 * @return formatted string resource main_monthly_exception or empty
+	 * Returns the months that the alarm is going to ring on.
+	 * @return formatted string resource alarm_monthly, special cases, or empty
 	 */
-	@NotNull
+	@NotNull @Contract(pure = true)
+	String getMonthsString() {
+		if (context == null) {
+			if (BuildConfig.DEBUG) Log.e(TAG, "Context is null, cannot get the months display string.");
+			return "";
+		}
+
+		Resources res = context.getResources();
+
+		StringBuilder months = new StringBuilder();
+		String separator = res.getString(R.string.separator);
+		String[] monthStrings = (new DateFormatSymbols()).getShortMonths();
+		List<String> monthsToAdd = new ArrayList<>();
+		int numMonths = 0;
+		boolean evenFlag = true, oddFlag = true;
+
+		for (int i = 0; i < repeatMonths.length; i++) {
+			// have to flip the equals because repeatMonths[0] represents January (1)
+			evenFlag = evenFlag && (i % 2 != 0) == repeatMonths[i];
+			oddFlag = oddFlag && (i % 2 == 0) == repeatMonths[i];
+
+			if (repeatMonths[i]) {
+				monthsToAdd.add(monthStrings[i]);
+				numMonths++;
+			}
+		}
+
+		if (numMonths == 0) { return res.getString(R.string.alarm_no_months); }
+		if (numMonths == 12) { return res.getString(R.string.alarm_all_months); }
+		if (numMonths == 6 && evenFlag) { return res.getString(R.string.alarm_even_months); }
+		if (numMonths == 6 && oddFlag) { return res.getString(R.string.alarm_odd_months); }
+
+		months.append(monthsToAdd.get(0));
+		if (numMonths > 1) {
+			// use normal separator
+			for (int i = 1; i < numMonths - 1; i++) {
+				months.append(separator);
+				months.append(monthsToAdd.get(i));
+			}
+
+			months.append(res.getString(R.string.final_separator));
+			months.append(monthsToAdd.get(monthsToAdd.size() - 1));
+		}
+
+		return String.format(res.getString(R.string.alarm_monthly), months.toString());
+	}
+
+	/**
+	 * Returns the exception months string, or empty string if no exceptions.
+	 * @return formatted string resource alarm_monthly_exception or empty
+	 */
+	@NotNull @Contract(pure = true)
 	private String getExceptionMonthsString() {
 		if (context == null) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "Context is null, cannot get the exception months display string.");
@@ -976,24 +1052,41 @@ public final class Alarm implements Listable, Cloneable {
 		StringBuilder months = new StringBuilder();
 		String separator = res.getString(R.string.separator);
 		String[] monthStrings = (new DateFormatSymbols()).getShortMonths();
+		List<String> monthsToAdd = new ArrayList<>();
+		int numMonths = 0;
 
 		for (int i = 0; i < repeatMonths.length; i++) {
 			if (!repeatMonths[i]) {
-				months.append(monthStrings[i]);
-				months.append(separator);
+				monthsToAdd.add(monthStrings[i]);
+				numMonths++;
 			}
 		}
-		if (months.length() == 0) { return ""; }
-		// TODO: other month exceptions?
 
-		months.delete(months.length() - separator.length(), months.length());	// delete the last comma
+		if (numMonths == 0) { return ""; }
+
+		if (numMonths == 1) {
+			months.append(monthsToAdd.get(0));
+		}
+		else {
+			months.append(monthStrings[0]);
+
+			// use normal separator
+			for (int i = 1; i < numMonths - 1; i++) {
+				months.append(separator);
+				months.append(monthsToAdd.get(i));
+			}
+
+			months.append(res.getString(R.string.final_separator));
+			months.append(monthsToAdd.get(monthsToAdd.size() - 1));
+		}
+
 		return String.format(res.getString(R.string.alarm_monthly_exception), months.toString());
 	}
 
 	/**
 	 * Builds a string for offsets. Returns a new string with days, hours, and minutes.
 	 */
-	@NotNull
+	@NotNull @Contract(pure = true)
 	private String getOffsetString() {
 		if (context == null) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "Context is null, cannot get the offset display string.");

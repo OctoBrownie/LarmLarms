@@ -422,7 +422,7 @@ public class ListableEditorActivity extends AppCompatActivity
 					return;
 				}
 				((TextView) alarmDaysLayout.findViewById(R.id.text))
-						.setText(((Alarm)workingListable).getWeeklyDisplayString());
+						.setText(((Alarm) workingListable).getWeeklyDisplayString());
 			}
 			else {
 				if (alarmMonthsLayout == null) {
@@ -430,7 +430,7 @@ public class ListableEditorActivity extends AppCompatActivity
 					return;
 				}
 				((TextView) alarmMonthsLayout.findViewById(R.id.text))
-						.setText("Raa not implemented yet");
+						.setText(((Alarm) workingListable).getMonthsString());
 			}
 		}
 	}
@@ -614,6 +614,29 @@ public class ListableEditorActivity extends AppCompatActivity
 
 		alarmDatePicker = picker;
 	}
+
+	/**
+	 * Sets up the days of the week field (alarmDaysLayout) and corresponding UI (text). Does
+	 * not check whether the field is null or not. For alarms only.
+	 */
+	private void setupWeekDays() {
+		alarmDaysLayout = findViewById(R.id.alarmDaysInput);
+
+		((TextView) alarmDaysLayout.findViewById(R.id.text))
+				.setText(((Alarm) workingListable).getWeeklyDisplayString());
+	}
+
+	/**
+	 * Sets up the months field (alarmMonthsLayout) and corresponding UI (text). Does not
+	 * check whether the field is null or not. For alarms only.
+	 */
+	private void setupMonths() {
+		alarmMonthsLayout = findViewById(R.id.alarmMonthsInput);
+
+		((TextView) alarmMonthsLayout.findViewById(R.id.text))
+				.setText(((Alarm) workingListable).getMonthsString());
+	}
+
 
 	/**
 	 * Sets up the day monthly layout for the first time. Sets the field and the UI (spinners). Does
@@ -833,7 +856,7 @@ public class ListableEditorActivity extends AppCompatActivity
 				if (alarmTimePicker == null) setupTimePicker();
 				alarmTimePicker.setVisibility(View.VISIBLE);
 
-				if (alarmDaysLayout == null) alarmDaysLayout = findViewById(R.id.alarmDaysInput);
+				if (alarmDaysLayout == null) setupWeekDays();
 				alarmDaysLayout.setVisibility(View.VISIBLE);
 				break;
 			case Alarm.REPEAT_DATE_MONTHLY:
@@ -841,7 +864,7 @@ public class ListableEditorActivity extends AppCompatActivity
 				if (alarmTimePicker == null) setupTimePicker();
 				alarmTimePicker.setVisibility(View.VISIBLE);
 
-				if (alarmMonthsLayout == null) alarmMonthsLayout = findViewById(R.id.alarmMonthsInput);
+				if (alarmMonthsLayout == null) setupMonths();
 				alarmMonthsLayout.setVisibility(View.VISIBLE);
 
 				if (alarmDateOfMonthLayout == null) {
@@ -863,7 +886,7 @@ public class ListableEditorActivity extends AppCompatActivity
 				if (alarmDayMonthlyLayout == null) setupDayMonthlyLayout();
 				alarmDayMonthlyLayout.setVisibility(View.VISIBLE);
 
-				if (alarmMonthsLayout == null) alarmMonthsLayout = findViewById(R.id.alarmMonthsInput);
+				if (alarmMonthsLayout == null) setupMonths();
 				alarmMonthsLayout.setVisibility(View.VISIBLE);
 				break;
 			default:

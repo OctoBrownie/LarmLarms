@@ -1,21 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
-	<!-- alarm repeat type display strings, prefixed by "alarm" -->
+	<!-- alarm display strings, prefixed by "alarm" -->
 	<string name="alarm_no_repeats_string">None</string>
 
 	<string name="alarm_snooze">Snoozed for <xliff:g id="min" example="5">%d</xliff:g> minutes</string>
 	<string name="alarm_once_abs_rel">Once on <xliff:g id="date" example="2000/01/01">%s</xliff:g></string>
+
 	<string name="alarm_weekly">Weekly on <xliff:g id="days" example="Mon, Tue">%s</xliff:g></string>
 	<string name="alarm_weekly_everyday">Every day</string>
 	<string name="alarm_weekly_weekdays">Weekdays</string>
 	<string name="alarm_weekly_weekends">Weekends</string>
-	<string name="alarm_date_monthly">Every <xliff:g id="ordinal" example="1st">%1$s</xliff:g> of the month
-		<xliff:g id="alarm_monthly_exception">%2$s</xliff:g></string>
+
+	<string name="alarm_date_monthly"><xliff:g id="alarm_monthly" example="Every Jan and Feb">%1$s</xliff:g>
+		on the <xliff:g id="ordinal" example="1st">%2$s</xliff:g></string>
+	<string name="alarm_date_monthly_except">Every <xliff:g id="ordinal" example="1st">%1$s</xliff:g>
+		of the month<xliff:g id="alarm_monthly_exception" example=", except Jan">%2$s</xliff:g></string>
 	<string name="alarm_day_monthly">Every <xliff:g id="ordinal" example="1st">%1$s</xliff:g>
+		<xliff:g id="day of week" example="Monday">%2$s</xliff:g> of
+		<xliff:g id="alarm_monthly" example="Jan and Feb">%3$s</xliff:g></string>
+	<string name="alarm_day_monthly_except">Every <xliff:g id="ordinal" example="1st">%1$s</xliff:g>
 		<xliff:g id="day of week" example="Monday">%2$s</xliff:g> of the
-		month<xliff:g id="alarm_monthly_exception">%3$s</xliff:g></string>
-	<string name="alarm_monthly_exception">, except <xliff:g id="months" example="Jan, Feb">%s</xliff:g></string>
+		month<xliff:g id="alarm_monthly_exception" example=", except Jan">%3$s</xliff:g></string>
+
+	<string name="alarm_monthly">Every <xliff:g id="months" example="Jan and Feb">%s</xliff:g></string>
+	<string name="alarm_monthly_exception">, except <xliff:g id="months" example="Jan, Feb and Mar">%s</xliff:g></string>
+	<string name="alarm_no_months">No months</string>
+	<string name="alarm_all_months">Every month</string>
+	<string name="alarm_even_months">Every even month</string>
+	<string name="alarm_odd_months">Every odd month</string>
+
 	<string name="alarm_date_yearly">Every year on <xliff:g id="date" example="2000/01/01">%s</xliff:g></string>
+
 	<!-- TODO: it's always plural? -->
 	<string name="alarm_offset">Every <xliff:g id="offset" example="2 days, 2 hours and 5 minutes">%1$s</xliff:g>
 		<xliff:g id="newline">%n</xliff:g>Next ring date: <xliff:g id="date" example="2000/01/01">%2$s</xliff:g></string>

@@ -17,7 +17,8 @@ import androidx.fragment.app.DialogFragment;
  * Dialog fragment for ListableEditor. Creates a dialog either for the days of the week or for the
  * months of the year.
  */
-public class EditorDialogFrag extends DialogFragment implements DialogInterface.OnClickListener {
+public class EditorDialogFrag extends DialogFragment implements
+		DialogInterface.OnMultiChoiceClickListener, DialogInterface.OnClickListener {
 	/**
 	 * A listener for the dialog. Only receives the positive button click
 	 */
@@ -61,7 +62,7 @@ public class EditorDialogFrag extends DialogFragment implements DialogInterface.
 		else {
 			items = (new DateFormatSymbols()).getMonths();
 		}
-		builder.setMultiChoiceItems(items, selected, null);
+		builder.setMultiChoiceItems(items, selected, this);
 
 		builder.setPositiveButton(android.R.string.ok, this);
 		builder.setNegativeButton(android.R.string.cancel, this);
@@ -77,6 +78,18 @@ public class EditorDialogFrag extends DialogFragment implements DialogInterface.
 	@Override
 	public void onClick(DialogInterface dialog, int which) {
 		if (listener != null) listener.onDialogClose(isDays, which);
+	}
+
+	/**
+	 * Onclick callback for the checkboxes on the dialog. Changes the respective entry in selected
+	 * (which will affect the original Alarm's fields)
+	 * @param dialog the dialog whose checkboxes wer clicked
+	 * @param which which checkbox was clicked
+	 * @param isChecked whether the checkbox was checked or not
+	 */
+	@Override
+	public void onClick(DialogInterface dialog, int which, boolean isChecked) {
+		selected[which] = isChecked;
 	}
 
 	/**
