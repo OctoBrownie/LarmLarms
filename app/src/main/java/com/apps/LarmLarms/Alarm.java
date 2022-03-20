@@ -978,8 +978,13 @@ public final class Alarm implements Listable, Cloneable {
 	@NotNull @Override @Contract(pure = true)
 	public String toString() { return name; }
 
+	/**
+	 * Gets the display string for REPEAT_WEEKLY, specifically representing which days the alarm
+	 * repeats on. Will return "Weekly on [days]" unless it's a special set of days (every day,
+	 * weekends, weekdays, or none).
+	 */
 	@NotNull
-	private String getWeeklyDisplayString() {
+	String getWeeklyDisplayString() {
 		if (context == null) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "Context is null, cannot get the weekly display string.");
 			return "";

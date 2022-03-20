@@ -24,7 +24,7 @@ public class RecyclerDialogFrag extends DialogFragment {
 
 	/**
 	 * Creates a new dialog for a recycler view item.
-	 * @param l a listener for the thing
+	 * @param l a listener for the dialog
 	 * @param isAlarm whether the clicked item was an alarm or a folder
 	 */
 	RecyclerDialogFrag(DialogInterface.OnClickListener l, boolean isAlarm) {

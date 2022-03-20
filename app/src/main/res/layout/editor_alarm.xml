@@ -99,65 +99,27 @@
 					android:text="@string/alarm_editor_date_monthly_text_2"/>
 			</LinearLayout>
 
-			<!-- TODO: provide alt resources for smaller screens? If not, text could be cut off
-				 TODO: could make these into buttons (perhaps easier to click?) -->
 			<!-- days of week layout -->
 			<LinearLayout
 				android:id="@+id/alarmDaysInput"
 				android:layout_width="match_parent"
 				android:layout_height="wrap_content"
 				android:orientation="horizontal"
-				android:gravity="center_horizontal"
 				android:visibility="gone">
-				<TextView
-					style="@style/EditorDaysStyle"
+				<android.widget.Button
+					style="@style/ButtonStyle.Borderless"
 
 					android:layout_width="wrap_content"
 					android:layout_height="wrap_content"
-					android:tag="0"
-					android:onClick="dayOfWeekClicked" />
+					android:onClick="dayOfWeekButtonClicked"
+					android:text="@string/alarm_editor_days_button" />
 				<TextView
-					style="@style/EditorDaysStyle"
+					style="@style/EditorLabelStyle"
 
+					android:id="@+id/text"
 					android:layout_width="wrap_content"
 					android:layout_height="wrap_content"
-					android:tag="1"
-					android:onClick="dayOfWeekClicked" />
-				<TextView
-					style="@style/EditorDaysStyle"
-
-					android:layout_width="wrap_content"
-					android:layout_height="wrap_content"
-					android:tag="2"
-					android:onClick="dayOfWeekClicked" />
-				<TextView
-					style="@style/EditorDaysStyle"
-
-					android:layout_width="wrap_content"
-					android:layout_height="wrap_content"
-					android:tag="3"
-					android:onClick="dayOfWeekClicked" />
-				<TextView
-					style="@style/EditorDaysStyle"
-
-					android:layout_width="wrap_content"
-					android:layout_height="wrap_content"
-					android:tag="4"
-					android:onClick="dayOfWeekClicked" />
-				<TextView
-					style="@style/EditorDaysStyle"
-
-					android:layout_width="wrap_content"
-					android:layout_height="wrap_content"
-					android:tag="5"
-					android:onClick="dayOfWeekClicked" />
-				<TextView
-					style="@style/EditorDaysStyle"
-
-					android:layout_width="wrap_content"
-					android:layout_height="wrap_content"
-					android:tag="6"
-					android:onClick="dayOfWeekClicked" />
+					android:text="@null" />
 			</LinearLayout>
 
 			<!-- DAY_MONTHLY layout -->
@@ -190,112 +152,28 @@
 					android:layout_height="wrap_content"/>
 			</LinearLayout>
 
-			<!-- TODO: provide alt resources for smaller/larger screens? If not, text could be cut
-			off or unnecessarily broken up -->
 			<!-- months of year layout -->
 			<LinearLayout
 				android:id="@+id/alarmMonthsInput"
 				android:layout_width="match_parent"
 				android:layout_height="wrap_content"
-				android:orientation="vertical"
+				android:orientation="horizontal"
 				android:visibility="gone">
-				<LinearLayout
-					android:layout_width="match_parent"
+				<android.widget.Button
+					style="@style/ButtonStyle.Borderless"
+
+					android:layout_width="wrap_content"
 					android:layout_height="wrap_content"
-					android:orientation="horizontal"
-					android:gravity="center_horizontal">
-					<TextView
-						style="@style/EditorDaysStyle"
+					android:onClick="monthsButtonClicked"
+					android:text="@string/alarm_editor_months_button" />
+				<TextView
+					style="@style/EditorLabelStyle"
 
-						android:layout_width="wrap_content"
-						android:layout_height="wrap_content"
-						android:tag="0"
-						android:onClick="monthClicked" />
-					<TextView
-						style="@style/EditorDaysStyle"
-
-						android:layout_width="wrap_content"
-						android:layout_height="wrap_content"
-						android:tag="1"
-						android:onClick="monthClicked" />
-					<TextView
-						style="@style/EditorDaysStyle"
-
-						android:layout_width="wrap_content"
-						android:layout_height="wrap_content"
-						android:tag="2"
-						android:onClick="monthClicked" />
-					<TextView
-						style="@style/EditorDaysStyle"
-
-						android:layout_width="wrap_content"
-						android:layout_height="wrap_content"
-						android:tag="3"
-						android:onClick="monthClicked" />
-					<TextView
-						style="@style/EditorDaysStyle"
-
-						android:layout_width="wrap_content"
-						android:layout_height="wrap_content"
-						android:tag="4"
-						android:onClick="monthClicked" />
-					<TextView
-						style="@style/EditorDaysStyle"
-
-						android:layout_width="wrap_content"
-						android:layout_height="wrap_content"
-						android:tag="5"
-						android:onClick="monthClicked" />
-				</LinearLayout>
-
-				<LinearLayout
-					android:layout_width="match_parent"
+					android:id="@id/text"
+					android:layout_width="wrap_content"
 					android:layout_height="wrap_content"
-					android:orientation="horizontal"
-					android:gravity="center_horizontal">
-					<TextView
-						style="@style/EditorDaysStyle"
-
-						android:layout_width="wrap_content"
-						android:layout_height="wrap_content"
-						android:tag="6"
-						android:onClick="monthClicked" />
-					<TextView
-						style="@style/EditorDaysStyle"
-
-						android:layout_width="wrap_content"
-						android:layout_height="wrap_content"
-						android:tag="7"
-						android:onClick="monthClicked" />
-					<TextView
-						style="@style/EditorDaysStyle"
-
-						android:layout_width="wrap_content"
-						android:layout_height="wrap_content"
-						android:tag="8"
-						android:onClick="monthClicked" />
-					<TextView
-						style="@style/EditorDaysStyle"
-
-						android:layout_width="wrap_content"
-						android:layout_height="wrap_content"
-						android:tag="9"
-						android:onClick="monthClicked" />
-					<TextView
-						style="@style/EditorDaysStyle"
-
-						android:layout_width="wrap_content"
-						android:layout_height="wrap_content"
-						android:tag="10"
-						android:onClick="monthClicked" />
-					<TextView
-						style="@style/EditorDaysStyle"
-
-						android:layout_width="wrap_content"
-						android:layout_height="wrap_content"
-						android:tag="11"
-						android:onClick="monthClicked" />
-				</LinearLayout>
+					android:labelFor="@+id/alarmMonthsButton"
+					android:text="@null" />
 			</LinearLayout>
 
 			<!-- offset layout -->
@@ -417,7 +295,6 @@
 				<android.widget.Button
 					style="@style/ButtonStyle.Borderless"
 
-					android:id="@+id/soundButton"
 					android:layout_width="wrap_content"
 					android:layout_height="wrap_content"
 					android:onClick="chooseSound"
@@ -428,7 +305,6 @@
 					android:id="@+id/soundText"
 					android:layout_width="wrap_content"
 					android:layout_height="wrap_content"
-					android:labelFor="@+id/alarmNameInput"
 					android:text="@null" />
 			</LinearLayout>
 		</LinearLayout>

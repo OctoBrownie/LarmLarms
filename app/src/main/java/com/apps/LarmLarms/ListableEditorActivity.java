@@ -3,9 +3,9 @@ package com.apps.LarmLarms;
 import android.annotation.SuppressLint;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.content.res.TypedArray;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
@@ -49,7 +49,8 @@ import androidx.appcompat.app.AppCompatActivity;
  * Must have an action defined in this class
  * For specific actions, see the action documentation for extra requirements
  */
-public class ListableEditorActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
+public class ListableEditorActivity extends AppCompatActivity
+		implements AdapterView.OnItemSelectedListener, EditorDialogFrag.DialogCloseListener {
 
 	/* **************************************  Constants  *************************************** */
 	
@@ -389,27 +390,49 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 	}
 
 	/**
-	 * An onclick callback if a TextView representing a day of the week is clicked.
-	 * @param view the day of week TextView that was clicked
+	 * An onclick callback to change the days of the week to ring. Creates a dialog
+	 * @param view the day of week button (view that triggered the callback)
 	 */
-	public void dayOfWeekClicked(@NotNull View view) {
-		int index = Integer.parseInt(view.getTag().toString());
-		boolean newState = !((Alarm) workingListable).getRepeatDays(index);
-
-		((Alarm) workingListable).setRepeatDays(index, newState);
-		changeColors((TextView) view, newState);
+	public void dayOfWeekButtonClicked(@NotNull View view) {
+		EditorDialogFrag dialog = new EditorDialogFrag(this, true,
+				((Alarm) workingListable).getRepeatDays());
+		dialog.show(getSupportFragmentManager(), null);
 	}
 
 	/**
 	 * An onclick callback if a TextView representing a month of the year is clicked.
 	 * @param view the month TextView that was clicked
 	 */
-	public void monthClicked(@NotNull View view) {
-		int index = Integer.parseInt(view.getTag().toString());
-		boolean newState = !((Alarm) workingListable).getRepeatMonths(index);
+	public void monthsButtonClicked(@NotNull View view) {
+		EditorDialogFrag dialog = new EditorDialogFrag(this, false,
+				((Alarm) workingListable).getRepeatMonths());
+		dialog.show(getSupportFragmentManager(), null);
+	}
 
-		((Alarm) workingListable).setRepeatMonths(index, newState);
-		changeColors((TextView) view, newState);
+	/**
+	 * Callback for EditorDialogFrag dialogs for when they close
+	 * @param isDays whether it was a days or months dialog
+	 * @param which which button was clicked
+	 */
+	public void onDialogClose(boolean isDays, int which) {
+		if (which == DialogInterface.BUTTON_POSITIVE) {
+			if (isDays) {
+				if (alarmDaysLayout == null) {
+					if (BuildConfig.DEBUG) Log.e(TAG, "Alarm days layout was null when the dialog for it closed.");
+					return;
+				}
+				((TextView) alarmDaysLayout.findViewById(R.id.text))
+						.setText(((Alarm)workingListable).getWeeklyDisplayString());
+			}
+			else {
+				if (alarmMonthsLayout == null) {
+					if (BuildConfig.DEBUG) Log.e(TAG, "Alarm days layout was null when the dialog for it closed.");
+					return;
+				}
+				((TextView) alarmMonthsLayout.findViewById(R.id.text))
+						.setText("Raa not implemented yet");
+			}
+		}
 	}
 
 	/**
@@ -542,44 +565,6 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 	 * Sets up the UI for editing (or creating) a folder.
 	 */
 	private void folderUISetup() { setContentView(R.layout.editor_folder); }
-
-	/**
-	 * Sets up the days of the week field (alarmDaysLayout) and corresponding UI (text/colors). Does
-	 * not check whether the field is null or not. For alarms only.
-	 */
-	private void setupWeekDays() {
-		alarmDaysLayout = findViewById(R.id.alarmDaysInput);
-
-		Alarm alarm = (Alarm) workingListable;
-		ArrayList<View> children = getAllChildren(alarmDaysLayout);
-		String[] dayStrings = (new DateFormatSymbols()).getShortWeekdays();
-
-		changeColors(children, alarm.getRepeatDays());
-
-		// loops through Calendar constants for days, starts at 1 and ends at 7
-		for (int i = 1; i < dayStrings.length; i++) {
-			((TextView) children.get(i - 1)).setText(dayStrings[i]);
-		}
-	}
-
-	/**
-	 * Sets up the months field (alarmMonthsLayout) and corresponding UI (text/colors). Does not
-	 * check whether the field is null or not. For alarms only.
-	 */
-	private void setupMonths() {
-		alarmMonthsLayout = findViewById(R.id.alarmMonthsInput);
-
-		Alarm alarm = (Alarm) workingListable;
-		ArrayList<View> children = getAllChildren(alarmMonthsLayout);
-		String[] monthStrings = (new DateFormatSymbols()).getShortMonths();
-
-		changeColors(children, alarm.getRepeatMonths());
-
-		// loops through Calendar constants for months, starts at 0 and ends at 11
-		for (int i = 0; i < monthStrings.length; i++) {
-			((TextView) children.get(i)).setText(monthStrings[i]);
-		}
-	}
 
 	/**
 	 * Sets up the time picker for the first time. Sets the field and UI (hours/minutes on picker).
@@ -848,7 +833,7 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 				if (alarmTimePicker == null) setupTimePicker();
 				alarmTimePicker.setVisibility(View.VISIBLE);
 
-				if (alarmDaysLayout == null) setupWeekDays();
+				if (alarmDaysLayout == null) alarmDaysLayout = findViewById(R.id.alarmDaysInput);
 				alarmDaysLayout.setVisibility(View.VISIBLE);
 				break;
 			case Alarm.REPEAT_DATE_MONTHLY:
@@ -856,7 +841,7 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 				if (alarmTimePicker == null) setupTimePicker();
 				alarmTimePicker.setVisibility(View.VISIBLE);
 
-				if (alarmMonthsLayout == null) setupMonths();
+				if (alarmMonthsLayout == null) alarmMonthsLayout = findViewById(R.id.alarmMonthsInput);
 				alarmMonthsLayout.setVisibility(View.VISIBLE);
 
 				if (alarmDateOfMonthLayout == null) {
@@ -878,7 +863,7 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 				if (alarmDayMonthlyLayout == null) setupDayMonthlyLayout();
 				alarmDayMonthlyLayout.setVisibility(View.VISIBLE);
 
-				if (alarmMonthsLayout == null) setupMonths();
+				if (alarmMonthsLayout == null) alarmMonthsLayout = findViewById(R.id.alarmMonthsInput);
 				alarmMonthsLayout.setVisibility(View.VISIBLE);
 				break;
 			default:
@@ -886,71 +871,6 @@ public class ListableEditorActivity extends AppCompatActivity implements Adapter
 				finish();
 		}
 		((Alarm) workingListable).setRepeatType(type);
-	}
-
-	/**
-	 * Gets all children in the selected view hierarchy, except for ViewGroups.
-	 * @param view the View or ViewGroup to generate a list for, can be null
-	 * @return the list of children, in a 1D ArrayList and not including view groups, cannot be null
-	 */
-	@NotNull
-	private static ArrayList<View> getAllChildren(@Nullable View view) {
-		ArrayList<View> children = new ArrayList<>();
-
-		if (view == null) {
-			return children;
-		}
-		else if (!(view instanceof ViewGroup)) {
-			children.add(view);
-			return children;
-		}
-
-		ViewGroup group = (ViewGroup) view;
-		for (int i = 0, n = group.getChildCount(); i < n; i++) {
-			children.addAll(getAllChildren(group.getChildAt(i)));
-		}
-		return children;
-	}
-
-	/**
-	 * Changes the colors of the children specified according to the mask. Changes up to the length
-	 * of the mask or all of the views in group, whichever comes first.
-	 * @param children the children to change the colors of views for (TextViews), shouldn't be null
-	 * @param mask the boolean mask to use, where true is highlighted, false is not
-	 */
-	private void changeColors(@NotNull ArrayList<View> children, boolean[] mask) {
-		int max = Math.min(children.size(), mask.length);
-		TextView t;
-
-		TypedArray textColors = getTheme().obtainStyledAttributes(
-				new int[] {R.attr.activeTextColor, R.attr.inactiveTextColor});
-
-		for (int i = 0; i < max; i++) {
-			// change colors of each child
-			t = (TextView) children.get(i);
-			if (t == null) continue;
-
-			if (mask[i]) { t.setTextColor(textColors.getColor(0, 0)); }
-			else { t.setTextColor(textColors.getColor(1, 0)); }
-		}
-
-		textColors.recycle();
-	}
-
-	/**
-	 * Changes the colors of a single text view.
-	 * TODO: could possibly use a color selector for these views instead
-	 * @param view the TextView to change the color of view for, shouldn't be null
-	 * @param mask the boolean mask to use, where true is highlighted, false is not
-	 */
-	private void changeColors(@NotNull TextView view, boolean mask) {
-		TypedArray textColors = getTheme().obtainStyledAttributes(
-				new int[] {R.attr.activeTextColor, R.attr.inactiveTextColor});
-
-		if (mask) { view.setTextColor(textColors.getColor(0, 0)); }
-		else { view.setTextColor(textColors.getColor(1, 0)); }
-
-		textColors.recycle();
 	}
 
 	/**
