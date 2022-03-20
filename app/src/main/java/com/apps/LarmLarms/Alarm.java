@@ -609,68 +609,11 @@ public final class Alarm implements Listable, Cloneable {
 	boolean[] getRepeatDays() { return repeatDays; }
 
 	/**
-	 * Gets whether the alarm repeats on the day given.
-	 * @param index the day to check repeat data for, corresponding to the Calendar day constant - 1
-	 * @return whether the alarm repeats on that day or not, or false if the index is out of bounds
-	 */
-	boolean getRepeatDays(int index) {
-		if (index < 0 || index >= 7) {
-			if (BuildConfig.DEBUG) Log.e(TAG, "Index given to setRepeatDays is invalid.");
-			return false;
-		}
-		return repeatDays[index];
-	}
-
-	/**
-	 * Sets whether the alarm should repeat on index or not. If the index is invalid (not between 0
-	 * and 6, inclusive), will not do anything.
-	 * @param index the day to set repeat data for, corresponding to the Calendar constant - 1
-	 * @param active the active state of the specified day
-	 */
-	void setRepeatDays(int index, boolean active) {
-		if (index < 0 || index >= 7) {
-			if (BuildConfig.DEBUG) Log.e(TAG, "Index given to setRepeatDays is invalid.");
-			return;
-		}
-		repeatDays[index] = active;
-		updateRingTime();
-	}
-
-	/**
 	 * Returns the repeat months of the alarm, even if the current repeat type doesn't use it.
 	 * @return an array of size 12, whose indices correspond to the Calendar month constants
 	 */
 	@NotNull @Contract(pure = true)
 	boolean[] getRepeatMonths() { return repeatMonths; }
-
-	/**
-	 * Gets whether the alarm is going to ring on the specified month.
-	 * @param index the month to check, equal to the corresponding Calendar month constant
-	 * @return whether the alarm is set to ring on that month or not, or false if the index is out
-	 * of bounds
-	 */
-	boolean getRepeatMonths(int index) {
-		if (index < 0 || index >= 12) {
-			if (BuildConfig.DEBUG) Log.e(TAG, "Index given to setRepeatMonths is invalid.");
-			return false;
-		}
-		return repeatMonths[index];
-	}
-
-	/**
-	 * Sets whether the alarm will ring on the specified month. If the index is invalid, will not
-	 * do anything.
-	 * @param index the month to set, equal to the corresponding Calendar month constant
-	 * @param active the active state to set the alarm to for that month
-	 */
-	void setRepeatMonths(int index, boolean active) {
-		if (index < 0 || index >= 12) {
-			if (BuildConfig.DEBUG) Log.e(TAG, "Index given to setRepeatMonths is invalid.");
-			return;
-		}
-		repeatMonths[index] = active;
-		updateRingTime();
-	}
 
 	/**
 	 * Gets the repeat week of the alarm.

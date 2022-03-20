@@ -2,6 +2,8 @@ package com.apps.LarmLarms;
 
 import org.junit.Test;
 
+import java.util.Arrays;
+
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -120,8 +122,9 @@ public class AlarmUnitTest {
 
 		// differences between the alarms that shouldn't throw off the equals method
 		alarm1.snooze();
-		alarm2.setRepeatDays(0, false);
-		alarm2.setRepeatDays(3, false);
+		boolean[] days = alarm2.getRepeatDays();
+		days[0] = false;
+		days[2] = false;
 
 		alarm1.updateRingTime();
 		alarm2.updateRingTime();
@@ -154,10 +157,13 @@ public class AlarmUnitTest {
 	public void cloneMutableTest() throws Exception {
 		Alarm alarm = new Alarm(null, "Title");
 		alarm.setRepeatType(Alarm.REPEAT_DAY_WEEKLY);
-		alarm.setRepeatDays(0, false);
-		alarm.setRepeatDays(2, false);
-		alarm.setRepeatDays(3, false);
-		alarm.setRepeatDays(5, false);
+
+		boolean[] days = alarm.getRepeatDays();
+		days[0] = false;
+		days[2] = false;
+		days[3] = false;
+		days[5] = false;
+
 		alarm.setActive(false);
 		alarm.setSoundOn(false);
 		alarm.setVibrateOn(false);
@@ -166,20 +172,20 @@ public class AlarmUnitTest {
 		assert clone != null;
 
 		clone.setListableName("Hello?");
-		clone.setRepeatDays(0, true);
-		clone.setRepeatDays(2, true);
-		clone.setRepeatDays(3, true);
-		clone.setRepeatDays(5, true);
+
+		days = clone.getRepeatDays();
+		days[0] = true;
+		days[2] = true;
+		days[3] = true;
+		days[5] = true;
+
 		clone.setAlarmTimeMillis(alarm.getAlarmTimeMillis() + 1);
 		clone.setActive(true);
 		clone.setSoundOn(true);
 
 		assertEquals(false, alarm.getListableName().equals(clone.getListableName()));
 		assertEquals(false, alarm.getAlarmTimeCalendar().equals(clone.getAlarmTimeCalendar()));
-		assertEquals(false, alarm.getRepeatDays(0));
-		assertEquals(false, alarm.getRepeatDays(2));
-		assertEquals(false, alarm.getRepeatDays(3));
-		assertEquals(false, alarm.getRepeatDays(5));
+		assertEquals(false, Arrays.equals(alarm.getRepeatDays(), clone.getRepeatDays()));
 		assertEquals(false, alarm.isActive());
 		assertEquals(false, alarm.isSoundOn());
 	}
