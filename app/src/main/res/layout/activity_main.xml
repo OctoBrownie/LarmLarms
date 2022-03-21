@@ -20,6 +20,17 @@
 		android:textAllCaps="false"
 		tools:text="00:00" />
 
+	<TextView
+		style="@style/TextStyle"
+
+		android:id="@+id/next_alarm_text"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:layout_margin="@dimen/marginSizeDefault"
+		android:gravity="start"
+		android:text="@null"
+		tools:text="Next alarm: &quot;name&quot; on 03/14/1592 at 11:00" />
+
 	<!-- top toolbar -->
 	<LinearLayout
 	android:layout_width="wrap_content"

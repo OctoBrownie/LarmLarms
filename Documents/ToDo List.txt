@@ -1,10 +1,12 @@
 To do list for new features or bugs to be fixed
 
-CURRENTLY WORKING ON: dialogs and checkboxes in ListableEditor
+CURRENTLY WORKING ON: making sure alarms are ringing on time (didn't ring AT ALL today when it should've
+rang for food and dishes, says the next alarm is in a week when it should clearly be tomorrow...)
 
 Make the UI look prettier
 	Some repeat strings don't really look nice (ex: offset strings are always plural + sound funky,
-	exception months are shorthand and don't have an "and" between the last two months)
+	months are shorthand and don't have an "and" between the last two months)
+		Use quantity strings
 New ListableEditor features
 	Switches for ringtone and vibration (?)
 	Slider for ringtone volume
@@ -50,6 +52,8 @@ Reorder alarms within a folder
 Make "offset from now" only a thing in the Editor (the alarms are always offset from a specific time)
 	Makes it so that when you're trying to edit an alarm, it will KEEP the same offset if you don't
 	change the offset time
+Maybe move classes into different packages?
+Might be useful to see which alarm is next (name and time)
 
 BUGS
 Vibration only occurs right when the alarm starts ringing (doesn't loop)

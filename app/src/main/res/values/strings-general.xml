@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
 	<!-- general display strings, no prefixes -->
 	<string name="app_name">Larm Larms</string>
 	<string name="space">" "</string>
@@ -28,6 +28,11 @@
 	<!-- MainActivity display strings, prefixed by "main" -->
 	<string name="main_no_alarms_text">There\'s nothing here!</string>
 	<string name="main_add_alarm_button">+</string>
+	<string name="main_next_alarm">Next alarm:
+		"\""<xliff:g id="name" example="Alarm name">%1$s</xliff:g>"\""
+		on <xliff:g id="date" example="3/14/22">%2$s</xliff:g>
+		at <xliff:g id="time" example="12:01">%3$s</xliff:g></string>
+	<string name="main_no_next_alarm">No next alarm to ring.</string>
 
 	<!-- MainActivity description strings, prefixed by "main," suffixed by "descrip" -->
 	<string name="main_add_folder_button_descrip">Add folder</string>

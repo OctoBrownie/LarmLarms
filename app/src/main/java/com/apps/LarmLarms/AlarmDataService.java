@@ -60,6 +60,14 @@ public class AlarmDataService extends Service {
 	 * In a bundle, this is the key used to store a reduced folder structure (a String ArrayList).
 	 */
 	static final String BUNDLE_LIST_KEY = "com.apps.LarmLarms.bundleKey.FOLDERS";
+	/**
+	 * In a bundle, this is the key used to store the name of a Listable.
+	 */
+	static final String BUNDLE_NAME_KEY = "com.apps.LarmLarms.bundleKey.NAME";
+	/**
+	 * In a bundle, this is the key used to store the time of an Alarm.
+	 */
+	static final String BUNDLE_TIME_KEY = "com.apps.LarmLarms.bundleKey.TIME";
 
 	/**
 	 * Flag to set if the calling intent doesn't want the service to immediately update the alarm
@@ -70,27 +78,27 @@ public class AlarmDataService extends Service {
 	/* *****************************  Message what field constants  **************************** */
 
 	/**
-	 * Inbound: the client is asking for a specific Listable. The specified Listable's absolute
+	 * Inbound: The client is asking for a specific Listable. The specified Listable's absolute
 	 * index should be in the arg1 field, and the Messenger to reply to should be in the replyTo
 	 * field. Can also take a Handler coming from the getTarget() method, but a Messenger is
 	 * preferred and will be used instead if present.
 	 * <br/>
-	 * Outbound: a response with a ListableInfo from the Service. Puts the ListableInfo in a bundle
+	 * Outbound: A response with a ListableInfo from the Service. Puts the ListableInfo in a bundle
 	 * accessible by getData() or peekData() using BUNDLE_INFO_KEY for the key. Puts the absolute
 	 * index of the listable in field arg1.
 	 */
 	static final int MSG_GET_LISTABLE = 0;
 	/**
-	 * Inbound: the client is asking for the entire reduced string list for the dataset. The replyTo
+	 * Inbound: The client is asking for the entire reduced string list for the dataset. The replyTo
 	 * field should be filled with a messenger.
 	 * <br/>
-	 * Outbound: a response with the reduced string array list from the Service. Puts the list in a
+	 * Outbound: A response with the reduced string array list from the Service. Puts the list in a
 	 * bundle accessible by getData() or peekData() using BUNDLE_LIST_KEY for the key.
 	 */
 	static final int MSG_GET_FOLDERS = 1;
 
 	/**
-	 * Inbound: the client wants to set a Listable to a certain index. The absolute index of the
+	 * Inbound: The client wants to set a Listable to a certain index. The absolute index of the
 	 * Listable should be in the arg1 field and a ListableInfo in the data bundle (with
 	 * BUNDLE_INFO_KEY for its key). Within the ListableInfo, there should be the new listable in 
 	 * the listable field. Triggers MSG_DATA_CHANGED messages to be sent.
@@ -99,7 +107,7 @@ public class AlarmDataService extends Service {
 	 */
 	static final int MSG_SET_LISTABLE = 2;
 	/**
-	 * Inbound: the client wants to add a Listable at the specified index and parent. A ListableInfo
+	 * Inbound: The client wants to add a Listable at the specified index and parent. A ListableInfo
 	 * should be in the data bundle (using BUNDLE_INFO_KEY for its key), with the new Listable in the
 	 * Listable field, the absolute index of the new parent in absParentIndex, and the new absolute
 	 * index in absIndex. Triggers MSG_DATA_CHANGED messages and may trigger MSG_DATA_FILLED messages
@@ -109,7 +117,7 @@ public class AlarmDataService extends Service {
 	 */
 	static final int MSG_ADD_LISTABLE = 3;
 	/**
-	 * Inbound: the client wants to move a Listable to a new folder. arg1 should always be filled with
+	 * Inbound: The client wants to move a Listable to a new folder. arg1 should always be filled with
 	 * the old absolute index of the Listable. A ListableInfo should be in the data bundle (using 
 	 * BUNDLE_INFO_KEY for its key). To identify the new position of the listable, the path of
 	 * the parent folder must be in the ListableInfo's path field. Will assume that the new path is
@@ -120,7 +128,7 @@ public class AlarmDataService extends Service {
 	 */
 	static final int MSG_MOVE_LISTABLE = 4;
 	/**
-	 * Inbound: the client wants to delete a Listable. The absolute index of the Listable should be
+	 * Inbound: The client wants to delete a Listable. The absolute index of the Listable should be
 	 * in the arg1 field. Triggers MSG_DATA_CHANGED and may trigger MSG_DATA_EMPTIED messages to be
 	 * sent.
 	 * <br/>
@@ -129,35 +137,35 @@ public class AlarmDataService extends Service {
 	static final int MSG_DELETE_LISTABLE = 5;
 
 	/**
-	 * Inbound: the client wants to toggle isActive on a Listable. The absolute index of the
+	 * Inbound: The client wants to toggle isActive on a Listable. The absolute index of the
 	 * Listable should be in the arg1 field. Does NOT trigger MSG_DATA_CHANGED messages to be sent.
 	 * <br/>
 	 * Outbound: N/A
 	 */
 	static final int MSG_TOGGLE_ACTIVE = 6;
 	/**
-	 * Inbound: the client wants to toggle an AlarmGroup open/closed. The absolute index of the
+	 * Inbound: The client wants to toggle an AlarmGroup open/closed. The absolute index of the
 	 * AlarmGroup should be in the arg1 field. Triggers MSG_DATA_CHANGED messages to be sent.
 	 * <br/>
 	 * Outbound: N/A
 	 */
 	static final int MSG_TOGGLE_OPEN_FOLDER = 7;
 	/**
-	 * Inbound: the client wants to snooze an Alarm. The absolute index of the Alarm should be
+	 * Inbound: The client wants to snooze an Alarm. The absolute index of the Alarm should be
 	 * in the arg1 field. Triggers MSG_DATA_CHANGED messages to be sent.
 	 * <br/>
 	 * Outbound: N/A
 	 */
 	static final int MSG_SNOOZE_ALARM = 8;
 	/**
-	 * Inbound: the client wants to unsnooze an Alarm. The absolute index of the Alarm should be
+	 * Inbound: The client wants to unsnooze an Alarm. The absolute index of the Alarm should be
 	 * in the arg1 field. Triggers MSG_DATA_CHANGED messages to be sent.
 	 * <br/>
 	 * Outbound: N/A
 	 */
 	static final int MSG_UNSNOOZE_ALARM = 9;
 	/**
-	 * Inbound: the client wants to dismiss an Alarm. The absolute index of the Alarm should be
+	 * Inbound: The client wants to dismiss an Alarm. The absolute index of the Alarm should be
 	 * in the arg1 field. Triggers MSG_DATA_CHANGED messages to be sent.
 	 * <br/>
 	 * Outbound: N/A
@@ -205,6 +213,19 @@ public class AlarmDataService extends Service {
 	 */
 	static final int MSG_DATA_FILLED = 14;
 
+	/**
+	 * Inbound: A client wants to change its notification of the next alarm. In the replyTo field
+	 * there should be a Messenger to either register or unregister as a data listener. Data
+	 * listeners are sent MSG_NEXT_ALARM messages whenever the data has changed, even if the next
+	 * alarm hasn't. If the Messenger is already registered, the service will unregister it. When a
+	 * new one is registered, will send a MSG_NEXT_ALARM message immediately to it.
+	 * <br/>
+	 * Outbound: Means the next alarm has changed. The next alarm's time is in the bundle under
+	 * BUNDLE_TIME_KEY and its name is as well under BUNDLE_NAME_KEY. If there is no alarm to ring,
+	 * the bundle will be null.
+	 */
+	static final int MSG_NEXT_ALARM = 15;
+
 	/* *************************************  Instance Fields  ********************************** */
 
 	/**
@@ -230,11 +251,25 @@ public class AlarmDataService extends Service {
 	private List<Messenger> emptyListeners;
 
 	/**
+	 * List of registered listeners for next alarm events. Next alarm events are sent when adding,
+	 * changing, moving, or removing alarms from the list. It also includes some method calls on
+	 * listables, such as toggling open/closed a folder or snoozing alarms. Cannot be null.
+	 */
+	@NotNull
+	private List<Messenger> nextAlarmListeners;
+
+	/**
 	 * The folder holding the entire dataset. Cannot be null but before the service is bound it will
 	 * be an empty folder.
 	 */
 	@NotNull
 	private AlarmGroup rootFolder;
+
+	/**
+	 * The next alarm to ring. Null if there's no next alarm to ring.
+	 */
+	@Nullable
+	private Alarm nextAlarm;
 
 	/* **********************************  Lifecycle Methods  ********************************** */
 
@@ -246,6 +281,7 @@ public class AlarmDataService extends Service {
 		rootFolder = new AlarmGroup();
 		dataChangeListeners = new ArrayList<>();
 		emptyListeners = new ArrayList<>();
+		nextAlarmListeners = new ArrayList<>();
 		handlerThread = new HandlerThread(HANDLER_THREAD_NAME);
 	}
 
@@ -677,24 +713,23 @@ public class AlarmDataService extends Service {
 		if (inMsg.replyTo == null) {
 			// invalid message
 			if (BuildConfig.DEBUG) Log.e(TAG, "MSG_DATA_CHANGED: Message didn't have a Messenger to reply to.");
+			return;
 		}
-		else {
-			int index = dataChangeListeners.indexOf(inMsg.replyTo);
-			if (index == -1) {
-				dataChangeListeners.add(inMsg.replyTo);
 
-				Message outMsg = Message.obtain(null, MSG_DATA_CHANGED);
-				outMsg.arg1 = rootFolder.size() - 1;
-				try {
-					inMsg.replyTo.send(outMsg);
-				}
-				catch (RemoteException e) {
-					e.printStackTrace();
-				}
+		int index = dataChangeListeners.indexOf(inMsg.replyTo);
+		if (index == -1) {
+			dataChangeListeners.add(inMsg.replyTo);
+
+			Message outMsg = Message.obtain(null, MSG_DATA_CHANGED);
+			outMsg.arg1 = rootFolder.size() - 1;
+			try {
+				inMsg.replyTo.send(outMsg);
 			}
-			else
-				dataChangeListeners.remove(index);
+			catch (RemoteException e) {
+				e.printStackTrace();
+			}
 		}
+		else dataChangeListeners.remove(index);
 	}
 
 	/**
@@ -733,6 +768,43 @@ public class AlarmDataService extends Service {
 				emptyListeners.remove(index);
 			}
 		}
+	}
+
+	/**
+	 * Responds to an inbound MSG_NEXT_ALARM message. Using the replyTo field from the message,
+	 * either registers it (if not registered) as a listener or unregisters it (if already
+	 * registered).
+	 * @param inMsg the inbound MSG_DATA_CHANGED message
+	 */
+	private void handleNextAlarm(@NotNull Message inMsg) {
+		if (inMsg.replyTo == null) {
+			// invalid message
+			if (BuildConfig.DEBUG) Log.e(TAG, "MSG_NEXT_ALARM: Message didn't have a Messenger to reply to.");
+			return;
+		}
+
+		int index = nextAlarmListeners.indexOf(inMsg.replyTo);
+		if (index == -1) {
+			nextAlarmListeners.add(inMsg.replyTo);
+
+			Message outMsg = Message.obtain(null, MSG_NEXT_ALARM);
+
+			Bundle b = null;
+			if (nextAlarm != null) {
+				b = new Bundle();
+				b.putLong(BUNDLE_TIME_KEY, nextAlarm.getAlarmTimeMillis());
+				b.putString(BUNDLE_NAME_KEY, nextAlarm.getListableName());
+			}
+			outMsg.setData(b);
+
+			try {
+				inMsg.replyTo.send(outMsg);
+			}
+			catch (RemoteException e) {
+				e.printStackTrace();
+			}
+		}
+		else nextAlarmListeners.remove(index);
 	}
 
 	/* ********************************  Send Message Methods  ******************************** */
@@ -790,11 +862,47 @@ public class AlarmDataService extends Service {
 	}
 
 	/**
+	 * Sends MSG_NEXT_ALARM messages to all registered next alarm listeners. The message should
+	 * have the time the alarm will ring in bundle under BUNDLE_TIME_KEY and the name of the alarm
+	 * in the bundle under BUNDLE_NAME_KEY.
+	 */
+	private void sendNextAlarm() {
+		Message outMsg;
+
+		for (Messenger m : nextAlarmListeners) {
+			outMsg = Message.obtain(null, MSG_NEXT_ALARM);
+
+			Bundle b = null;
+			if (nextAlarm != null) {
+				b = new Bundle();
+				b.putLong(BUNDLE_TIME_KEY, nextAlarm.getAlarmTimeMillis());
+				b.putString(BUNDLE_NAME_KEY, nextAlarm.getListableName());
+			}
+			outMsg.setData(b);
+
+			try {
+				m.send(outMsg);
+			}
+			catch (RemoteException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+	/**
 	 * Sets the next alarm to ring. Does not create a new pending intent, rather updates the current
-	 * one. Tells AlarmManager to wake up and call AlarmRingingService.
+	 * one. Tells AlarmManager to wake up and call AlarmRingingService. Sends MSG_NEXT_ALARM if
+	 * necessary.
 	 */
 	private void setNextAlarmToRing() {
 		ListableInfo next = getNextRingingAlarm(rootFolder.getListables());
+
+		if ((nextAlarm == null && next.listable == null) ||
+				(nextAlarm != null && nextAlarm.equals(next.listable))) {
+			if (BuildConfig.DEBUG) Log.i(TAG, "The next ringing alarm was the same as before.");
+			return;
+		}
+		nextAlarm = (Alarm) next.listable;
 
 		Intent intent = new Intent(this, RingingService.class);
 		if (next.listable != null) {
@@ -825,6 +933,8 @@ public class AlarmDataService extends Service {
 					pendingIntent);
 			if (BuildConfig.DEBUG) Log.i(TAG, "Sent an intent to AlarmManager.");
 		}
+
+		sendNextAlarm();
 	}
 
 	/* *************************************  Other Methods  *********************************** */
@@ -992,6 +1102,10 @@ public class AlarmDataService extends Service {
 				case MSG_DATA_EMPTY_LISTENER:
 					service.handleDataEmpty(msg);
 					if (BuildConfig.DEBUG) Log.d(TAG, "Added or removed a data empty listener.");
+					break;
+				case MSG_NEXT_ALARM:
+					service.handleNextAlarm(msg);
+					if (BuildConfig.DEBUG) Log.d(TAG, "Added or removed a next alarm listener.");
 					break;
 				default:
 					if (BuildConfig.DEBUG) Log.e(TAG, "Unknown message type. Sending to Handler's handleMessage().");

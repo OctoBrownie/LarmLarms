@@ -11,8 +11,10 @@ import android.os.Looper;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
+import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.View;
+import android.widget.TextView;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -37,6 +39,10 @@ public class MainActivity extends AppCompatActivity {
 	 * The FrameView that contains the recycler view fragment
 	 */
 	private View fragContainer;
+	/**
+	 * The TextView showing the next alarm that will ring.
+	 */
+	private TextView nextAlarmText;
 
 	/**
 	 * Shows whether it is bound to the data service or not.
@@ -46,19 +52,20 @@ public class MainActivity extends AppCompatActivity {
 	 * The service connection to the data service.
 	 */
 	@NotNull
-	private EmptyServiceConnection dataConn;
+	private DataServiceConnection dataConn;
 	/**
-	 * The messenger of the data service. Used for sending empty listener messages.
+	 * The messenger of the data service. Used for sending empty listener or next alarm listener
+	 * messages.
 	 */
 	@Nullable
-	private Messenger dataMessenger;
+	private Messenger serviceMessenger;
 
 	/**
 	 * Creates a new MainActivity and initializes the data connection. Does not bind to the data
 	 * service.
 	 */
 	public MainActivity() {
-		dataConn = new EmptyServiceConnection(this);
+		dataConn = new DataServiceConnection();
 	}
 
 	/* ********************************* Lifecycle Methods ********************************* */
@@ -74,6 +81,7 @@ public class MainActivity extends AppCompatActivity {
 
 		noAlarmsText = findViewById(R.id.no_alarms_text);
 		fragContainer = findViewById(R.id.frag_frame);
+		nextAlarmText = findViewById(R.id.next_alarm_text);
 
 		// always need to reinflate the frag
 		FragmentTransaction trans = getSupportFragmentManager().beginTransaction();
@@ -101,10 +109,11 @@ public class MainActivity extends AppCompatActivity {
 		// unbind from service
 		if (boundToDataService) {
 			dataConn.removeEmptyListener();
+			dataConn.removeNextAlarmListener();
 
 			unbindService(dataConn);
 			boundToDataService = false;
-			dataMessenger = null;
+			serviceMessenger = null;
 		}
 	}
 
@@ -152,47 +161,58 @@ public class MainActivity extends AppCompatActivity {
 		noAlarmsText.setVisibility(View.VISIBLE);
 	}
 
+	/**
+	 * Changes the next alarm to ring text based on what was returned from the data service.
+	 * @param b the data bundle returned from the data service
+	 */
+	private void changeNextAlarm(@NotNull Bundle b) {
+		String text;
+
+		if (b.getString(AlarmDataService.BUNDLE_NAME_KEY) == null)
+			text = getResources().getString(R.string.main_no_next_alarm);
+		else {
+			long time = b.getLong(AlarmDataService.BUNDLE_TIME_KEY);
+			String dateString = DateFormat.getMediumDateFormat(this).format(time);
+			String timeString = DateFormat.getTimeFormat(this).format(time);
+
+			text = String.format(getResources().getString(R.string.main_next_alarm),
+					b.getString(AlarmDataService.BUNDLE_NAME_KEY), dateString, timeString);
+		}
+		nextAlarmText.setText(text);
+	}
+
 	/* ***********************************  Inner Classes  ************************************** */
 
 	/**
-	 * The ServiceConnection to connect with the data service. Makes the activity an empty listener.
+	 * The ServiceConnection to connect with the data service. Makes the activity an empty listener
+	 * and a next alarm listener.
 	 */
-	private class EmptyServiceConnection implements ServiceConnection {
+	private class DataServiceConnection implements ServiceConnection {
 		/**
-		 * The activity it binds to.
-		 */
-		@NotNull
-		private MainActivity mainActivity;
-		/**
-		 * The empty messenger that the data service replies to with empty messages.
+		 * The messenger that the data service replies to with empty or next alarm messages.
 		 */
 		@Nullable
-		private Messenger emptyMessenger;
-
-		/**
-		 * Creates a new connection and sets the activity.
-		 * @param act the activity that is using this connection
-		 */
-		private EmptyServiceConnection(@NotNull MainActivity act) {
-			mainActivity = act;
-		}
+		private Messenger replyMessenger;
 
 		/**
 		 * Called when the data service connects to the activity. Sets some fields in the outer class
-		 * and registers it as an empty listener.
+		 * and registers it as an empty listener and next alarm listener.
 		 * @param className the name of the class that was bound to (unused)
 		 * @param service the binder that the service returned
 		 */
 		@Override
 		public void onServiceConnected(@NotNull ComponentName className, @NotNull IBinder service) {
 			boundToDataService = true;
-			dataMessenger = new Messenger(service);
+			serviceMessenger = new Messenger(service);
+			replyMessenger = new Messenger(new DataServiceHandler(MainActivity.this));
 
-			Message msg = Message.obtain(null, AlarmDataService.MSG_DATA_EMPTY_LISTENER, 0, 0);
-			emptyMessenger = new Messenger(new EmptyHandler(mainActivity));
-			msg.replyTo = emptyMessenger;
+			Message emptyMsg = Message.obtain(null, AlarmDataService.MSG_DATA_EMPTY_LISTENER, 0, 0);
+			emptyMsg.replyTo = replyMessenger;
+			Message nextAlarmMsg = Message.obtain(null, AlarmDataService.MSG_NEXT_ALARM, 0, 0);
+			nextAlarmMsg.replyTo = replyMessenger;
 			try {
-				dataMessenger.send(msg);
+				serviceMessenger.send(emptyMsg);
+				serviceMessenger.send(nextAlarmMsg);
 			}
 			catch (RemoteException e) {
 				// handler doesn't exist, messenger is unusable
@@ -216,12 +236,28 @@ public class MainActivity extends AppCompatActivity {
 		 * Removes the activity from the data service as an empty listener.
 		 */
 		private void removeEmptyListener() {
-			if (!boundToDataService || dataMessenger == null) return;
+			if (!boundToDataService || MainActivity.this.serviceMessenger == null) return;
 
 			Message msg = Message.obtain(null, AlarmDataService.MSG_DATA_EMPTY_LISTENER);
-			msg.replyTo = emptyMessenger;
+			msg.replyTo = replyMessenger;
 			try {
-				dataMessenger.send(msg);
+				MainActivity.this.serviceMessenger.send(msg);
+			}
+			catch (RemoteException e) {
+				e.printStackTrace();
+			}
+		}
+
+		/**
+		 * Removes the activity from the data service as an next alarm listener.
+		 */
+		private void removeNextAlarmListener() {
+			if (!boundToDataService || MainActivity.this.serviceMessenger == null) return;
+
+			Message msg = Message.obtain(null, AlarmDataService.MSG_NEXT_ALARM);
+			msg.replyTo = replyMessenger;
+			try {
+				MainActivity.this.serviceMessenger.send(msg);
 			}
 			catch (RemoteException e) {
 				e.printStackTrace();
@@ -230,9 +266,10 @@ public class MainActivity extends AppCompatActivity {
 	}
 
 	/**
-	 * Inner handler class for handling empty/full messages from the data service.
+	 * Inner handler class for handling empty/full messages and next alarm messages from the data
+	 * service.
 	 */
-	private static class EmptyHandler extends Handler {
+	private static class DataServiceHandler extends Handler {
 		/**
 		 * The activity it binds to.
 		 */
@@ -243,7 +280,7 @@ public class MainActivity extends AppCompatActivity {
 		 * Creats a new handler on the main thread. Also sets the main activity.
 		 * @param activity the activity that uses this handler
 		 */
-		private EmptyHandler(@NotNull MainActivity activity) {
+		private DataServiceHandler(@NotNull MainActivity activity) {
 			super(Looper.getMainLooper());
 			this.activity = activity;
 		}
@@ -265,6 +302,9 @@ public class MainActivity extends AppCompatActivity {
 					break;
 				case AlarmDataService.MSG_DATA_FILLED:
 					activity.showFrag();
+					break;
+				case AlarmDataService.MSG_NEXT_ALARM:
+					activity.changeNextAlarm(msg.getData());
 					break;
 				default:
 					if (BuildConfig.DEBUG) Log.e(TAG, "Unknown message type. Sending to Handler's handleMessage().");
