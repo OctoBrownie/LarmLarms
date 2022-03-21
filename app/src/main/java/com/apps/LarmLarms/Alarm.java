@@ -1135,7 +1135,10 @@ public final class Alarm implements Listable, Cloneable {
 		if (!alarmIsActive || alarmSnoozed) { return; }
 
 		GregorianCalendar workingClock = new GregorianCalendar();
-		int thisMonth = workingClock.get(Calendar.MONTH), currMonth = thisMonth;
+		final GregorianCalendar currTime = new GregorianCalendar();
+
+		int currMonth = workingClock.get(Calendar.MONTH);
+		final int thisMonth = currMonth;
 
 		boolean clockSet = false;	// whether or not workingClock has been set yet
 
@@ -1164,9 +1167,10 @@ public final class Alarm implements Listable, Cloneable {
 				// trying to avoid any namespace issues
 				{
 					// days of week follow Calendar constants
-					int dayOfWeek = workingClock.get(Calendar.DAY_OF_WEEK), todayDayOfWeek = dayOfWeek;
+					int dayOfWeek = workingClock.get(Calendar.DAY_OF_WEEK);
+					final int todayDayOfWeek = dayOfWeek;
 
-					while (!clockSet) {
+					while (!clockSet || workingClock.before(currTime)) {
 						if (repeatDays[dayOfWeek - 1]) {
 							workingClock.set(Calendar.DAY_OF_WEEK, dayOfWeek);
 							clockSet = true;
@@ -1188,7 +1192,7 @@ public final class Alarm implements Listable, Cloneable {
 				break;
 			case REPEAT_DATE_MONTHLY:
 				// third condition is in case the day of the month (ex. 31st) doesn't exist
-				while (!clockSet ||
+				while (!clockSet || workingClock.before(currTime) ||
 						workingClock.get(Calendar.DAY_OF_MONTH) != ringTime.get(Calendar.DAY_OF_MONTH)) {
 					if (repeatMonths[currMonth]) {
 						workingClock.set(Calendar.MONTH, currMonth);
@@ -1222,7 +1226,7 @@ public final class Alarm implements Listable, Cloneable {
 
 				workingClock.set(Calendar.DAY_OF_WEEK, ringTime.get(Calendar.DAY_OF_WEEK));
 
-				while (!clockSet) {
+				while (!clockSet || workingClock.before(currTime)) {
 					if (repeatMonths[currMonth]) {
 						workingClock.set(Calendar.MONTH, currMonth);
 						clockSet = true;
@@ -1250,7 +1254,7 @@ public final class Alarm implements Listable, Cloneable {
 					workingClock.set(Calendar.DAY_OF_MONTH, day);
 					workingClock.set(Calendar.MONTH, month);
 
-					while (workingClock.get(Calendar.DAY_OF_MONTH) != day) {
+					while (workingClock.before(currTime) || workingClock.get(Calendar.DAY_OF_MONTH) != day) {
 						workingClock.add(Calendar.YEAR, 1);
 						workingClock.set(Calendar.DAY_OF_MONTH, day);
 						workingClock.set(Calendar.MONTH, month);
