@@ -30,9 +30,12 @@
 	<string name="main_add_alarm_button">+</string>
 	<string name="main_next_alarm">Next alarm:
 		"\""<xliff:g id="name" example="Alarm name">%1$s</xliff:g>"\""
-		on <xliff:g id="date" example="3/14/22">%2$s</xliff:g>
+		<xliff:g id="main_date_string" example="on 3/14/22">%2$s</xliff:g>
 		at <xliff:g id="time" example="12:01">%3$s</xliff:g></string>
-	<string name="main_no_next_alarm">No next alarm to ring.</string>
+	<string name="main_no_next_alarm">No next alarm to ring</string>
+	<string name="main_date_string">on <xliff:g id="date" example="3/14/22">%s</xliff:g></string>
+	<string name="main_date_string_today">today</string>
+	<string name="main_date_string_tomorrow">tomorrow</string>
 
 	<!-- MainActivity description strings, prefixed by "main," suffixed by "descrip" -->
 	<string name="main_add_folder_button_descrip">Add folder</string>

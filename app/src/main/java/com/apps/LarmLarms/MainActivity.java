@@ -19,6 +19,9 @@ import android.widget.TextView;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Calendar;
+import java.util.GregorianCalendar;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentTransaction;
 
@@ -171,9 +174,25 @@ public class MainActivity extends AppCompatActivity {
 		if (b.getString(AlarmDataService.BUNDLE_NAME_KEY) == null)
 			text = getResources().getString(R.string.main_no_next_alarm);
 		else {
-			long time = b.getLong(AlarmDataService.BUNDLE_TIME_KEY);
-			String dateString = DateFormat.getMediumDateFormat(this).format(time);
-			String timeString = DateFormat.getTimeFormat(this).format(time);
+			Log.i("DataService", "Did the thing, boss.");
+			GregorianCalendar time = new GregorianCalendar(), rightNow = new GregorianCalendar();
+			time.setTimeInMillis(b.getLong(AlarmDataService.BUNDLE_TIME_KEY));
+
+			String dateString = null;
+			if (time.get(Calendar.DAY_OF_MONTH) == rightNow.get(Calendar.DAY_OF_MONTH)) {
+				dateString = getResources().getString(R.string.main_date_string_today);
+			}
+
+			rightNow.add(Calendar.DAY_OF_MONTH, 1);
+			if (time.get(Calendar.DAY_OF_MONTH) == rightNow.get(Calendar.DAY_OF_MONTH)) {
+				dateString = getResources().getString(R.string.main_date_string_tomorrow);
+			}
+
+			if (dateString == null) {
+				dateString = String.format(getResources().getString(R.string.main_date_string),
+						DateFormat.getMediumDateFormat(this).format(time.getTimeInMillis()));
+			}
+			String timeString = DateFormat.getTimeFormat(this).format(time.getTimeInMillis());
 
 			text = String.format(getResources().getString(R.string.main_next_alarm),
 					b.getString(AlarmDataService.BUNDLE_NAME_KEY), dateString, timeString);
