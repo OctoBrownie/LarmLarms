@@ -719,15 +719,7 @@ public class AlarmDataService extends Service {
 		int index = dataChangeListeners.indexOf(inMsg.replyTo);
 		if (index == -1) {
 			dataChangeListeners.add(inMsg.replyTo);
-
-			Message outMsg = Message.obtain(null, MSG_DATA_CHANGED);
-			outMsg.arg1 = rootFolder.size() - 1;
-			try {
-				inMsg.replyTo.send(outMsg);
-			}
-			catch (RemoteException e) {
-				e.printStackTrace();
-			}
+			sendDataChanged(inMsg.replyTo);
 		}
 		else dataChangeListeners.remove(index);
 	}
@@ -742,31 +734,23 @@ public class AlarmDataService extends Service {
 		if (inMsg.replyTo == null) {
 			// invalid message
 			if (BuildConfig.DEBUG) Log.e(TAG, "MSG_DATA_EMPTY_LISTENER: Message didn't have a Messenger to reply to.");
+			return;
+		}
+
+		int index = emptyListeners.indexOf(inMsg.replyTo);
+		if (index == -1) {
+			// register the empty listener
+			emptyListeners.add(inMsg.replyTo);
+
+			// send a DATA_EMPTIED or DATA_FILLED to the new listener
+			if (rootFolder.size() == 1)
+				sendDataEmptied(inMsg.replyTo);
+			else
+				sendDataFilled(inMsg.replyTo);
 		}
 		else {
-			int index = emptyListeners.indexOf(inMsg.replyTo);
-			if (index == -1) {
-				// register the empty listener
-				emptyListeners.add(inMsg.replyTo);
-
-				// send a DATA_EMPTIED or DATA_FILLED to the new listener
-				Message outMsg = Message.obtain();
-				if (rootFolder.size() == 1)
-					outMsg.what = MSG_DATA_EMPTIED;
-				else
-					outMsg.what = MSG_DATA_FILLED;
-
-				try {
-					inMsg.replyTo.send(outMsg);
-				}
-				catch (RemoteException e) {
-					e.printStackTrace();
-				}
-			}
-			else {
-				// unregister the empty listener
-				emptyListeners.remove(index);
-			}
+			// unregister the empty listener
+			emptyListeners.remove(index);
 		}
 	}
 
@@ -786,23 +770,7 @@ public class AlarmDataService extends Service {
 		int index = nextAlarmListeners.indexOf(inMsg.replyTo);
 		if (index == -1) {
 			nextAlarmListeners.add(inMsg.replyTo);
-
-			Message outMsg = Message.obtain(null, MSG_NEXT_ALARM);
-
-			Bundle b = null;
-			if (nextAlarm != null) {
-				b = new Bundle();
-				b.putLong(BUNDLE_TIME_KEY, nextAlarm.getAlarmTimeMillis());
-				b.putString(BUNDLE_NAME_KEY, nextAlarm.getListableName());
-			}
-			outMsg.setData(b);
-
-			try {
-				inMsg.replyTo.send(outMsg);
-			}
-			catch (RemoteException e) {
-				e.printStackTrace();
-			}
+			sendNextAlarm(inMsg.replyTo);
 		}
 		else nextAlarmListeners.remove(index);
 	}
@@ -814,18 +782,25 @@ public class AlarmDataService extends Service {
 	 * have the number of listables in the arg1 field.
 	 */
 	private void sendDataChanged() {
-		Message outMsg;
+		for (Messenger m : dataChangeListeners) {
+			sendDataChanged(m);
+		}
+	}
+	/**
+	 * Sends MSG_DATA_CHANGED messages to one specific messenger. The message should have the number
+	 * of listables in the arg1 field.
+	 * @param m the messenger to send the message to
+	 */
+	private void sendDataChanged(@NotNull Messenger m) {
 		int numListables = rootFolder.size() - 1;
 
-		for (Messenger m : dataChangeListeners) {
-			outMsg = Message.obtain(null, MSG_DATA_CHANGED);
-			outMsg.arg1 = numListables;
-			try {
-				m.send(outMsg);
-			}
-			catch (RemoteException e) {
-				e.printStackTrace();
-			}
+		Message outMsg = Message.obtain(null, MSG_DATA_CHANGED);
+		outMsg.arg1 = numListables;
+		try {
+			m.send(outMsg);
+		}
+		catch (RemoteException e) {
+			e.printStackTrace();
 		}
 	}
 
@@ -833,15 +808,21 @@ public class AlarmDataService extends Service {
 	 * Send a MSG_DATA_EMPTIED message to all registered empty listeners.
 	 */
 	private void sendDataEmptied() {
-		Message outMsg;
 		for (Messenger m : emptyListeners) {
-			outMsg = Message.obtain(null, MSG_DATA_EMPTIED);
-			try {
-				m.send(outMsg);
-			}
-			catch (RemoteException e) {
-				e.printStackTrace();
-			}
+			sendDataEmptied(m);
+		}
+	}
+	/**
+	 * Send a MSG_DATA_EMPTIED message to one specific messenger.
+	 * @param m the messenger to send the message to
+	 */
+	private void sendDataEmptied(@NotNull Messenger m) {
+		Message outMsg = Message.obtain(null, MSG_DATA_EMPTIED);
+		try {
+			m.send(outMsg);
+		}
+		catch (RemoteException e) {
+			e.printStackTrace();
 		}
 	}
 
@@ -849,15 +830,21 @@ public class AlarmDataService extends Service {
 	 * Send a MSG_DATA_FILLED message to all registered empty listeners.
 	 */
 	private void sendDataFilled() {
-		Message outMsg;
 		for (Messenger m : emptyListeners) {
-			outMsg = Message.obtain(null, MSG_DATA_FILLED);
-			try {
-				m.send(outMsg);
-			}
-			catch (RemoteException e) {
-				e.printStackTrace();
-			}
+			sendDataFilled(m);
+		}
+	}
+	/**
+	 * Send a MSG_DATA_FILLED message to one specific messenger.
+	 * @param m the messenger to send the message to
+	 */
+	private void sendDataFilled(@NotNull Messenger m) {
+		Message outMsg = Message.obtain(null, MSG_DATA_FILLED);
+		try {
+			m.send(outMsg);
+		}
+		catch (RemoteException e) {
+			e.printStackTrace();
 		}
 	}
 
@@ -867,25 +854,32 @@ public class AlarmDataService extends Service {
 	 * in the bundle under BUNDLE_NAME_KEY.
 	 */
 	private void sendNextAlarm() {
-		Message outMsg;
-
 		for (Messenger m : nextAlarmListeners) {
-			outMsg = Message.obtain(null, MSG_NEXT_ALARM);
+			sendNextAlarm(m);
+		}
+	}
+	/**
+	 * Sends MSG_NEXT_ALARM messages to one specific messenger. The message should have the time the
+	 * alarm will ring in bundle under BUNDLE_TIME_KEY and the name of the alarm in the bundle under
+	 * BUNDLE_NAME_KEY.
+	 * @param m the messenger to send the message to
+	 */
+	private void sendNextAlarm(@NotNull Messenger m) {
+		Message outMsg = Message.obtain(null, MSG_NEXT_ALARM);
 
-			Bundle b = null;
-			if (nextAlarm != null) {
-				b = new Bundle();
-				b.putLong(BUNDLE_TIME_KEY, nextAlarm.getAlarmTimeMillis());
-				b.putString(BUNDLE_NAME_KEY, nextAlarm.getListableName());
-			}
-			outMsg.setData(b);
+		Bundle b = null;
+		if (nextAlarm != null) {
+			b = new Bundle();
+			b.putLong(BUNDLE_TIME_KEY, nextAlarm.getAlarmTimeMillis());
+			b.putString(BUNDLE_NAME_KEY, nextAlarm.getListableName());
+		}
+		outMsg.setData(b);
 
-			try {
-				m.send(outMsg);
-			}
-			catch (RemoteException e) {
-				e.printStackTrace();
-			}
+		try {
+			m.send(outMsg);
+		}
+		catch (RemoteException e) {
+			e.printStackTrace();
 		}
 	}
 
