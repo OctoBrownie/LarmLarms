@@ -914,18 +914,22 @@ public class AlarmDataService extends Service {
 			pendingIntent = PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 		}
 
-		if (manager != null && pendingIntent != null) {
-			if (next.listable == null) {
-				if (BuildConfig.DEBUG) Log.i(TAG, "No next listable to register to ring.");
-				manager.cancel(pendingIntent);
-				return;
-			}
+		if (manager == null || pendingIntent == null) {
+			if (BuildConfig.DEBUG) Log.i(TAG, "Couldn't reach alarm manager or the service to get" +
+					"the pending intent.");
+			return;
+		}
 
+		if (next.listable == null) {
+			if (BuildConfig.DEBUG) Log.i(TAG, "No next listable to register to ring.");
+			manager.cancel(pendingIntent);
+		}
+		else {
+			if (BuildConfig.DEBUG) Log.i(TAG, "Sent an intent to AlarmManager.");
 			manager.setAlarmClock(
 					new AlarmManager.AlarmClockInfo(((Alarm) next.listable).getAlarmTimeMillis(),
 							pendingIntent),
 					pendingIntent);
-			if (BuildConfig.DEBUG) Log.i(TAG, "Sent an intent to AlarmManager.");
 		}
 
 		sendNextAlarm();
