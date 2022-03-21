@@ -174,7 +174,6 @@ public class MainActivity extends AppCompatActivity {
 		if (b.getString(AlarmDataService.BUNDLE_NAME_KEY) == null)
 			text = getResources().getString(R.string.main_no_next_alarm);
 		else {
-			Log.i("DataService", "Did the thing, boss.");
 			GregorianCalendar time = new GregorianCalendar(), rightNow = new GregorianCalendar();
 			time.setTimeInMillis(b.getLong(AlarmDataService.BUNDLE_TIME_KEY));
 

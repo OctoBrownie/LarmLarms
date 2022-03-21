@@ -228,7 +228,6 @@ public final class AlarmGroup implements Listable, Cloneable {
 	 */
 	@NotNull @Override @Contract(pure = true)
 	public String toEditString() {
-		// TODO: implement toString for AlarmGroup
 		String res = name;
 		res += '\t' + Boolean.toString(isActive);
 
