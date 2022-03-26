@@ -1140,7 +1140,12 @@ public final class Alarm implements Listable, Cloneable {
 		int currMonth = workingClock.get(Calendar.MONTH);
 		final int thisMonth = currMonth;
 
-		boolean clockSet = false;	// whether or not workingClock has been set yet
+		// whether or not workingClock has been set yet
+		boolean clockSet = false;
+		
+		// whether the end of the current time interval (ex: last day of week) has been reached, so
+		// we can wrap around to the next one
+		boolean wrap = false;
 
 		if (repeatType != REPEAT_ONCE_REL && repeatType != REPEAT_OFFSET) {
 			// common to all the non-offset repeat types that use workingClock
@@ -1171,6 +1176,7 @@ public final class Alarm implements Listable, Cloneable {
 					final int todayDayOfWeek = dayOfWeek;
 
 					while (!clockSet || workingClock.before(currTime)) {
+						if (wrap) workingClock.add(Calendar.WEEK_OF_MONTH, 1);
 						if (repeatDays[dayOfWeek - 1]) {
 							workingClock.set(Calendar.DAY_OF_WEEK, dayOfWeek);
 							clockSet = true;
@@ -1178,7 +1184,7 @@ public final class Alarm implements Listable, Cloneable {
 
 						// go to the next day of the week
 						dayOfWeek = dayOfWeek % 7 + 1;
-						if (dayOfWeek == Calendar.SUNDAY) workingClock.add(Calendar.WEEK_OF_MONTH, 1);
+						wrap = dayOfWeek == Calendar.SUNDAY;
 
 						// we've wrapped all the way around
 						if (dayOfWeek == todayDayOfWeek) {
@@ -1194,6 +1200,7 @@ public final class Alarm implements Listable, Cloneable {
 				// third condition is in case the day of the month (ex. 31st) doesn't exist
 				while (!clockSet || workingClock.before(currTime) ||
 						workingClock.get(Calendar.DAY_OF_MONTH) != ringTime.get(Calendar.DAY_OF_MONTH)) {
+					if (wrap) workingClock.add(Calendar.YEAR, 1);
 					if (repeatMonths[currMonth]) {
 						workingClock.set(Calendar.MONTH, currMonth);
 						workingClock.set(Calendar.DAY_OF_MONTH, ringTime.get(Calendar.DAY_OF_MONTH));
@@ -1202,7 +1209,7 @@ public final class Alarm implements Listable, Cloneable {
 
 					// go to the next month
 					currMonth = (currMonth + 1) % 12;
-					if (currMonth == Calendar.JANUARY) workingClock.add(Calendar.YEAR, 1);
+					wrap = currMonth == Calendar.JANUARY;
 
 					// we've wrapped all the way around
 					if (currMonth == thisMonth) {
@@ -1227,6 +1234,7 @@ public final class Alarm implements Listable, Cloneable {
 				workingClock.set(Calendar.DAY_OF_WEEK, ringTime.get(Calendar.DAY_OF_WEEK));
 
 				while (!clockSet || workingClock.before(currTime)) {
+					if (wrap) workingClock.add(Calendar.YEAR, 1);
 					if (repeatMonths[currMonth]) {
 						workingClock.set(Calendar.MONTH, currMonth);
 						clockSet = true;
@@ -1234,7 +1242,7 @@ public final class Alarm implements Listable, Cloneable {
 
 					// go to the next month
 					currMonth = (currMonth + 1) % 12;
-					if (currMonth == Calendar.JANUARY) workingClock.add(Calendar.YEAR, 1);
+					wrap = currMonth == Calendar.JANUARY;
 
 					// we've wrapped all the way around
 					if (currMonth == thisMonth) {
