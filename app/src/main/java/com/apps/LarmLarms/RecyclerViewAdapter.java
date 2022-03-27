@@ -112,6 +112,10 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 	@Override
 	public void onBindViewHolder (@NotNull RecyclerViewHolder holder, final int position) {
 		ListableInfo i = data.get(position);
+		if (i == null || i.listable == null) {
+			if (BuildConfig.DEBUG) Log.e(TAG, "The listable to display doesn't exist as far as the adapter knows.");
+			return;
+		}
 
 		holder.changeListable(i.listable);
 
