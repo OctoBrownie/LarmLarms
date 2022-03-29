@@ -1,4 +1,4 @@
-package com.apps.LarmLarms;
+package com.LarmLarms;
 
 import android.content.Context;
 import android.content.DialogInterface;

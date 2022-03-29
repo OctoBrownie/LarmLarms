@@ -1,4 +1,4 @@
-package com.apps.LarmLarms;
+package com.LarmLarms;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;

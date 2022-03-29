@@ -1,4 +1,4 @@
-package com.apps.LarmLarms;
+package com.LarmLarms;
 
 import android.annotation.SuppressLint;
 import android.content.ComponentName;

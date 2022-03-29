@@ -1,4 +1,4 @@
-package com.apps.LarmLarms;
+package com.LarmLarms;
 
 import android.app.Service;
 import android.content.ComponentName;
