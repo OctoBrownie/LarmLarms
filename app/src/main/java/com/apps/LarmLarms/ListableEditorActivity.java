@@ -25,6 +25,7 @@ import android.widget.CheckBox;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.NumberPicker;
+import android.widget.SeekBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.TimePicker;
@@ -50,7 +51,8 @@ import androidx.appcompat.app.AppCompatActivity;
  * For specific actions, see the action documentation for extra requirements
  */
 public class ListableEditorActivity extends AppCompatActivity
-		implements AdapterView.OnItemSelectedListener, EditorDialogFrag.DialogCloseListener {
+		implements AdapterView.OnItemSelectedListener, EditorDialogFrag.DialogCloseListener,
+		SeekBar.OnSeekBarChangeListener {
 
 	/* **************************************  Constants  *************************************** */
 	
@@ -323,7 +325,7 @@ public class ListableEditorActivity extends AppCompatActivity
 		}
 	}
 
-	/* ************************************  Callbacks  ************************************* */
+	/* **********************************  Button Callbacks  ********************************** */
 
 	/**
 	 * An onclick callback for the back button. Closes the ListableEditor.
@@ -410,6 +412,86 @@ public class ListableEditorActivity extends AppCompatActivity
 	}
 
 	/**
+	 * Callback for the set ringtone button. Opens another app to choose the audio file.
+	 * TODO: Perhaps make my own sound picker...?
+	 * @param view the pick ringtone button (view that triggered the callback)
+	 */
+	public void chooseSound(@NotNull View view) {
+		Intent getSound = new Intent(RingtoneManager.ACTION_RINGTONE_PICKER);
+		getSound.putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI,
+				((Alarm) workingListable).getRingtoneUri());
+		getSound.putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, RingtoneManager.TYPE_ALARM);
+		startActivityForResult(getSound, REQ_GET_RINGTONE);
+	}
+
+	/* *********************************  Spinner Callbacks  *********************************** */
+
+	/**
+	 * Based on which repeat type was selected (using the position), will show/hide certain UI
+	 * elements and change the repeatType of workingListable.
+	 *
+	 * @param parent Spinner (AdapterView) that just closed
+	 * @param view view within the AdapterView that was clicked
+	 * @param pos position of the view within the Adapter
+	 * @param id row ID of the item selected
+	 */
+	@Override
+	public void onItemSelected(@NotNull AdapterView<?> parent, View view, int pos, long id) {
+		switch (parent.getId()) {
+			case R.id.alarmRepeatTypeInput:
+				changeRepeatType(pos, false);
+				break;
+			case R.id.alarmWeekOfMonthInput:
+				((Alarm) workingListable).setRepeatWeek(pos);
+				break;
+			case R.id.alarmDayOfWeekInput:
+				((Alarm) workingListable).getAlarmTimeCalendar().set(Calendar.DAY_OF_WEEK, pos + 1);
+				break;
+			case R.id.parentFolderInput:
+				if (paths != null)
+					listablePath = paths.get(pos);
+				break;
+			default:
+				if (BuildConfig.DEBUG) Log.e(TAG, "Unknown AdapterView selected an item.");
+				finish();
+		}
+	}
+
+	/**
+	 * Doesn't do anything when nothing has been selected from the repeat type dropdown.
+	 * @param parent Spinner (AdapterView) that just closed
+	 */
+	@Override
+	public void onNothingSelected(@NotNull AdapterView<?> parent) {}
+
+	/* ***********************************  SeekBar Callbacks  ********************************** */
+
+	/**
+	 * Callback for SeekBar, called whenever the volume has changed. Unused.
+	 * @param seekBar the SeekBar whose progress changed
+	 * @param progress the current progress level
+	 * @param fromUser whether the progress change was user-initiated or not
+	 */
+	public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {}
+	/**
+	 * Callback for SeekBar, called whenever the user has started changing the bar. Unused.
+	 * @param seekBar the SeekBar whose progress changed
+	 */
+	public void onStartTrackingTouch(SeekBar seekBar) {}
+
+	/**
+	 * Callback for SeekBar, called whenever the user has stopped changing the bar. Sets the volume
+	 * of the current alarm.
+	 * @param seekBar the SeekBar whose progress changed
+	 */
+	public void onStopTrackingTouch(SeekBar seekBar) {
+		((Alarm) workingListable).setSoundOn(seekBar.getProgress() != 0);
+		((Alarm) workingListable).setVolume(seekBar.getProgress());
+	}
+
+	/* ***********************************  Other Callbacks  *********************************** */
+
+	/**
 	 * Callback for EditorDialogFrag dialogs for when they close
 	 * @param isDays whether it was a days or months dialog
 	 * @param which which button was clicked
@@ -433,19 +515,6 @@ public class ListableEditorActivity extends AppCompatActivity
 						.setText(((Alarm) workingListable).getMonthsString());
 			}
 		}
-	}
-
-	/**
-	 * Callback for the set ringtone button. Opens another app to choose the audio file.
-	 * TODO: Perhaps make my own sound picker...?
-	 * @param view the pick ringtone button (view that triggered the callback)
-	 */
-	public void chooseSound(@NotNull View view) {
-		Intent getSound = new Intent(RingtoneManager.ACTION_RINGTONE_PICKER);
-		getSound.putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI,
-				((Alarm) workingListable).getRingtoneUri());
-		getSound.putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, RingtoneManager.TYPE_ALARM);
-		startActivityForResult(getSound, REQ_GET_RINGTONE);
 	}
 
 	/**
@@ -495,46 +564,6 @@ public class ListableEditorActivity extends AppCompatActivity
 		}
 	}
 
-	/* *************************  Callbacks from OnItemSelectedListener  ************************ */
-
-	/**
-	 * Based on which repeat type was selected (using the position), will show/hide certain UI
-	 * elements and change the repeatType of workingAlarm.
-	 *
-	 * @param parent Spinner (AdapterView) that just closed
-	 * @param view view within the AdapterView that was clicked
-	 * @param pos position of the view within the Adapter
-	 * @param id row ID of the item selected
-	 */
-	@Override
-	public void onItemSelected(@NotNull AdapterView<?> parent, View view, int pos, long id) {
-		switch (parent.getId()) {
-			case R.id.alarmRepeatTypeInput:
-				changeRepeatType(pos, false);
-				break;
-			case R.id.alarmWeekOfMonthInput:
-				((Alarm) workingListable).setRepeatWeek(pos);
-				break;
-			case R.id.alarmDayOfWeekInput:
-				((Alarm) workingListable).getAlarmTimeCalendar().set(Calendar.DAY_OF_WEEK, pos + 1);
-				break;
-			case R.id.parentFolderInput:
-				if (paths != null)
-					listablePath = paths.get(pos);
-				break;
-			default:
-				if (BuildConfig.DEBUG) Log.e(TAG, "Unknown AdapterView selected an item.");
-				finish();
-		}
-	}
-
-	/**
-	 * Doesn't do anything when nothing has been selected from the repeat type dropdown.
-	 * @param parent Spinner (AdapterView) that just closed
-	 */
-	@Override
-	public void onNothingSelected(@NotNull AdapterView<?> parent) {}
-
 	/* ***************************************  UI Setup  ************************************** */
 
 	/**
@@ -559,6 +588,11 @@ public class ListableEditorActivity extends AppCompatActivity
 		// set name of the current ringtone
 		TextView alarmSoundLabel = findViewById(R.id.soundText);
 		alarmSoundLabel.setText(((Alarm) workingListable).getRingtoneName());
+
+		// set the volume bar to the current volume and register listeners
+		SeekBar volumeBar = findViewById(R.id.volumeSeekBar);
+		volumeBar.setProgress(((Alarm) workingListable).getVolume());
+		volumeBar.setOnSeekBarChangeListener(this);
 	}
 
 	/**

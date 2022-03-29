@@ -1,11 +1,10 @@
 To do list for new features or bugs to be fixed
 
-CURRENTLY WORKING ON: making sure alarms are ringing on time (didn't ring AT ALL today when it should've
-rang for food and dishes, says the next alarm is in a week when it should clearly be tomorrow...)
+CURRENTLY WORKING ON: Maybe move classes into different packages?
 
 Make the UI look prettier
 	Some repeat strings don't really look nice (ex: offset strings are always plural + sound funky,
-	months are shorthand and don't have an "and" between the last two months)
+	months are shorthand)
 		Use quantity strings
 New ListableEditor features
 	Switches for ringtone and vibration (?)
@@ -18,6 +17,7 @@ Settings activity and some ideas for settings:
 	Uppercase/lowercase for time strings (PM vs pm, currently hardcoded to lowercase)
 	Theme changes
 	Clock or spinner for date or time pickers (see styles.xml)
+	Default alarm settings (repeat type, ringtone, volume, etc)
 Use a (color) selector to make disabled alarms more obvious (MainActivity)
 	See https://programmer.ink/think/a-detailed-explanation-of-the-use-of-selector-in-android.html
 Style all components
@@ -33,12 +33,6 @@ Remove superfluous methods and unnecessary fields
 Silent exiting (+ logging) when encountering issues or raising exceptions?
 	Could also print stack trace
 Could remove the isActive field in edit strings (not REALLY necessary... I think)
-Could probably remove a lot of ids (i.e. for the text labels)
-Could possibly give user choice for some color presets (like the "sandy blue" theme that it almost
-	feels like we're going for right now)
-Maybe use FlexboxLayout for alarm editor (similar to FlowLayout in Java Swing)
-	Google blog post: https://android-developers.googleblog.com/2017/02/build-flexible-layouts-with.html
-	GitHub: https://github.com/google/flexbox-layout
 Make more tests
 Could use DiffUtil perhaps for differences between versions of lists (minimal animations)
 Show multiple alarms if they ring near the same time (in a notification? together with the other alarm?)
@@ -52,8 +46,8 @@ Reorder alarms within a folder
 Make "offset from now" only a thing in the Editor (the alarms are always offset from a specific time)
 	Makes it so that when you're trying to edit an alarm, it will KEEP the same offset if you don't
 	change the offset time
-Maybe move classes into different packages?
-Might be useful to see which alarm is next (name and time)
+	If it's close enough (within the minute or something), shouldn't change ringTime at all (makes it exact)
+Preview alarm (mostly for volume)?
 
 BUGS
 Vibration only occurs right when the alarm starts ringing (doesn't loop)
@@ -65,15 +59,13 @@ It is possible to duplicate an alarm notification if the user interacts with the
 		In that case, the flag would automatically set it to be "silent" from the start
 Animations for folder opening/closing should only be played when the folder in question is clicked
 Sometimes requires you to unlock your phone to turn off the alarm (when off)
-Dismissing a repeating alarm (wakeup alarm) closed it but it rang again immediately (on the last day
-it was supposed to ring, Friday)
-	Also rang again on Saturday??
-Snoozing seemed permanent in the case of a repeating alarm? No indications otherwise (in repeat string
-or in ListableEditor)
 For February 29 in particular, REPEAT_DATE_MONTHLY may fail if it's ONLY February for repeat months
 	Should repeat every 4 years, with some exceptions...
 	Currently it will repeat on March 1st every year (Feb 29 on the first month only)
 If the date doesn't currently exist, will use an incorrect date
 	Ex: trying to set an alarm (like a REPEAT_YEARLY) for Feb 29 on a non-leap year
 	Doesn't check if the date exists when saving to the alarm in the first place (Alarm.ringTime)
+Might not update time of an ONCE_REL alarm if you turn it on and it's overdue (offsets from current
+time correctly but doesn't show it on the alarm itself until something else triggers a refresh)
+If adding a new alarm, doesn't nest it correctly (just becomes the last alarm)
 

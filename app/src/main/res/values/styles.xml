@@ -22,6 +22,11 @@
 		<item name="android:layout_margin">@dimen/marginSizeDefault</item>
 	</style>
 
+	<style name="SeekBar" parent="Base.Widget.AppCompat.SeekBar">
+		<item name="android:layout_margin">@dimen/marginSizeSmall</item>
+		<item name="android:layout_gravity">center</item>
+	</style>
+
 	<!-- - - - - - - - - - - - - - - -  styles for Buttons  - - - - - - - - - - - - - - - - - - -->
 
 	<style name="ButtonStyle" parent="Widget.MaterialComponents.Button">

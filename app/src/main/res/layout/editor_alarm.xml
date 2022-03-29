@@ -8,14 +8,6 @@
 
 	<include layout="@layout/editor_menu" />
 
-	<!--
-	Naming conventions for input/text field ids (here only):
-	All alarm-specific ids are prefixed with "alarm"
-	Id names correspond to the field it fills in its Alarm object (the name field is filled by
-	EditText with id alarmNameInput)
-	Ids for fields are always appended with "Input" and their corresponding labels with "Text"
-	TODO: remove unnecessary ids, like for most labels
-	-->
 	<ScrollView
 		android:layout_width="match_parent"
 		android:layout_height="match_parent">
@@ -26,6 +18,7 @@
 			android:orientation="vertical">
 
 			<!-- repeat type layout -->
+
 			<LinearLayout
 				android:layout_width="match_parent"
 				android:layout_height="wrap_content"
@@ -35,7 +28,6 @@
 				<TextView
 					style="@style/EditorLabelStyle"
 
-					android:id="@+id/alarmRepeatTypeText"
 					android:layout_width="wrap_content"
 					android:layout_height="wrap_content"
 					android:labelFor="@+id/alarmRepeatTypeInput"
@@ -81,7 +73,6 @@
 				<TextView
 					style="@style/EditorLabelStyle"
 
-					android:id="@+id/alarmDateOfMonthText1"
 					android:layout_width="wrap_content"
 					android:layout_height="wrap_content"
 					android:text="@string/alarm_editor_date_monthly_text_1"/>
@@ -93,7 +84,6 @@
 				<TextView
 					style="@style/EditorLabelStyle"
 
-					android:id="@+id/alarmDateOfMonthText2"
 					android:layout_width="wrap_content"
 					android:layout_height="wrap_content"
 					android:text="@string/alarm_editor_date_monthly_text_2"/>
@@ -133,10 +123,8 @@
 				<TextView
 					style="@style/EditorLabelStyle"
 
-					android:id="@+id/alarmWeekOfMonthText"
 					android:layout_width="wrap_content"
 					android:layout_height="wrap_content"
-					android:labelFor="@+id/alarmWeekOfMonthInput"
 					android:text="@string/alarm_editor_day_monthly_text_1"/>
 				<Spinner
 					style="@style/SpinnerStyle"
@@ -172,7 +160,6 @@
 					android:id="@id/text"
 					android:layout_width="wrap_content"
 					android:layout_height="wrap_content"
-					android:labelFor="@+id/alarmMonthsButton"
 					android:text="@null" />
 			</LinearLayout>
 
@@ -209,7 +196,7 @@
 					<EditText
 						style="@style/EditorOffsetInputStyle"
 
-						android:id="@+id/alarmOffsetDaysInput"
+						android:id="@id/alarmOffsetDaysInput"
 						android:inputType="number"
 						android:imeOptions="actionNext" />
 				</LinearLayout>
@@ -230,14 +217,13 @@
 					<EditText
 						style="@style/EditorOffsetInputStyle"
 
-						android:id="@+id/alarmOffsetHoursInput"
+						android:id="@id/alarmOffsetHoursInput"
 						android:inputType="number"
 						android:imeOptions="actionNext" />
 				</LinearLayout>
 
 				<!-- mins -->
 				<LinearLayout
-					android:id="@+id/alarmOffsetMins"
 					android:layout_width="match_parent"
 					android:layout_height="wrap_content"
 					android:orientation="horizontal">
@@ -245,7 +231,6 @@
 					<TextView
 						style="@style/EditorLabelStyle"
 
-						android:id="@+id/alarmOffsetMinsText"
 						android:layout_width="wrap_content"
 						android:layout_height="wrap_content"
 						android:labelFor="@+id/alarmOffsetMinsInput"
@@ -253,7 +238,7 @@
 					<EditText
 						style="@style/EditorOffsetInputStyle"
 
-						android:id="@+id/alarmOffsetMinsInput"
+						android:id="@id/alarmOffsetMinsInput"
 						android:inputType="number"
 						android:imeOptions="actionDone" />
 				</LinearLayout>
@@ -271,7 +256,6 @@
 				<TextView
 					style="@style/EditorLabelStyle"
 
-					android:id="@+id/nameText"
 					android:layout_width="wrap_content"
 					android:layout_height="wrap_content"
 					android:labelFor="@+id/folderNameInput"
@@ -306,6 +290,25 @@
 					android:layout_width="wrap_content"
 					android:layout_height="wrap_content"
 					android:text="@null" />
+			</LinearLayout>
+
+			<LinearLayout
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:orientation="horizontal">
+				<TextView
+					style="@style/EditorLabelStyle"
+
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:text="@string/alarm_editor_volume_text" />
+
+				<SeekBar
+					style="@style/SeekBar"
+
+					android:id="@+id/volumeSeekBar"
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content" />
 			</LinearLayout>
 		</LinearLayout>
 	</ScrollView>

@@ -5,6 +5,7 @@ import android.content.res.Resources;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
+import android.provider.Settings;
 import android.text.format.DateFormat;
 import android.util.Log;
 
@@ -175,6 +176,10 @@ public final class Alarm implements Listable, Cloneable {
 	 */
 	private boolean alarmSoundIsOn;
 	/**
+	 * The volume to play the alarm at. Should be an integer between 0 and 100.
+	 */
+	private int volume;
+	/**
 	 * The URI of the ringtone of the alarm.
 	 */
 	@Nullable
@@ -231,9 +236,8 @@ public final class Alarm implements Listable, Cloneable {
 		alarmSnoozed = false;
 		numSnoozes = 0;
 
-		// TODO: use getActualDefaultRingtoneUri(context, type) or getDefaultRingtoneUri(type)?
-		if (context != null)
-			ringtoneUri = RingtoneManager.getActualDefaultRingtoneUri(context, RingtoneManager.TYPE_ALARM);
+		volume = 60;
+		ringtoneUri = Settings.System.DEFAULT_RINGTONE_URI;
 	}
 
 	/* ********************************  Methods from Listable  ********************************** */
@@ -483,7 +487,8 @@ public final class Alarm implements Listable, Cloneable {
 	 * or threads. To get an Alarm back from an edit string, use fromEditString(String).
 	 * <br/>
 	 * Current edit string format (separated by TABS):
-	 * [alarm title] [active] [repeat info] [next ring time] [ringtone uri] [is snoozed] [# of snoozes]
+	 * [alarm title] [active] [repeat info] [next ring time] [ringtone uri] [is snoozed]
+	 * [# of snoozes] [volume]
 	 * <br/>
 	 * Repeat type format (separated by SPACES): [type] [type-specific data]
 	 * <br/>
@@ -549,6 +554,7 @@ public final class Alarm implements Listable, Cloneable {
 
 		alarmString.append('\t').append(alarmSnoozed);
 		alarmString.append('\t').append(numSnoozes);
+		alarmString.append('\t').append(volume);
 
 		return alarmString.toString();
 	}
@@ -761,6 +767,23 @@ public final class Alarm implements Listable, Cloneable {
 	void setSoundOn(boolean on) { alarmSoundIsOn = on; }
 
 	/**
+	 * Gets the volume of the alarm.
+	 */
+	@Contract(pure = true)
+	int getVolume() { return volume; }
+
+	/**
+	 * Sets the volume of the alarm.
+	 * @param vol the new volume, should be between 0 and 100
+	 */
+	void setVolume(int vol) {
+		if (vol < 0) vol = 0;
+		if (vol > 100) vol = 100;
+
+		volume = vol;
+	}
+
+	/**
 	 * Returns the URI of the ringtone this alarm has. Can be null if the alarm is set to silent.
 	 */
 	@Nullable @Contract(pure = true)
@@ -816,7 +839,7 @@ public final class Alarm implements Listable, Cloneable {
 		}
 
 		String[] fields = src.split("\t");
-		if (fields.length != 7) {
+		if (fields.length != 8) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "Edit string didn't have a correct number of fields.");
 			return null;
 		}
@@ -892,10 +915,9 @@ public final class Alarm implements Listable, Cloneable {
 		}
 
 		res.ringTime.setTimeInMillis(Long.parseLong(fields[3]));
-		if ("null".equals(fields[4]))
-			res.setRingtoneUri(null);
-		else
-			res.setRingtoneUri(Uri.parse(fields[4]));
+
+		if ("null".equals(fields[4])) res.setRingtoneUri(null);
+		else res.setRingtoneUri(Uri.parse(fields[4]));
 
 		res.alarmSnoozed = Boolean.parseBoolean(fields[5]);
 
@@ -903,7 +925,15 @@ public final class Alarm implements Listable, Cloneable {
 			res.numSnoozes = Integer.parseInt(fields[6]);
 		}
 		catch (NumberFormatException e) {
-			if (BuildConfig.DEBUG) Log.e(TAG, "Edit string has an incorrectly formatted number of snoozes.");
+			if (BuildConfig.DEBUG) Log.e(TAG, "Edit string has an invalid number of snoozes.");
+			return null;
+		}
+
+		try {
+			res.setVolume(Integer.parseInt(fields[7]));
+		}
+		catch (NumberFormatException e) {
+			if (BuildConfig.DEBUG) Log.e(TAG, "Edit string has an invalid volume.");
 			return null;
 		}
 

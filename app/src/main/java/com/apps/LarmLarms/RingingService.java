@@ -66,6 +66,10 @@ public class RingingService extends Service implements MediaPlayer.OnPreparedLis
 	private MediaPlayer mediaPlayer;
 
 	/**
+	 * The current alarm being presented.
+	 */
+	private Alarm alarm;
+	/**
 	 * The absolute index of the alarm that's currently ringing.
 	 */
 	private int alarmAbsIndex;
@@ -110,9 +114,8 @@ public class RingingService extends Service implements MediaPlayer.OnPreparedLis
 		bindService(new Intent(this, AlarmDataService.class).putExtra(AlarmDataService.EXTRA_NO_UPDATE, true),
 				dataConn, Context.BIND_AUTO_CREATE);
 
-		Alarm currAlarm = Alarm.fromEditString(this,
-				inIntent.getStringExtra(EXTRA_LISTABLE));
-		if (currAlarm == null) {
+		alarm = Alarm.fromEditString(this, inIntent.getStringExtra(EXTRA_LISTABLE));
+		if (alarm == null) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "Alarm was invalid.");
 			stopSelf();
 			return Service.START_NOT_STICKY;
@@ -124,7 +127,7 @@ public class RingingService extends Service implements MediaPlayer.OnPreparedLis
 		Intent fullScreenIntent = new Intent(this, RingingActivity.class);
 		fullScreenIntent.putExtra(EXTRA_LISTABLE_INDEX, alarmAbsIndex);
 		fullScreenIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-		fullScreenIntent.putExtra(EXTRA_LISTABLE, currAlarm.toEditString());
+		fullScreenIntent.putExtra(EXTRA_LISTABLE, alarm.toEditString());
 		PendingIntent fullScreenPendingIntent = PendingIntent.getActivity(this, 0, fullScreenIntent,
 				PendingIntent.FLAG_UPDATE_CURRENT);
 
@@ -140,7 +143,7 @@ public class RingingService extends Service implements MediaPlayer.OnPreparedLis
 				PendingIntent.FLAG_UPDATE_CURRENT);
 
 		RemoteViews notifView = new RemoteViews(getPackageName(), R.layout.alarm_notification);
-		notifView.setTextViewText(R.id.alarm_name_text, currAlarm.getListableName());
+		notifView.setTextViewText(R.id.alarm_name_text, alarm.getListableName());
 
 		notifView.setOnClickPendingIntent(R.id.snooze_button, snoozePendingIntent);
 		notifView.setOnClickPendingIntent(R.id.dismiss_button, dismissPendingIntent);
@@ -148,7 +151,7 @@ public class RingingService extends Service implements MediaPlayer.OnPreparedLis
 		NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
 				.setSmallIcon(R.mipmap.ic_launcher)
 				.setContentTitle(getResources().getString(R.string.app_name))
-				.setContentText(currAlarm.getListableName())
+				.setContentText(alarm.getListableName())
 				.setTicker(getResources().getString(R.string.notif_ticker))
 				.setPriority(NotificationCompat.PRIORITY_MAX)
 				.setDefaults(Notification.DEFAULT_VIBRATE | Notification.DEFAULT_LIGHTS)
@@ -163,7 +166,7 @@ public class RingingService extends Service implements MediaPlayer.OnPreparedLis
 				.setCustomBigContentView(notifView)
 				.setCustomHeadsUpContentView(notifView);
 
-		if (currAlarm.getRingtoneUri() != null) {
+		if (alarm.getRingtoneUri() != null) {
 			// media player setup
 			mediaPlayer = new MediaPlayer();
 			mediaPlayer.setAudioAttributes(new AudioAttributes.Builder()
@@ -175,7 +178,7 @@ public class RingingService extends Service implements MediaPlayer.OnPreparedLis
 			mediaPlayer.setWakeMode(this, PowerManager.PARTIAL_WAKE_LOCK);
 
 			try {
-				mediaPlayer.setDataSource(this, currAlarm.getRingtoneUri());
+				mediaPlayer.setDataSource(this, alarm.getRingtoneUri());
 				mediaPlayer.setOnPreparedListener(this);
 				mediaPlayer.prepareAsync();
 			}
@@ -225,7 +228,11 @@ public class RingingService extends Service implements MediaPlayer.OnPreparedLis
 	 * @param mp the media player that was just prepared.
 	 */
 	@Override
-	public void onPrepared(@NotNull MediaPlayer mp) { mp.start(); }
+	public void onPrepared(@NotNull MediaPlayer mp) {
+		float vol = alarm.getVolume() / 100f;
+		mp.setVolume(vol, vol);
+		mp.start();
+	}
 
 	/**
 	 * Callback for MediaPlayer.OnErrorListener.
