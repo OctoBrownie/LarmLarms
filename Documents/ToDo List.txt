@@ -1,6 +1,6 @@
 To do list for new features or bugs to be fixed
 
-CURRENTLY WORKING ON: Maybe move classes into different packages?
+CURRENTLY WORKING ON:
 
 Make the UI look prettier
 	Some repeat strings don't really look nice (ex: offset strings are always plural + sound funky,

@@ -1,4 +1,4 @@
-package com.LarmLarms;
+package com.LarmLarms.data;
 
 import android.app.AlarmManager;
 import android.app.NotificationChannel;
@@ -16,6 +16,10 @@ import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
 import android.util.Log;
+
+import com.LarmLarms.BuildConfig;
+import com.LarmLarms.R;
+import com.LarmLarms.ringing.RingingService;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -55,25 +59,25 @@ public class AlarmDataService extends Service {
 	/**
 	 * In a bundle, this is the key used to store a ListableInfo.
 	 */
-	static final String BUNDLE_INFO_KEY = "com.apps.LarmLarms.bundleKey.INFO";
+	public static final String BUNDLE_INFO_KEY = "com.apps.LarmLarms.bundleKey.INFO";
 	/**
 	 * In a bundle, this is the key used to store a reduced folder structure (a String ArrayList).
 	 */
-	static final String BUNDLE_LIST_KEY = "com.apps.LarmLarms.bundleKey.FOLDERS";
+	public static final String BUNDLE_LIST_KEY = "com.apps.LarmLarms.bundleKey.FOLDERS";
 	/**
 	 * In a bundle, this is the key used to store the name of a Listable.
 	 */
-	static final String BUNDLE_NAME_KEY = "com.apps.LarmLarms.bundleKey.NAME";
+	public static final String BUNDLE_NAME_KEY = "com.apps.LarmLarms.bundleKey.NAME";
 	/**
 	 * In a bundle, this is the key used to store the time of an Alarm.
 	 */
-	static final String BUNDLE_TIME_KEY = "com.apps.LarmLarms.bundleKey.TIME";
+	public static final String BUNDLE_TIME_KEY = "com.apps.LarmLarms.bundleKey.TIME";
 
 	/**
 	 * Flag to set if the calling intent doesn't want the service to immediately update the alarm
 	 * pending intent when first created. Used with a boolean extra in incoming intents.
 	 */
-	static final String EXTRA_NO_UPDATE = "com.apps.LarmLarms.extra.NO_UPDATE";
+	public static final String EXTRA_NO_UPDATE = "com.apps.LarmLarms.extra.NO_UPDATE";
 
 	/* *****************************  Message what field constants  **************************** */
 
@@ -87,7 +91,7 @@ public class AlarmDataService extends Service {
 	 * accessible by getData() or peekData() using BUNDLE_INFO_KEY for the key. Puts the absolute
 	 * index of the listable in field arg1.
 	 */
-	static final int MSG_GET_LISTABLE = 0;
+	public static final int MSG_GET_LISTABLE = 0;
 	/**
 	 * Inbound: The client is asking for the entire reduced string list for the dataset. The replyTo
 	 * field should be filled with a messenger.
@@ -95,7 +99,7 @@ public class AlarmDataService extends Service {
 	 * Outbound: A response with the reduced string array list from the Service. Puts the list in a
 	 * bundle accessible by getData() or peekData() using BUNDLE_LIST_KEY for the key.
 	 */
-	static final int MSG_GET_FOLDERS = 1;
+	public static final int MSG_GET_FOLDERS = 1;
 
 	/**
 	 * Inbound: The client wants to set a Listable to a certain index. The absolute index of the
@@ -105,7 +109,7 @@ public class AlarmDataService extends Service {
 	 * <br/>
 	 * Outbound: N/A
 	 */
-	static final int MSG_SET_LISTABLE = 2;
+	public static final int MSG_SET_LISTABLE = 2;
 	/**
 	 * Inbound: The client wants to add a Listable at the specified index and parent. A ListableInfo
 	 * should be in the data bundle (using BUNDLE_INFO_KEY for its key), with the new Listable in the
@@ -115,7 +119,7 @@ public class AlarmDataService extends Service {
 	 * <br/>
 	 * Outbound: N/A
 	 */
-	static final int MSG_ADD_LISTABLE = 3;
+	public static final int MSG_ADD_LISTABLE = 3;
 	/**
 	 * Inbound: The client wants to move a Listable to a new folder. arg1 should always be filled with
 	 * the old absolute index of the Listable. A ListableInfo should be in the data bundle (using 
@@ -126,7 +130,7 @@ public class AlarmDataService extends Service {
 	 * <br/>
 	 * Outbound: N/A
 	 */
-	static final int MSG_MOVE_LISTABLE = 4;
+	public static final int MSG_MOVE_LISTABLE = 4;
 	/**
 	 * Inbound: The client wants to delete a Listable. The absolute index of the Listable should be
 	 * in the arg1 field. Triggers MSG_DATA_CHANGED and may trigger MSG_DATA_EMPTIED messages to be
@@ -134,7 +138,7 @@ public class AlarmDataService extends Service {
 	 * <br/>
 	 * Outbound: N/A
 	 */
-	static final int MSG_DELETE_LISTABLE = 5;
+	public static final int MSG_DELETE_LISTABLE = 5;
 
 	/**
 	 * Inbound: The client wants to toggle isActive on a Listable. The absolute index of the
@@ -142,35 +146,35 @@ public class AlarmDataService extends Service {
 	 * <br/>
 	 * Outbound: N/A
 	 */
-	static final int MSG_TOGGLE_ACTIVE = 6;
+	public static final int MSG_TOGGLE_ACTIVE = 6;
 	/**
 	 * Inbound: The client wants to toggle an AlarmGroup open/closed. The absolute index of the
 	 * AlarmGroup should be in the arg1 field. Triggers MSG_DATA_CHANGED messages to be sent.
 	 * <br/>
 	 * Outbound: N/A
 	 */
-	static final int MSG_TOGGLE_OPEN_FOLDER = 7;
+	public static final int MSG_TOGGLE_OPEN_FOLDER = 7;
 	/**
 	 * Inbound: The client wants to snooze an Alarm. The absolute index of the Alarm should be
 	 * in the arg1 field. Triggers MSG_DATA_CHANGED messages to be sent.
 	 * <br/>
 	 * Outbound: N/A
 	 */
-	static final int MSG_SNOOZE_ALARM = 8;
+	public static final int MSG_SNOOZE_ALARM = 8;
 	/**
 	 * Inbound: The client wants to unsnooze an Alarm. The absolute index of the Alarm should be
 	 * in the arg1 field. Triggers MSG_DATA_CHANGED messages to be sent.
 	 * <br/>
 	 * Outbound: N/A
 	 */
-	static final int MSG_UNSNOOZE_ALARM = 9;
+	public static final int MSG_UNSNOOZE_ALARM = 9;
 	/**
 	 * Inbound: The client wants to dismiss an Alarm. The absolute index of the Alarm should be
 	 * in the arg1 field. Triggers MSG_DATA_CHANGED messages to be sent.
 	 * <br/>
 	 * Outbound: N/A
 	 */
-	static final int MSG_DISMISS_ALARM = 10;
+	public static final int MSG_DISMISS_ALARM = 10;
 
 	/**
 	 * Inbound: A client wants to change its notification of data changes. In the replyTo field
@@ -183,7 +187,7 @@ public class AlarmDataService extends Service {
 	 * count should be in the arg1 field. Means that the new data has been written to the alarm store
 	 * and can be queried from the service or read directly from disk.
 	 */
-	static final int MSG_DATA_CHANGED = 11;
+	public static final int MSG_DATA_CHANGED = 11;
 
 	/**
 	 * Inbound: A client wants to change its notification of the data being empty or full. In the
@@ -195,7 +199,7 @@ public class AlarmDataService extends Service {
 	 * <br/>
 	 * Outbound: N/A
 	 */
-	static final int MSG_DATA_EMPTY_LISTENER = 12;
+	public static final int MSG_DATA_EMPTY_LISTENER = 12;
 	/**
 	 * Inbound: N/A
 	 * <br/>
@@ -203,7 +207,7 @@ public class AlarmDataService extends Service {
 	 * anymore. No guarantees can be made about message fields. Only sent to registered empty
 	 * listeners.
 	 */
-	static final int MSG_DATA_EMPTIED = 13;
+	public static final int MSG_DATA_EMPTIED = 13;
 	/**
 	 * Inbound: N/A
 	 * <br/>
@@ -211,7 +215,7 @@ public class AlarmDataService extends Service {
 	 * it was empty before. No guarantees can be made about message fields. Only sent to registered
 	 * empty listeners.
 	 */
-	static final int MSG_DATA_FILLED = 14;
+	public static final int MSG_DATA_FILLED = 14;
 
 	/**
 	 * Inbound: A client wants to change its notification of the next alarm. In the replyTo field
@@ -224,7 +228,7 @@ public class AlarmDataService extends Service {
 	 * BUNDLE_TIME_KEY and its name is as well under BUNDLE_NAME_KEY. If there is no alarm to ring,
 	 * the bundle will be null.
 	 */
-	static final int MSG_NEXT_ALARM = 15;
+	public static final int MSG_NEXT_ALARM = 15;
 
 	/* *************************************  Instance Fields  ********************************** */
 

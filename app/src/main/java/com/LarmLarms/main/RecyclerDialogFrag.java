@@ -1,8 +1,10 @@
-package com.LarmLarms;
+package com.LarmLarms.main;
 
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
+
+import com.LarmLarms.R;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.DialogFragment;

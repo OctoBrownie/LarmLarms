@@ -1,4 +1,4 @@
-package com.LarmLarms;
+package com.LarmLarms.data;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -9,7 +9,7 @@ import org.jetbrains.annotations.Nullable;
  * Using isAlarm(), it can also discriminate between Alarms and AlarmGroups. This is meant mostly
  * to expose the data necessary for displaying alarms on the main page.
  */
-interface Listable {
+public interface Listable {
 	/**
 	 * Differentiates between alarms and folders.
 	 * @return whether the Listable is an alarm or folder

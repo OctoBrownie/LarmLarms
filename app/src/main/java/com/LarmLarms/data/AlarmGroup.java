@@ -1,7 +1,9 @@
-package com.LarmLarms;
+package com.LarmLarms.data;
 
 import android.content.Context;
 import android.util.Log;
+
+import com.LarmLarms.BuildConfig;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -263,7 +265,7 @@ public final class AlarmGroup implements Listable, Cloneable {
 	 * Gets whether the folder is open or closed.
 	 */
 	@Contract(pure = true)
-	boolean getIsOpen() { return isOpen; }
+	public boolean getIsOpen() { return isOpen; }
 
 	/**
 	 * Toggles the folder open state (if it was open, close it; if it was closed, open it).
@@ -297,7 +299,7 @@ public final class AlarmGroup implements Listable, Cloneable {
 	 * within it are null), will not do anything.
 	 * @param listables a new list of listables to use, can be null
 	 */
-	void setListables(@Nullable ArrayList<Listable> listables) {
+	private void setListables(@Nullable ArrayList<Listable> listables) {
 		if (listables == null) {
 			if (BuildConfig.DEBUG) Log.v(TAG, "New list of Listables is null.");
 			return;

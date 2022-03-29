@@ -1,4 +1,4 @@
-package com.LarmLarms;
+package com.LarmLarms.ringing;
 
 import android.app.Notification;
 import android.app.PendingIntent;
@@ -18,6 +18,11 @@ import android.os.PowerManager;
 import android.os.RemoteException;
 import android.util.Log;
 import android.widget.RemoteViews;
+
+import com.LarmLarms.BuildConfig;
+import com.LarmLarms.R;
+import com.LarmLarms.data.Alarm;
+import com.LarmLarms.data.AlarmDataService;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -39,23 +44,23 @@ public class RingingService extends Service implements MediaPlayer.OnPreparedLis
 	/**
 	 * An extra used for carrying a Listable in edit string form.
 	 */
-	final static String EXTRA_LISTABLE = "com.apps.LarmLarms.extra.LISTABLE";
+	public final static String EXTRA_LISTABLE = "com.apps.LarmLarms.extra.LISTABLE";
 	/**
 	 * An extra used for carrying a Listable's absolute index within the data.
 	 */
-	final static String EXTRA_LISTABLE_INDEX = "com.apps.LarmLarms.extra.ABS_INDEX";
+	public final static String EXTRA_LISTABLE_INDEX = "com.apps.LarmLarms.extra.ABS_INDEX";
 
 	/* *********************************  Other static fields  ********************************** */
 
 	/**
 	 * String ID for the notification channel the foreground notifications are posted in.
 	 */
-	static final String CHANNEL_ID = "RingingAlarms";
+	public static final String CHANNEL_ID = "RingingAlarms";
 	/**
 	 * The int ID for the foreground notification itself. There should only be one at any given time,
 	 * so using the same ID should be fine.
 	 */
-	static final int NOTIFICATION_ID = 42;
+	public static final int NOTIFICATION_ID = 42;
 
 	/* ***********************************  Non-static fields ********************************* */
 

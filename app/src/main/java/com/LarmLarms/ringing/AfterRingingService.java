@@ -1,4 +1,4 @@
-package com.LarmLarms;
+package com.LarmLarms.ringing;
 
 import android.app.Service;
 import android.content.ComponentName;
@@ -10,6 +10,9 @@ import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
 import android.util.Log;
+
+import com.LarmLarms.BuildConfig;
+import com.LarmLarms.data.AlarmDataService;
 
 import org.jetbrains.annotations.NotNull;
 

@@ -1,4 +1,4 @@
-package com.LarmLarms;
+package com.LarmLarms.data;
 
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -10,26 +10,26 @@ import org.jetbrains.annotations.Nullable;
 /**
  * A struct containing information about a listable within a nested list of Listables
  */
-class ListableInfo implements Parcelable {
+public class ListableInfo implements Parcelable {
 	/**
 	 * The absolute index of a Listable.
 	 */
-	int absIndex;
+	public int absIndex;
 
 	/**
 	 * The relative index of a Listable.
 	 */
-	int relIndex;
+	public int relIndex;
 
 	/**
 	 * The number of indents for a Listable.
 	 */
-	int numIndents;
+	public int numIndents;
 
 	/**
 	 * The absolute index of a Listable's parent. Should be -1 if there is no parent.
 	 */
-	int absParentIndex;
+	public int absParentIndex;
 
 	/**
 	 * Represents a Listable, and implies the other fields are describing this listable. Not
@@ -37,26 +37,26 @@ class ListableInfo implements Parcelable {
 	 * Parcel).
 	 */
 	@Nullable
-	Listable listable;
+	public Listable listable;
 
 	/**
 	 * Represents the parent folder to the field listable. Not guaranteed to be a handle to the
 	 * original AlarmGroup (if, for example, it was recreated from a Parcel).
 	 */
 	@Nullable
-	AlarmGroup parent;
+	public AlarmGroup parent;
 
 	/**
 	 * Represents the path to this listable but doesn't include the listable itself. It is in the
 	 * same form as the strings returned from AlarmGroup.toPathList().
 	 */
 	@Nullable
-	String path;
+	public String path;
 
 	/**
 	 * Initializes dummy data in the struct variables, all invalid data in case it isn't filled out.
 	 */
-	ListableInfo() {
+	public ListableInfo() {
 		relIndex = -1;
 		absIndex = -1;
 		numIndents = -1;

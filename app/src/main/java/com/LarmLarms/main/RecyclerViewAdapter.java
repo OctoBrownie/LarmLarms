@@ -1,4 +1,4 @@
-package com.LarmLarms;
+package com.LarmLarms.main;
 
 import android.content.Context;
 import android.content.DialogInterface;
@@ -18,6 +18,15 @@ import android.widget.ImageView;
 import android.widget.Switch;
 import android.widget.TextView;
 
+import com.LarmLarms.BuildConfig;
+import com.LarmLarms.R;
+import com.LarmLarms.data.Alarm;
+import com.LarmLarms.data.AlarmDataService;
+import com.LarmLarms.data.AlarmGroup;
+import com.LarmLarms.data.Listable;
+import com.LarmLarms.data.ListableInfo;
+import com.LarmLarms.editor.ListableEditorActivity;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -30,7 +39,7 @@ import androidx.recyclerview.widget.RecyclerView;
  * Gets data for the RecyclerView holding alarms. It is unusable without the Messenger to the data
  * service, so be sure to set it before use.
  */
-public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.RecyclerViewHolder> {
+class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.RecyclerViewHolder> {
 	/**
 	 * Tag of the class for logging purposes.
 	 */

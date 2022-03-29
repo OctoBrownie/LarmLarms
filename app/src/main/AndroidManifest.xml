@@ -16,7 +16,7 @@
 		android:roundIcon="@mipmap/ic_launcher_round"
 		android:supportsRtl="true"
 		android:theme="@style/Theme.AppTheme">
-		<activity android:name=".MainActivity">
+		<activity android:name=".main.MainActivity">
 			<intent-filter>
 				<action android:name="android.intent.action.MAIN" />
 
@@ -25,25 +25,25 @@
 		</activity>
 
 		<!-- TODO: add intent filter for ACTION_SET_ALARM? -->
-		<activity android:name=".ListableEditorActivity" />
+		<activity android:name=".editor.ListableEditorActivity" />
 		<activity
-			android:name=".RingingActivity"
+			android:name=".ringing.RingingActivity"
 			android:excludeFromRecents="true"
 			android:launchMode="singleTask"
 			android:showOnLockScreen="true"
 			android:taskAffinity="" />
 
 		<service
-			android:name=".RingingService"
+			android:name=".ringing.RingingService"
 			android:description="@string/notif_service_description"
 			android:enabled="true"
 			android:exported="false" />
 		<service
-			android:name=".AlarmDataService"
+			android:name=".data.AlarmDataService"
 			android:enabled="true"
 			android:exported="false" />
 		<service
-			android:name=".AfterRingingService"
+			android:name=".ringing.AfterRingingService"
 			android:enabled="true"
 			android:exported="false" />
 	</application>

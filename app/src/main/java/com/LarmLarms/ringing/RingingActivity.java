@@ -1,4 +1,4 @@
-package com.LarmLarms;
+package com.LarmLarms.ringing;
 
 import android.app.KeyguardManager;
 import android.content.Context;
@@ -9,6 +9,10 @@ import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.TextView;
+
+import com.LarmLarms.BuildConfig;
+import com.LarmLarms.R;
+import com.LarmLarms.data.Alarm;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

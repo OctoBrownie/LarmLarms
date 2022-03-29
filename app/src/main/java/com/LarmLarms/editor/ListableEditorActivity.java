@@ -1,4 +1,4 @@
-package com.LarmLarms;
+package com.LarmLarms.editor;
 
 import android.annotation.SuppressLint;
 import android.content.ComponentName;
@@ -30,6 +30,14 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
+
+import com.LarmLarms.BuildConfig;
+import com.LarmLarms.R;
+import com.LarmLarms.data.Alarm;
+import com.LarmLarms.data.AlarmDataService;
+import com.LarmLarms.data.AlarmGroup;
+import com.LarmLarms.data.Listable;
+import com.LarmLarms.data.ListableInfo;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -64,27 +72,27 @@ public class ListableEditorActivity extends AppCompatActivity
 	/**
 	 * An extra used for carrying a ListableInfo.
 	 */
-	final static String EXTRA_LISTABLE_INFO = "com.apps.LarmLarms.extra.INFO";
+	public final static String EXTRA_LISTABLE_INFO = "com.apps.LarmLarms.extra.INFO";
 
 	// for inbound intents
 	/**
 	 * Intent action for creating a new alarm. Requires nothing else.
 	 */
-	final static String ACTION_CREATE_ALARM = "com.apps.LarmLarms.action.CREATE_ALARM";
+	public final static String ACTION_CREATE_ALARM = "com.apps.LarmLarms.action.CREATE_ALARM";
 	/**
 	 * Intent action for editing an existing Alarm. Requires that EXTRA_LISTABLE_INFO contain a
 	 * ListableInfo with absIndex, listable, and path filled out.
 	 */
-	final static String ACTION_EDIT_ALARM = "com.apps.LarmLarms.action.EDIT_ALARM";
+	public final static String ACTION_EDIT_ALARM = "com.apps.LarmLarms.action.EDIT_ALARM";
 	/**
 	 * Request code to create a new folder. Requires nothing else.
 	 */
-	final static String ACTION_CREATE_FOLDER = "com.apps.LarmLarms.action.CREATE_FOLDER";
+	public final static String ACTION_CREATE_FOLDER = "com.apps.LarmLarms.action.CREATE_FOLDER";
 	/**
 	 * Request code to edit an existing AlarmGroup. Requires that EXTRA_LISTABLE_INFO contain a
 	 * ListableInfo with absIndex, listable, and path filled out.
 	 */
-	final static String ACTION_EDIT_FOLDER = "com.apps.LarmLarms.action.EDIT_FOLDER";
+	public final static String ACTION_EDIT_FOLDER = "com.apps.LarmLarms.action.EDIT_FOLDER";
 
 	// for outbound intents
 	/**

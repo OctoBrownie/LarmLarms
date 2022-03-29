@@ -1,4 +1,4 @@
-package com.LarmLarms;
+package com.LarmLarms.data;
 
 import android.content.Context;
 import android.content.res.Resources;
@@ -8,6 +8,9 @@ import android.net.Uri;
 import android.provider.Settings;
 import android.text.format.DateFormat;
 import android.util.Log;
+
+import com.LarmLarms.BuildConfig;
+import com.LarmLarms.R;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -36,41 +39,41 @@ public final class Alarm implements Listable, Cloneable {
 	 * Represents an alarm that doesn't repeat (rings once) and is specified by an absolute date/time.
 	 * Only uses field ringTime.
 	 */
-	static final int REPEAT_ONCE_ABS = 0;
+	public static final int REPEAT_ONCE_ABS = 0;
 	/**
 	 * Represents an alarm that doesn't repeat (rings once) and is specified by an offset from the
 	 * current time (relative date/time). Uses field ringTime for storing date/time, and offset
 	 * variables for storing the offset from creation/modification time.
 	 */
-	static final int REPEAT_ONCE_REL = 1;
+	public static final int REPEAT_ONCE_REL = 1;
 	/**
 	 * Represents an alarm that repeats at a given time on specific days every week. Uses field
 	 * ringTime to specify the time to ring and repeatDays for the days of the week to ring.
 	 */
-	static final int REPEAT_DAY_WEEKLY = 2;
+	public static final int REPEAT_DAY_WEEKLY = 2;
 	/**
 	 * Represents an alarm that repeats on a specific date (a number) every month. Uses field
 	 * ringTime for the date (not month) and time of the alarm, repeatMonths for the months to ring
 	 * on (can skip months).
 	 */
-	static final int REPEAT_DATE_MONTHLY = 3;
+	public static final int REPEAT_DATE_MONTHLY = 3;
 	/**
 	 * Represents an alarm that repeats on a specific day (day of a week) every month. Uses field
 	 * ringTime for the time of the alarm and the day of the week, repeatMonths for the months to
 	 * ring on (can skip months), and repeatWeek for the week to ring on (first week, second week,
 	 * last week, etc).
 	 */
-	static final int REPEAT_DAY_MONTHLY = 4;
+	public static final int REPEAT_DAY_MONTHLY = 4;
 	/**
 	 * Represents an alarm that rings at a certain date/time every year. Only uses field ringTime.
 	 */
-	static final int REPEAT_DATE_YEARLY = 5;
+	public static final int REPEAT_DATE_YEARLY = 5;
 	/**
 	 * Represents an alarm that repeats every offset from the previous time. Uses field ringTime to
 	 * store date/time of the next ring time, and offset variables to store the offset to generate
 	 * the next ring time (add them to ringTime).
 	 */
-	static final int REPEAT_OFFSET = 6;
+	public static final int REPEAT_OFFSET = 6;
 
 	/**
 	 * Total number of repeat types, used for validating data (repeat type number has to be under
@@ -580,12 +583,12 @@ public final class Alarm implements Listable, Cloneable {
 	 * Returns the ring time of the alarm.
 	 */
 	@NotNull @Contract(pure = true)
-	Calendar getAlarmTimeCalendar() { return ringTime; }
+	public Calendar getAlarmTimeCalendar() { return ringTime; }
 
 	/**
 	 * Returns the next ring time of the alarm in a long.
 	 */
-	long getAlarmTimeMillis() { return ringTime.getTimeInMillis(); }
+	public long getAlarmTimeMillis() { return ringTime.getTimeInMillis(); }
 
 	/**
 	 * Returns the next ring time of the alarm in a long and deletes any snooze periods that affect
@@ -603,7 +606,7 @@ public final class Alarm implements Listable, Cloneable {
 	 * Sets the next ring time of the alarm.
 	 * @param time the new time to set the alarm to
 	 */
-	void setAlarmTimeMillis(long time) {
+	public void setAlarmTimeMillis(long time) {
 		if (time < 0) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "New calendar time was negative.");
 			return;
@@ -616,13 +619,13 @@ public final class Alarm implements Listable, Cloneable {
 	 * @return the repeat type, which is always a valid repeat type
 	 */
 	@Contract(pure = true)
-	int getRepeatType() { return repeatType; }
+	public int getRepeatType() { return repeatType; }
 
 	/**
 	 * Sets the repeat type of the alarm. If the repeat type is invalid, does nothing.
 	 * @param type the new type to set the alarm to
 	 */
-	void setRepeatType(int type) {
+	public void setRepeatType(int type) {
 		if (type < 0 || type >= NUM_REPEAT_TYPES) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "Repeat type is invalid.");
 			return;
@@ -636,27 +639,27 @@ public final class Alarm implements Listable, Cloneable {
 	 * @return an array of size 7, whose indices correspond to Calendar day constants - 1
 	 */
 	@NotNull @Contract(pure = true)
-	boolean[] getRepeatDays() { return repeatDays; }
+	public boolean[] getRepeatDays() { return repeatDays; }
 
 	/**
 	 * Returns the repeat months of the alarm, even if the current repeat type doesn't use it.
 	 * @return an array of size 12, whose indices correspond to the Calendar month constants
 	 */
 	@NotNull @Contract(pure = true)
-	boolean[] getRepeatMonths() { return repeatMonths; }
+	public boolean[] getRepeatMonths() { return repeatMonths; }
 
 	/**
 	 * Gets the repeat week of the alarm.
 	 * @return the repeat week, an index of the string array alarm_week_strings
 	 */
 	@Contract(pure = true)
-	int getRepeatWeek() { return repeatWeek; }
+	public int getRepeatWeek() { return repeatWeek; }
 
 	/**
 	 * Sets the repeat week of the alarm. If the new week is invalid, will not do anything.
 	 * @param newWeek the new repeat week, an index of the string array alarm_week_strings
 	 */
-	void setRepeatWeek(int newWeek) {
+	public void setRepeatWeek(int newWeek) {
 		if (newWeek < 0 || newWeek >= 5) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "New week to repeat on is invalid.");
 			return;
@@ -670,13 +673,13 @@ public final class Alarm implements Listable, Cloneable {
 	 * @return a number greater than or equal to 0
 	 */
 	@Contract(pure = true)
-	int getOffsetDays() { return offsetDays; }
+	public int getOffsetDays() { return offsetDays; }
 
 	/**
 	 * Sets the number of days to offset by. If invalid (under 0), will not do anything.
 	 * @param days the number of days to offset by
 	 */
-	void setOffsetDays(int days) {
+	public void setOffsetDays(int days) {
 		if (days < 0) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "New number of days is invalid.");
 			return;
@@ -690,14 +693,14 @@ public final class Alarm implements Listable, Cloneable {
 	 * @return a number between 0 and 23
 	 */
 	@Contract(pure = true)
-	int getOffsetHours() { return offsetHours; }
+	public int getOffsetHours() { return offsetHours; }
 
 	/**
 	 * Sets the number of hours to offset the alarm with. If out of bounds (under 0 or over 23), will
 	 * not do anything.
 	 * @param hours the number of hours to offset, between 0 and 23 inclusive
 	 */
-	void setOffsetHours(int hours) {
+	public void setOffsetHours(int hours) {
 		if (hours < 0 || hours >= 24) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "New number of hours is invalid.");
 			return;
@@ -711,13 +714,13 @@ public final class Alarm implements Listable, Cloneable {
 	 * @return a number between 0 and 59 inclusive
 	 */
 	@Contract(pure = true)
-	int getOffsetMins() { return offsetMins; }
+	public int getOffsetMins() { return offsetMins; }
 
 	/**
 	 * Sets the number of minutes to offset by
 	 * @param min a number between 0 and 59 inclusive
 	 */
-	void setOffsetMins(int min) {
+	public void setOffsetMins(int min) {
 		if (min < 0 || min >= 60) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "New number of minutes is invalid.");
 			return;
@@ -729,54 +732,54 @@ public final class Alarm implements Listable, Cloneable {
 	 * Gets whether the offset is from the current time or not.
 	 */
 	@Contract(pure = true)
-	boolean isOffsetFromNow() { return offsetFromNow; }
+	public boolean isOffsetFromNow() { return offsetFromNow; }
 
 	/**
 	 * Sets whether the offset is from the current time or not.
 	 */
-	void setOffsetFromNow(boolean offsetFromNow) { this.offsetFromNow = offsetFromNow; }
+	public void setOffsetFromNow(boolean offsetFromNow) { this.offsetFromNow = offsetFromNow; }
 
 	/**
 	 * Gets whether the current alarm is snoozed or not.
 	 */
 	@Contract(pure = true)
-	boolean getIsSnoozed() { return alarmSnoozed; }
+	public boolean getIsSnoozed() { return alarmSnoozed; }
 
 	/**
 	 * Gets whether the alarm has vibrate on or not.
 	 */
 	@Contract(pure = true)
-	boolean isVibrateOn() { return alarmVibrateIsOn; }
+	public boolean isVibrateOn() { return alarmVibrateIsOn; }
 
 	/**
 	 * Sets whether the alarm has vibrate on or not.
 	 * @param on the new state to set it to
 	 */
-	void setVibrateOn(boolean on) { alarmVibrateIsOn = on; }
+	public void setVibrateOn(boolean on) { alarmVibrateIsOn = on; }
 
 	/**
 	 * Gets whether the alarm has sound on or not.
 	 */
 	@Contract(pure = true)
-	boolean isSoundOn() { return alarmSoundIsOn; }
+	public boolean isSoundOn() { return alarmSoundIsOn; }
 
 	/**
 	 * Sets whether the alarm has sound on or not.
 	 * @param on the new state to set it to
 	 */
-	void setSoundOn(boolean on) { alarmSoundIsOn = on; }
+	public void setSoundOn(boolean on) { alarmSoundIsOn = on; }
 
 	/**
 	 * Gets the volume of the alarm.
 	 */
 	@Contract(pure = true)
-	int getVolume() { return volume; }
+	public int getVolume() { return volume; }
 
 	/**
 	 * Sets the volume of the alarm.
 	 * @param vol the new volume, should be between 0 and 100
 	 */
-	void setVolume(int vol) {
+	public void setVolume(int vol) {
 		if (vol < 0) vol = 0;
 		if (vol > 100) vol = 100;
 
@@ -787,13 +790,13 @@ public final class Alarm implements Listable, Cloneable {
 	 * Returns the URI of the ringtone this alarm has. Can be null if the alarm is set to silent.
 	 */
 	@Nullable @Contract(pure = true)
-	Uri getRingtoneUri() { return ringtoneUri; }
+	public Uri getRingtoneUri() { return ringtoneUri; }
 
 	/**
 	 * Sets the new ringtone URI.
 	 * @param newRingtone the new ringtone to set it to, can be null if the ringtone is silent
 	 */
-	void setRingtoneUri(@Nullable Uri newRingtone) {
+	public void setRingtoneUri(@Nullable Uri newRingtone) {
 		if (BuildConfig.DEBUG && newRingtone == null) {
 			Log.i(TAG, "The new ringtone is silent.");
 		}
@@ -805,7 +808,7 @@ public final class Alarm implements Listable, Cloneable {
 	 * @return the name of the ringtone, or empty string if context is null
 	 */
 	@NotNull @Contract(pure = true)
-	String getRingtoneName() {
+	public String getRingtoneName() {
 		if (context == null) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "Context is null, cannot query the name of the ringtone.");
 			return "";
@@ -829,7 +832,7 @@ public final class Alarm implements Listable, Cloneable {
 	 * formatted incorrectly
 	 */
 	@Nullable @Contract(pure = true)
-	static Alarm fromEditString(@Nullable Context context, @Nullable String src) {
+	public static Alarm fromEditString(@Nullable Context context, @Nullable String src) {
 		if (src == null) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "Edit string is null.");
 			return null;
@@ -950,7 +953,7 @@ public final class Alarm implements Listable, Cloneable {
 	 * formatted incorrectly
 	 */
 	@Nullable @Contract(pure = true)
-	static Alarm fromStoreString(@Nullable Context currContext, @Nullable String src) {
+	public static Alarm fromStoreString(@Nullable Context currContext, @Nullable String src) {
 		if (src == null) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "Store string is null.");
 			return null;
@@ -982,7 +985,7 @@ public final class Alarm implements Listable, Cloneable {
 	 * @return formatted string resource alarm_weekly, special cases, or empty
 	 */
 	@NotNull @Contract(pure = true)
-	String getWeeklyDisplayString() {
+	public String getWeeklyDisplayString() {
 		if (context == null) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "Context is null, cannot get the weekly display string.");
 			return "";
@@ -1020,7 +1023,7 @@ public final class Alarm implements Listable, Cloneable {
 	 * @return formatted string resource alarm_monthly, special cases, or empty
 	 */
 	@NotNull @Contract(pure = true)
-	String getMonthsString() {
+	public String getMonthsString() {
 		if (context == null) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "Context is null, cannot get the months display string.");
 			return "";
@@ -1161,7 +1164,7 @@ public final class Alarm implements Listable, Cloneable {
 	 * NOTE: if the date doesn't exist (ex. April 31 for DATE_MONTHLY), it will simply skip it (will
 	 * not schedule an alarm for May 1)
 	 */
-	void updateRingTime() {
+	public void updateRingTime() {
 		if (!alarmIsActive || alarmSnoozed) { return; }
 
 		GregorianCalendar workingClock = new GregorianCalendar();
@@ -1316,7 +1319,7 @@ public final class Alarm implements Listable, Cloneable {
 	/**
 	 * Snoozes the alarm for 5 minutes. Sets ringTime to five minutes away from original ringTime.
 	 */
-	void snooze() {
+	public void snooze() {
 		alarmSnoozed = true;
 		numSnoozes++;
 		// TODO: change number of minutes to snooze?
@@ -1327,7 +1330,7 @@ public final class Alarm implements Listable, Cloneable {
 	/**
 	 * Unsnoozes the alarm if it was snoozed previously. Won't do anything if it wasn't snoozed.
 	 */
-	void unsnooze() {
+	public void unsnooze() {
 		alarmSnoozed = false;
 
 		ringTime.add(Calendar.MINUTE, -5*numSnoozes);
