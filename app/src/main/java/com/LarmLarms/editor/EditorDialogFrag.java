@@ -17,7 +17,7 @@ import androidx.fragment.app.DialogFragment;
  * Dialog fragment for ListableEditor. Creates a dialog either for the days of the week or for the
  * months of the year.
  */
-class EditorDialogFrag extends DialogFragment implements
+public class EditorDialogFrag extends DialogFragment implements
 		DialogInterface.OnMultiChoiceClickListener, DialogInterface.OnClickListener {
 	/**
 	 * A listener for the dialog. Only receives the positive button click
