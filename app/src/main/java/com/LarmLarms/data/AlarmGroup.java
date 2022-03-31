@@ -24,7 +24,7 @@ public final class AlarmGroup implements Listable, Cloneable {
 	 * Number of fields in a single edit string (don't have one for store strings because they can
 	 * span multiple lines and can have a different number of fields dependent on type)
 	 */
-	private static final int NUM_EDIT_FIELDS = 2;
+	private static final int NUM_EDIT_FIELDS = 3;
 
 	/**
 	 * Stores the name of the folder. Restricted characters: tabs and backslashes. If the user tries
@@ -226,15 +226,10 @@ public final class AlarmGroup implements Listable, Cloneable {
 	 * Creates an edit string for the current folder.
 	 * <br/>
 	 * Current edit string format (separated by tabs):
-	 * [name]	[isActive]
+	 * [name] [isActive] [isOpen]
 	 */
 	@NotNull @Override @Contract(pure = true)
-	public String toEditString() {
-		String res = name;
-		res += '\t' + Boolean.toString(isActive);
-
-		return res;
-	}
+	public String toEditString() { return name + '\t' + isActive + '\t' + isOpen; }
 
 	/**
 	 * Creates a string for storing the current folder. Stores folder with type identifier and
@@ -266,6 +261,12 @@ public final class AlarmGroup implements Listable, Cloneable {
 	 */
 	@Contract(pure = true)
 	public boolean getIsOpen() { return isOpen; }
+
+	/**
+	 * Sets whether the folder is open or not.
+	 * @param open the new state of the folder (open or closed)
+	 */
+	private void setOpen(boolean open) { isOpen = open; }
 
 	/**
 	 * Toggles the folder open state (if it was open, close it; if it was closed, open it).
@@ -341,6 +342,7 @@ public final class AlarmGroup implements Listable, Cloneable {
 
 		AlarmGroup dest = new AlarmGroup(fields[0]);
 		dest.setActive(Boolean.parseBoolean(fields[1]));
+		dest.setOpen(Boolean.parseBoolean(fields[2]));
 
 		return dest;
 	}
