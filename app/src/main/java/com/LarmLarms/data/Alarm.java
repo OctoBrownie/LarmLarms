@@ -175,10 +175,6 @@ public final class Alarm implements Listable, Cloneable {
 	private boolean alarmVibrateIsOn;
 
 	/**
-	 * Represents whether sound should be on when the alarm rings.
-	 */
-	private boolean alarmSoundIsOn;
-	/**
 	 * The volume to play the alarm at. Should be an integer between 0 and 100.
 	 */
 	private int volume;
@@ -233,7 +229,6 @@ public final class Alarm implements Listable, Cloneable {
 		offsetFromNow = true;
 
 		alarmVibrateIsOn = true;
-		alarmSoundIsOn = true;
 		alarmIsActive = true;
 
 		alarmSnoozed = false;
@@ -481,7 +476,7 @@ public final class Alarm implements Listable, Cloneable {
 		}
 		else if (!this.ringtoneUri.equals(that.ringtoneUri)) return false;
 
-		return this.alarmIsActive == that.alarmIsActive && this.alarmSoundIsOn == that.alarmSoundIsOn &&
+		return this.volume == that.volume && this.alarmIsActive == that.alarmIsActive &&
 				this.alarmVibrateIsOn == that.alarmVibrateIsOn;
 	}
 
@@ -588,7 +583,7 @@ public final class Alarm implements Listable, Cloneable {
 	/**
 	 * Returns the next ring time of the alarm in a long.
 	 */
-	public long getAlarmTimeMillis() { return ringTime.getTimeInMillis(); }
+	long getAlarmTimeMillis() { return ringTime.getTimeInMillis(); }
 
 	/**
 	 * Returns the next ring time of the alarm in a long and deletes any snooze periods that affect
@@ -743,7 +738,7 @@ public final class Alarm implements Listable, Cloneable {
 	 * Gets whether the current alarm is snoozed or not.
 	 */
 	@Contract(pure = true)
-	public boolean getIsSnoozed() { return alarmSnoozed; }
+	boolean getIsSnoozed() { return alarmSnoozed; }
 
 	/**
 	 * Gets whether the alarm has vibrate on or not.
@@ -756,18 +751,6 @@ public final class Alarm implements Listable, Cloneable {
 	 * @param on the new state to set it to
 	 */
 	public void setVibrateOn(boolean on) { alarmVibrateIsOn = on; }
-
-	/**
-	 * Gets whether the alarm has sound on or not.
-	 */
-	@Contract(pure = true)
-	public boolean isSoundOn() { return alarmSoundIsOn; }
-
-	/**
-	 * Sets whether the alarm has sound on or not.
-	 * @param on the new state to set it to
-	 */
-	public void setSoundOn(boolean on) { alarmSoundIsOn = on; }
 
 	/**
 	 * Gets the volume of the alarm.
@@ -953,7 +936,7 @@ public final class Alarm implements Listable, Cloneable {
 	 * formatted incorrectly
 	 */
 	@Nullable @Contract(pure = true)
-	public static Alarm fromStoreString(@Nullable Context currContext, @Nullable String src) {
+	static Alarm fromStoreString(@Nullable Context currContext, @Nullable String src) {
 		if (src == null) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "Store string is null.");
 			return null;
@@ -1319,7 +1302,7 @@ public final class Alarm implements Listable, Cloneable {
 	/**
 	 * Snoozes the alarm for 5 minutes. Sets ringTime to five minutes away from original ringTime.
 	 */
-	public void snooze() {
+	void snooze() {
 		alarmSnoozed = true;
 		numSnoozes++;
 		// TODO: change number of minutes to snooze?

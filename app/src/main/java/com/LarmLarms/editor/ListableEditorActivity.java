@@ -493,7 +493,6 @@ public class ListableEditorActivity extends AppCompatActivity
 	 * @param seekBar the SeekBar whose progress changed
 	 */
 	public void onStopTrackingTouch(SeekBar seekBar) {
-		((Alarm) workingListable).setSoundOn(seekBar.getProgress() != 0);
 		((Alarm) workingListable).setVolume(seekBar.getProgress());
 	}
 
@@ -966,7 +965,7 @@ public class ListableEditorActivity extends AppCompatActivity
 					break;
 				default:
 					// error: unknown request code!
-					if (BuildConfig.DEBUG) Log.e(TAG, "Unknown setListableName() request code! Exiting activity...");
+					if (BuildConfig.DEBUG) Log.e(TAG, "Unknown setListableName() error code! Exiting activity...");
 					finish();
 					return false;
 			}
