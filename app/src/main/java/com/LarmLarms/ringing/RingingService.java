@@ -171,7 +171,7 @@ public class RingingService extends Service implements MediaPlayer.OnPreparedLis
 				.setCustomBigContentView(notifView)
 				.setCustomHeadsUpContentView(notifView);
 
-		if (alarm.getRingtoneUri() != null) {
+		if (alarm.getRingtoneUri() != null && alarm.getVolume() != 0) {
 			// media player setup
 			mediaPlayer = new MediaPlayer();
 			mediaPlayer.setAudioAttributes(new AudioAttributes.Builder()
