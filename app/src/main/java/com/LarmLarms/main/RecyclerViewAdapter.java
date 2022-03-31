@@ -31,7 +31,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
-import java.util.List;
+import java.util.LinkedList;
+import java.util.Queue;
 
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -78,10 +79,9 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.Recyc
 	private final Messenger dataChangedMessenger;
 	/**
 	 * Any messages that failed to send but need to be sent. Read in the order they were added.
-	 * TODO: could implement as a Queue (LinkedList as a specific implementation?) instead
 	 */
 	@NotNull
-	private final List<Message> unsentMessages;
+	private final Queue<Message> unsentMessages;
 
 	/**
 	 * Creates a new RecyclerViewAdapter with a specific context. Data starts out empty.
@@ -95,7 +95,7 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.Recyc
 
 		dataService = null;
 		dataChangedMessenger = new Messenger(new MsgHandler(this));
-		unsentMessages = new ArrayList<>();
+		unsentMessages = new LinkedList<>();
 	}
 
 	/* ***************************  RecyclerView.Adapter Methods  ***************************** */
@@ -183,12 +183,10 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.Recyc
 				return;
 			}
 
-			// send all unsent messages in the order put there (unless they still don't get sent...)
-			int numMessages = unsentMessages.size();
-			for (int i = 0; i < numMessages; i++) {
+			// send all unsent messages in the order put there (they are lost if they don't get sent)
+			while (!unsentMessages.isEmpty()) {
 				try {
-					messenger.send(unsentMessages.get(0));
-					unsentMessages.remove(0);
+					messenger.send(unsentMessages.remove());
 				}
 				catch (RemoteException e) {
 					if (BuildConfig.DEBUG) Log.e(TAG, "The new messenger no longer exists.");
