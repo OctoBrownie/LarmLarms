@@ -370,7 +370,7 @@ public class ListableEditorActivity extends AppCompatActivity
 				if (msg == null) {
 					// path didn't change but Listable did, so use MSG_SET_LISTABLE
 					msg = Message.obtain(null, AlarmDataService.MSG_SET_LISTABLE);
-					msg.arg1 = listableIndex;
+					data.absIndex = listableIndex;
 				}
 
 				// listable changed, so add to the bundle
@@ -382,6 +382,7 @@ public class ListableEditorActivity extends AppCompatActivity
 			// create MSG_ADD_LISTABLE
 			msg = Message.obtain(null, AlarmDataService.MSG_ADD_LISTABLE);
 			data.listable = workingListable;
+			data.path = listablePath;
 		}
 
 		// if there is no message to send, then just exit the activity

@@ -271,7 +271,7 @@ public final class AlarmGroup implements Listable, Cloneable {
 	/**
 	 * Toggles the folder open state (if it was open, close it; if it was closed, open it).
 	 */
-	void toggleOpen() { isOpen = !isOpen; }
+	public void toggleOpen() { isOpen = !isOpen; }
 
 	/**
 	 * Gets the lookup of the folder. If the folder is open, will return the real lookup, but if it's
@@ -622,7 +622,7 @@ public final class AlarmGroup implements Listable, Cloneable {
 	 * @return the Listable or null if not found
 	 */
 	@Contract(pure = true)
-	ListableInfo getListableInfo(final int absIndex) { return getListableInfo(this, absIndex); }
+	public ListableInfo getListableInfo(final int absIndex) { return getListableInfo(this, absIndex); }
 
 	/**
 	 * Gets the relative listable index at the specified absolute index
@@ -687,11 +687,31 @@ public final class AlarmGroup implements Listable, Cloneable {
 	}
 
 	/**
+	 * Gets the index of the listable within the current folder
+	 * @param name the name of the Listable to look for, shouldn't be null
+	 * @return the index of the first Listable with that name, or -1 if not found
+	 */
+	@Contract(pure = true)
+	int getListableIndex(@Nullable final String name) {
+		if (name == null) {
+			if (BuildConfig.DEBUG) Log.e(TAG, "Couldn't look for the index. Name is null.");
+			return -1;
+		}
+
+		int index = 0;
+		for (Listable l : listables) {
+			if (l.getListableName().equals(name)) return index;
+			index++;
+		}
+		return -1;
+	}
+
+	/**
 	 * Sets a listable in the dataset using its relative index.
 	 * @param relIndex the relative index to set with
 	 * @param item the new Listable to set relIndex to
 	 */
-	private void setListable(final int relIndex, final Listable item) {
+	private void setListable(final int relIndex, @Nullable final Listable item) {
 		if (relIndex < 0 || relIndex >= listables.size()) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "Couldn't set Listable. Index is out of bounds.");
 			return;
@@ -714,7 +734,7 @@ public final class AlarmGroup implements Listable, Cloneable {
 	 * Adds a listable to the end of the current folder.
 	 * @param item the Listable to add to the folder
 	 */
-	void addListable(final Listable item) {
+	void addListable(@Nullable final Listable item) {
 		if (item == null) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "Couldn't set Listable. Item is null.");
 			return;
@@ -764,12 +784,14 @@ public final class AlarmGroup implements Listable, Cloneable {
 	 * doesn't do anything.
 	 * @param absIndex the absolute index of the Listable to set
 	 * @param item the new Listable to set it to
+	 * @return the listable that was deleted, or null if there was none
 	 */
-	void setListableAbs(final int absIndex, final Listable item) {
+	@Nullable
+	Listable setListableAbs(final int absIndex, final Listable item) {
 		ListableInfo i = getListableInfo(absIndex);
 		if (i == null) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "Listable at absolute index " + absIndex + " was not found.");
-			return;
+			return null;
 		}
 
 		if (i.parent == null) {
@@ -779,6 +801,7 @@ public final class AlarmGroup implements Listable, Cloneable {
 			i.parent.setListable(i.relIndex, item);
 		}
 		refreshLookup();
+		return i.listable;
 	}
 
 	/**

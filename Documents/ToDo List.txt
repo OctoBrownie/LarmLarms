@@ -1,6 +1,6 @@
 To do list for new features or bugs to be fixed
 
-CURRENTLY WORKING ON:
+CURRENTLY WORKING ON: scheduling alarms at boot
 
 Make the UI look prettier
 	Some repeat strings don't really look nice (ex: offset strings are always plural + sound funky,
@@ -8,11 +8,9 @@ Make the UI look prettier
 		Use quantity strings
 New ListableEditor features
 	Switches for ringtone and vibration (?)
-	Slider for ringtone volume
 	Customizable vibrations?
 		If we do this, probably want to manage our own Vibrator instead of relying on the
-			NotificationChannel's (can't change per alarm, is editable by user in settings)
-	dialog box + scrollview for days/months (don't have to worry about something similar to flow layout)
+		NotificationChannel's (can't change per alarm, is editable by user in settings)
 Settings activity and some ideas for settings:
 	Uppercase/lowercase for time strings (PM vs pm, currently hardcoded to lowercase)
 	Theme changes
@@ -32,7 +30,6 @@ Remove superfluous methods and unnecessary fields
 	Same with styles or strings or colors or attr or dimens or...
 Silent exiting (+ logging) when encountering issues or raising exceptions?
 	Could also print stack trace
-Could remove the isActive field in edit strings (not REALLY necessary... I think)
 Make more tests
 Could use DiffUtil perhaps for differences between versions of lists (minimal animations)
 Show multiple alarms if they ring near the same time (in a notification? together with the other alarm?)
@@ -48,6 +45,7 @@ Make "offset from now" only a thing in the Editor (the alarms are always offset 
 	change the offset time
 	If it's close enough (within the minute or something), shouldn't change ringTime at all (makes it exact)
 Preview alarm (mostly for volume)?
+Maybe could use a single ListableInfo field for ListableEditor instead of saving to multiple fields
 
 BUGS
 Vibration only occurs right when the alarm starts ringing (doesn't loop)

@@ -535,7 +535,8 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.Recyc
 		}
 
 		/**
-		 * Handles message from the data service. Only handles GET_LISTABLE and DATA_CHANGED messages.
+		 * Handles message from the data service. Handles almost all of the types of messages from
+		 * the data service, except empty listener and folder structure messages.
 		 * @param msg the inbound message
 		 */
 		@Override
@@ -545,10 +546,128 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.Recyc
 				return;
 			}
 
+			ListableInfo info;
+			Listable l;
 			switch (msg.what) {
 				case AlarmDataService.MSG_GET_LISTABLE:
 					handleGetListable(msg);
 					break;
+				case AlarmDataService.MSG_SET_LISTABLE:
+					// assumes new listable has nothing in it if it's an AlarmGroup
+					info = msg.getData().getParcelable(AlarmDataService.BUNDLE_INFO_KEY);
+					if (info == null) {
+						if (BuildConfig.DEBUG) Log.e(TAG, "Info sent back from the data service was null.");
+						return;
+					}
+					l = adapter.data.get(info.absIndex).listable;	// old listable
+					adapter.data.get(info.absIndex).listable = info.listable;
+					if (l != null && l.size() != 1) adapter.notifyItemRangeRemoved(info.absIndex + 1, l.size() - 1);
+					adapter.notifyItemChanged(info.absIndex);
+					break;
+				case AlarmDataService.MSG_ADD_LISTABLE:
+					info = msg.getData().getParcelable(AlarmDataService.BUNDLE_INFO_KEY);
+					if (info == null || info.listable == null) {
+						if (BuildConfig.DEBUG) Log.e(TAG, "Info sent back from the data service was null.");
+						return;
+					}
+					adapter.data.add(info.absIndex, info);
+					adapter.dataSize += info.listable.size();
+					adapter.notifyItemInserted(info.absIndex);
+					break;
+				case AlarmDataService.MSG_MOVE_LISTABLE:
+					info = msg.getData().getParcelable(AlarmDataService.BUNDLE_INFO_KEY);
+					if (info == null) {
+						if (BuildConfig.DEBUG) Log.e(TAG, "Info sent back from the data service was null.");
+						return;
+					}
+
+					l = adapter.data.get(msg.arg1).listable;	// old listable
+					if (l == null) {
+						if (BuildConfig.DEBUG) Log.e(TAG, "Listable in the list was null.");
+						return;
+					}
+
+					if (info.listable == null) info.listable = l;
+					if (l.isAlarm()) {
+						// delete the one at the old index
+						adapter.data.remove(msg.arg1);
+						adapter.notifyItemRemoved(msg.arg1);
+
+						adapter.data.add(info.absIndex, info);
+						adapter.notifyItemInserted(info.absIndex);
+					}
+					else {
+						// delete and add as many as the folder contains
+						int n = l.size();
+						for (int i = 0; i < n; i++) adapter.data.remove(msg.arg1);
+						adapter.dataSize -= n;
+						adapter.notifyItemRangeRemoved(msg.arg1, n);
+
+						n = info.listable.size();
+						adapter.data.add(info.absIndex, info);
+						for (int i = 1; i < n; i++)
+							adapter.data.add(info.absIndex + i,
+									((AlarmGroup) info.listable).getListableInfo(i - 1));
+						adapter.dataSize += n;
+						adapter.notifyItemRangeInserted(info.absIndex, n);
+					}
+					break;
+				case AlarmDataService.MSG_DELETE_LISTABLE:
+					l = adapter.data.get(msg.arg1).listable;
+					if (l == null) {
+						if (BuildConfig.DEBUG) Log.e(TAG, "Listable in the list was null.");
+						return;
+					}
+					if (l.isAlarm()) {
+						adapter.data.remove(msg.arg1);
+						adapter.dataSize -= 1;
+						adapter.notifyItemRemoved(msg.arg1);
+					}
+					else {
+						int n = l.size();
+						for (int i = 0; i < n; i++) adapter.data.remove(msg.arg1);
+						adapter.dataSize -= n;
+						adapter.notifyItemRangeRemoved(msg.arg1, n);
+					}
+					break;
+				case AlarmDataService.MSG_TOGGLE_ACTIVE:
+				case AlarmDataService.MSG_SNOOZE_ALARM:
+				case AlarmDataService.MSG_UNSNOOZE_ALARM:
+				case AlarmDataService.MSG_DISMISS_ALARM:
+					info = msg.getData().getParcelable(AlarmDataService.BUNDLE_INFO_KEY);
+					if (info == null) {
+						if (BuildConfig.DEBUG) Log.e(TAG, "Info sent back from the data service was null.");
+						return;
+					}
+					adapter.data.get(info.absIndex).listable = info.listable;
+					adapter.notifyItemChanged(info.absIndex);
+					break;
+				case AlarmDataService.MSG_TOGGLE_OPEN_FOLDER: {
+					// gotta insert/delete new listables
+					info = adapter.data.get(msg.arg1);
+					if (info.listable == null) {
+						if (BuildConfig.DEBUG) Log.e(TAG, "Info in the list was null.");
+						return;
+					}
+					int n = info.listable.size();
+					((AlarmGroup) info.listable).toggleOpen();
+					n = Math.max(n, info.listable.size());
+
+					if (((AlarmGroup) info.listable).getIsOpen()) {
+						// was closed before, add new ones
+						for (int i = 1; i < n; i++)
+							adapter.data.add(info.absIndex + i,
+									((AlarmGroup) info.listable).getListableInfo(i - 1));
+						adapter.dataSize += n - 1;
+						adapter.notifyItemRangeInserted(msg.arg1 + 1, n);
+					} else {
+						// was open before, delete old ones
+						for (int i = 1; i < n; i++) adapter.data.remove(msg.arg1 + 1);
+						adapter.dataSize -= n - 1;
+						adapter.notifyItemRangeRemoved(msg.arg1 + 1, n);
+					}
+					break;
+				}
 				case AlarmDataService.MSG_DATA_CHANGED:
 					adapter.dataSize = msg.arg1;
 					adapter.refreshListables();
@@ -565,23 +684,16 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.Recyc
 		 * @param msg the inbound MSG_GET_LISTABLE message, shouldn't be null
 		 */
 		private void handleGetListable(@NotNull Message msg) {
-			if (msg.what != AlarmDataService.MSG_GET_LISTABLE) {
-				if (BuildConfig.DEBUG) Log.e(TAG, "Delivered message is not a GET_LISTABLE message. Sending to Handler.");
-				super.handleMessage(msg);
-				return;
-			}
-
 			int absIndex = msg.arg1;
 
 			// what used to be onBindViewHolder()
 			ListableInfo i = msg.getData().getParcelable(AlarmDataService.BUNDLE_INFO_KEY);
 			if (i == null || i.listable == null) {
-				if (BuildConfig.DEBUG) Log.e(TAG, "Listable at absolute index " + absIndex + " does not exist!");
+				if (BuildConfig.DEBUG) Log.e(TAG, "Info sent back from the data service was null.");
 				return;
 			}
 
-			if (i.listable.isAlarm())
-				((Alarm)(i.listable)).setContext(adapter.context);
+			if (i.listable.isAlarm()) ((Alarm)(i.listable)).setContext(adapter.context);
 
 			// assumes the index absIndex is valid
 			adapter.data.set(absIndex, i);
