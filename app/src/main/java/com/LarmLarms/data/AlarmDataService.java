@@ -229,9 +229,9 @@ public class AlarmDataService extends Service {
 	 * alarm hasn't. If the Messenger is already registered, the service will unregister it. When a
 	 * new one is registered, will send a MSG_NEXT_ALARM message immediately to it.
 	 * <br/>
-	 * Outbound: Means the next alarm has changed. The next alarm's time is in the bundle under
-	 * BUNDLE_TIME_KEY and its name is as well under BUNDLE_NAME_KEY. If there is no alarm to ring,
-	 * the bundle will be null.
+	 * Outbound: Shows the next alarm, which might have changed. The next alarm's time is in the
+	 * bundle under BUNDLE_TIME_KEY and its name is as well under BUNDLE_NAME_KEY. If there is no
+	 * alarm to ring, the bundle will be null.
 	 */
 	public static final int MSG_NEXT_ALARM = 15;
 
@@ -295,6 +295,22 @@ public class AlarmDataService extends Service {
 	}
 
 	/**
+	 * Starts the service for a little while. Sets up the alarms.
+	 * @param inIntent the calling intent
+	 * @param flags any flags supplied to the service
+	 * @param startId the id of the service
+	 * @return always START_NOT_STICKY
+	 */
+	@Override
+	public int onStartCommand(@NotNull Intent inIntent, int flags, int startId) {
+		rootFolder = new AlarmGroup(getResources().getString(R.string.root_folder), getAlarmsFromDisk(this));
+
+		createNotificationChannel(this);
+		setNextAlarmToRing(this, rootFolder);
+		return Service.START_NOT_STICKY;
+	}
+
+	/**
 	 * Since the context is valid, fetches alarms from disk, checks for notification channels, and
 	 * sets the next alarm to ring. Starts the handler thread and registers a new messenger to
 	 * handle messages within that thread.
@@ -305,8 +321,8 @@ public class AlarmDataService extends Service {
 	public IBinder onBind(@NotNull Intent intent) {
 		rootFolder = new AlarmGroup(getResources().getString(R.string.root_folder), getAlarmsFromDisk(this));
 
-		createNotificationChannel();
-		if (!intent.getBooleanExtra(EXTRA_NO_UPDATE, false)) setNextAlarmToRing();
+		createNotificationChannel(this);
+		if (!intent.getBooleanExtra(EXTRA_NO_UPDATE, false)) setNextAlarmToRing(this, rootFolder);
 
 		handlerThread.start();
 		Messenger messenger = new Messenger(new MsgHandler(this, handlerThread));
@@ -329,7 +345,7 @@ public class AlarmDataService extends Service {
 	 * @return A populated ArrayList of Listables or an empty one in the case of an error
 	 */
 	@NotNull
-	private static ArrayList<Listable> getAlarmsFromDisk(@NotNull Context context) {
+	static ArrayList<Listable> getAlarmsFromDisk(@NotNull Context context) {
 		ArrayList<Listable> data = new ArrayList<>();
 
 		try {
@@ -516,8 +532,7 @@ public class AlarmDataService extends Service {
 			return;
 		}
 
-		writeAlarmsToDisk(this, rootFolder);
-		setNextAlarmToRing();
+		save();
 
 		Message outMsg = Message.obtain(inMsg);
 		info.listable = info.listable.clone();
@@ -566,8 +581,7 @@ public class AlarmDataService extends Service {
 		absIndex += currFolder.size();
 
 		currFolder.addListable(info.listable);
-		writeAlarmsToDisk(this, rootFolder);
-		setNextAlarmToRing();
+		save();
 
 		Message outMsg = Message.obtain(null, MSG_ADD_LISTABLE);
 		Bundle b = new Bundle();
@@ -637,8 +651,7 @@ public class AlarmDataService extends Service {
 		ListableInfo outInfo = rootFolder.getListableInfo(absIndex);
 		outInfo.listable = info.listable.clone();
 
-		writeAlarmsToDisk(this, rootFolder);
-		setNextAlarmToRing();
+		save();
 		
 		Bundle b = new Bundle();
 		b.putParcelable(BUNDLE_INFO_KEY, outInfo);
@@ -657,8 +670,7 @@ public class AlarmDataService extends Service {
 	 */
 	private void handleDeleteListable(@NotNull Message inMsg) {
 		rootFolder.deleteListableAbs(inMsg.arg1);
-		writeAlarmsToDisk(this, rootFolder);
-		setNextAlarmToRing();
+		save();
 
 		Message outMsg = Message.obtain(null, MSG_DELETE_LISTABLE);
 		outMsg.arg1 = inMsg.arg1;
@@ -686,8 +698,7 @@ public class AlarmDataService extends Service {
 
 		if (l.isAlarm() && ((Alarm) l).getIsSnoozed()) ((Alarm) l).unsnooze();
 
-		writeAlarmsToDisk(this, rootFolder);
-		setNextAlarmToRing();
+		save();
 
 		ListableInfo info = new ListableInfo();
 		info.absIndex = inMsg.arg1;
@@ -744,8 +755,7 @@ public class AlarmDataService extends Service {
 		}
 		((Alarm) l).snooze();
 
-		writeAlarmsToDisk(this, rootFolder);
-		setNextAlarmToRing();
+		save();
 
 		ListableInfo info = new ListableInfo();
 		info.absIndex = inMsg.arg1;
@@ -777,8 +787,7 @@ public class AlarmDataService extends Service {
 		}
 		((Alarm) l).unsnooze();
 
-		writeAlarmsToDisk(this, rootFolder);
-		setNextAlarmToRing();
+		save();
 
 		ListableInfo info = new ListableInfo();
 		info.absIndex = inMsg.arg1;
@@ -828,8 +837,7 @@ public class AlarmDataService extends Service {
 				break;
 		}
 
-		writeAlarmsToDisk(this, rootFolder);
-		setNextAlarmToRing();
+		save();
 
 		ListableInfo info = new ListableInfo();
 		info.absIndex = inMsg.arg1;
@@ -1014,37 +1022,32 @@ public class AlarmDataService extends Service {
 	 * Sets the next alarm to ring. Does not create a new pending intent, rather updates the current
 	 * one. Tells AlarmManager to wake up and call AlarmRingingService. Sends MSG_NEXT_ALARM if
 	 * necessary.
+	 * @param context the current context
+	 * @param rootFolder the folder to look in for the alarms
 	 */
-	private void setNextAlarmToRing() {
+	static Alarm setNextAlarmToRing(@NotNull Context context, @NotNull AlarmGroup rootFolder) {
 		ListableInfo next = getNextRingingAlarm(rootFolder.getListables());
 
-		if ((nextAlarm == null && next.listable == null) ||
-				(nextAlarm != null && nextAlarm.equals(next.listable))) {
-			if (BuildConfig.DEBUG) Log.i(TAG, "The next ringing alarm was the same as before.");
-			return;
-		}
-		nextAlarm = (Alarm) next.listable;
-
-		Intent intent = new Intent(this, RingingService.class);
+		Intent intent = new Intent(context, RingingService.class);
 		if (next.listable != null) {
 			intent.putExtra(RingingService.EXTRA_LISTABLE, next.listable.toEditString());
 			intent.putExtra(RingingService.EXTRA_LISTABLE_INDEX, next.absIndex);
 		}
 
-		AlarmManager manager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+		AlarmManager manager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
 		PendingIntent pendingIntent;
 
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-			pendingIntent = PendingIntent.getForegroundService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+			pendingIntent = PendingIntent.getForegroundService(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 		}
 		else {
-			pendingIntent = PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+			pendingIntent = PendingIntent.getService(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 		}
 
 		if (manager == null || pendingIntent == null) {
 			if (BuildConfig.DEBUG) Log.i(TAG, "Couldn't reach alarm manager or the service to get" +
 					"the pending intent.");
-			return;
+			return (Alarm) next.listable;
 		}
 
 		if (next.listable == null) {
@@ -1058,8 +1061,7 @@ public class AlarmDataService extends Service {
 							pendingIntent),
 					pendingIntent);
 		}
-
-		sendNextAlarm();
+		return (Alarm) next.listable;
 	}
 
 	/* *************************************  Other Methods  *********************************** */
@@ -1135,10 +1137,11 @@ public class AlarmDataService extends Service {
 
 	/**
 	 * Creates a notification channel if the API level requires it. Otherwise, does nothing.
+	 * @param context the current context
 	 */
-	private void createNotificationChannel() {
+	static void createNotificationChannel(@NotNull Context context) {
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-			CharSequence name = getString(R.string.notif_channel_name);
+			CharSequence name = context.getString(R.string.notif_channel_name);
 			int importance = NotificationManager.IMPORTANCE_HIGH;
 			NotificationChannel channel = new NotificationChannel(RingingService.CHANNEL_ID, name, importance);
 			channel.setShowBadge(false);
@@ -1148,13 +1151,22 @@ public class AlarmDataService extends Service {
 			channel.setSound(null, null);
 
 			// Register the channel with the system; can't change the importance or behaviors after this
-			NotificationManager notificationManager = getSystemService(NotificationManager.class);
+			NotificationManager notificationManager = context.getSystemService(NotificationManager.class);
 			if (notificationManager == null) {
 				if (BuildConfig.DEBUG) Log.e(TAG, "System returned a null notification manager.");
 				return;
 			}
 			notificationManager.createNotificationChannel(channel);
 		}
+	}
+
+	/**
+	 * Saves everything to disk and sets the alarms to ring.
+	 */
+	private void save() {
+		writeAlarmsToDisk(this, rootFolder);
+		nextAlarm = setNextAlarmToRing(this, rootFolder);
+		sendNextAlarm();
 	}
 
 	/* ***********************************  Inner Classes  ************************************* */

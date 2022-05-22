@@ -1,6 +1,6 @@
 To do list for new features or bugs to be fixed
 
-CURRENTLY WORKING ON: scheduling alarms at boot
+CURRENTLY WORKING ON:
 
 Make the UI look prettier
 	Some repeat strings don't really look nice (ex: offset strings are always plural + sound funky,
@@ -40,7 +40,7 @@ Between versions, transfer alarms list (so data isn't lost)
 Fade in alarm sounds
 Perhaps the folder animation looks a bit stiff because the folder itself doesn't move
 Reorder alarms within a folder
-Make "offset from now" only a thing in the Editor (the alarms are always offset from a specific time)
+Make "offset from now" only a thing in the Editor (the alarms are ALWAYS offset from a specific time)
 	Makes it so that when you're trying to edit an alarm, it will KEEP the same offset if you don't
 	change the offset time
 	If it's close enough (within the minute or something), shouldn't change ringTime at all (makes it exact)
