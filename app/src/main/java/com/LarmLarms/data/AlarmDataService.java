@@ -295,22 +295,6 @@ public class AlarmDataService extends Service {
 	}
 
 	/**
-	 * Starts the service for a little while. Sets up the alarms.
-	 * @param inIntent the calling intent
-	 * @param flags any flags supplied to the service
-	 * @param startId the id of the service
-	 * @return always START_NOT_STICKY
-	 */
-	@Override
-	public int onStartCommand(@NotNull Intent inIntent, int flags, int startId) {
-		rootFolder = new AlarmGroup(getResources().getString(R.string.root_folder), getAlarmsFromDisk(this));
-
-		createNotificationChannel(this);
-		setNextAlarmToRing(this, rootFolder);
-		return Service.START_NOT_STICKY;
-	}
-
-	/**
 	 * Since the context is valid, fetches alarms from disk, checks for notification channels, and
 	 * sets the next alarm to ring. Starts the handler thread and registers a new messenger to
 	 * handle messages within that thread.
@@ -322,7 +306,8 @@ public class AlarmDataService extends Service {
 		rootFolder = new AlarmGroup(getResources().getString(R.string.root_folder), getAlarmsFromDisk(this));
 
 		createNotificationChannel(this);
-		if (!intent.getBooleanExtra(EXTRA_NO_UPDATE, false)) setNextAlarmToRing(this, rootFolder);
+		if (!intent.getBooleanExtra(EXTRA_NO_UPDATE, false))
+			nextAlarm = setNextAlarmToRing(this, rootFolder);
 
 		handlerThread.start();
 		Messenger messenger = new Messenger(new MsgHandler(this, handlerThread));
