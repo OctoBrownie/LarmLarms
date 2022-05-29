@@ -566,6 +566,7 @@ public class AlarmDataService extends Service {
 		absIndex += currFolder.size();
 
 		currFolder.addListable(info.listable);
+		rootFolder.refreshLookup();
 		save();
 
 		Message outMsg = Message.obtain(null, MSG_ADD_LISTABLE);
@@ -1203,7 +1204,7 @@ public class AlarmDataService extends Service {
 					break;
 				case MSG_ADD_LISTABLE:
 					service.handleAddListable(msg);
-					if (BuildConfig.DEBUG) Log.d(TAG, "Added a listable to the end of the rootFolder.");
+					if (BuildConfig.DEBUG) Log.d(TAG, "Added a listable.");
 					break;
 				case MSG_MOVE_LISTABLE:
 					service.handleMoveListable(msg);
@@ -1211,7 +1212,7 @@ public class AlarmDataService extends Service {
 					break;
 				case MSG_DELETE_LISTABLE:
 					service.handleDeleteListable(msg);
-					if (BuildConfig.DEBUG) Log.d(TAG, "Deleted the listable at the specified absolute index.");
+					if (BuildConfig.DEBUG) Log.d(TAG, "Deleted a listable.");
 					break;
 				case MSG_TOGGLE_ACTIVE:
 					service.handleToggleActive(msg);
@@ -1246,7 +1247,7 @@ public class AlarmDataService extends Service {
 					if (BuildConfig.DEBUG) Log.d(TAG, "Added or removed a next alarm listener.");
 					break;
 				default:
-					if (BuildConfig.DEBUG) Log.e(TAG, "Unknown message type. Sending to Handler's handleMessage().");
+					if (BuildConfig.DEBUG) Log.e(TAG, "Unknown message type.");
 					super.handleMessage(msg);
 					break;
 			}
