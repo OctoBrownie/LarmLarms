@@ -373,16 +373,23 @@ public final class Alarm implements Listable, Cloneable {
 	public void turnOn() { alarmIsActive = true; }
 
 	/**
-	 * Changes the active state of the alarm to off (inactive). 
+	 * Changes the active state of the alarm to off (inactive). Will also unsnooze it if necessary.
 	 */
 	@Override
-	public void turnOff() { alarmIsActive = false; }
+	public void turnOff() {
+		alarmIsActive = false;
+		unsnooze();
+	}
 
 	/**
-	 * Toggles the active state of the alarm (if it's on, turn it off; of it's off, turn it on).
+	 * Toggles the active state of the alarm (if it's on, turn it off; of it's off, turn it on). Will
+	 * also unsnooze it if necessary.
 	 */
 	@Override
-	public void toggleActive() { alarmIsActive = !alarmIsActive; }
+	public void toggleActive() {
+		alarmIsActive = !alarmIsActive;
+		unsnooze();
+	}
 
 	/**
 	 * Sets the active state of the alarm.
@@ -1302,7 +1309,7 @@ public final class Alarm implements Listable, Cloneable {
 	/**
 	 * Snoozes the alarm for 5 minutes. Sets ringTime to five minutes away from original ringTime.
 	 */
-	void snooze() {
+	public void snooze() {
 		alarmSnoozed = true;
 		numSnoozes++;
 		// TODO: change number of minutes to snooze?
@@ -1318,5 +1325,29 @@ public final class Alarm implements Listable, Cloneable {
 
 		ringTime.add(Calendar.MINUTE, -5*numSnoozes);
 		numSnoozes = 0;
+	}
+
+	/**
+	 * Dismisses the current alarm.
+	 */
+	public void dismiss() {
+		unsnooze();
+
+		switch (repeatType) {
+			case Alarm.REPEAT_ONCE_ABS:
+			case Alarm.REPEAT_ONCE_REL:
+				turnOff();
+				break;
+			case Alarm.REPEAT_DAY_WEEKLY:
+			case Alarm.REPEAT_DATE_MONTHLY:
+			case Alarm.REPEAT_DAY_MONTHLY:
+			case Alarm.REPEAT_DATE_YEARLY:
+			case Alarm.REPEAT_OFFSET:
+				updateRingTime();
+				break;
+			default:
+				if (BuildConfig.DEBUG) Log.wtf(TAG, "The alarm repeat type was invalid...?");
+				break;
+		}
 	}
 }

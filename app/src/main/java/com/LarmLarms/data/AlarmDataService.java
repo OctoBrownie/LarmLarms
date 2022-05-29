@@ -82,16 +82,6 @@ public class AlarmDataService extends Service {
 	/* *****************************  Message what field constants  **************************** */
 
 	/**
-	 * Inbound: The client is asking for a specific Listable. The specified Listable's absolute
-	 * index should be in the arg1 field, and the Messenger to reply to should be in the replyTo
-	 * field. Can also take a Handler coming from the getTarget() method, but a Messenger is
-	 * preferred and will be used instead if present.
-	 * <br/>
-	 * Outbound: A response with a ListableInfo from the Service. The ListableInfo is in the bundle, 
-	 * and the absolute index in arg1.
-	 */
-	public static final int MSG_GET_LISTABLE = 0;
-	/**
 	 * Inbound: The client is asking for the entire reduced string list for the dataset. The replyTo
 	 * field should be filled with a messenger.
 	 * <br/>
@@ -106,8 +96,8 @@ public class AlarmDataService extends Service {
 	 * BUNDLE_INFO_KEY for its key). Within the ListableInfo, there should be the new listable and
 	 * its absolute index.
 	 * <br/>
-	 * Outbound: Notifies data change listeners that a listable has been set. In the data bundle,
-	 * the ListableInfo at BUNDLE_INFO_KEY contains only the listable and its absolute index.
+	 * Outbound: Notifies data change listeners that a listable has been set. Output messages are
+	 * of the same form as input messages.
 	 */
 	public static final int MSG_SET_LISTABLE = 2;
 	/**
@@ -115,28 +105,28 @@ public class AlarmDataService extends Service {
 	 * should be in the data bundle (using BUNDLE_INFO_KEY for its key), with the new Listable and
 	 * its specified path. May trigger MSG_DATA_FILLED messages to be sent.
 	 * <br/>
-	 * Outbound: Notifies data change listeners that a listable has been added. In the data bundle,
-	 * the ListableInfo at BUNDLE_INFO_KEY is completely filled.
+	 * Outbound: Notifies data change listeners that a listable has been added. Output messages are
+	 * of the same form as input messages.
 	 */
 	public static final int MSG_ADD_LISTABLE = 3;
 	/**
-	 * Inbound: The client wants to move a Listable to a new folder. arg1 should always be filled with
+	 * Inbound: The client wants to move a Listable to a new folder. arg1 should be filled with
 	 * the old absolute index of the Listable. A ListableInfo should be in the data bundle (using 
 	 * BUNDLE_INFO_KEY for its key). To identify the new position of the listable, the path of
 	 * the parent folder must be in the ListableInfo's path field. Will assume that the new path is
 	 * not inside the listable being moved (if it's an AlarmGroup). If the listable field is not null,
 	 * the listable will be replaced with the new one.
 	 * <br/>
-	 * Outbound: Notifies data change listeners that a listable has been moved. Gives the old
-	 * absolute index in the arg1 field. The ListableInfo in the data bundle is completely filled.
+	 * Outbound: Notifies data change listeners that a listable has been moved. Output messages are
+	 * of the same form as input messages.
 	 */
 	public static final int MSG_MOVE_LISTABLE = 4;
 	/**
 	 * Inbound: The client wants to delete a Listable. The absolute index of the Listable should be
 	 * in the arg1 field. May trigger MSG_DATA_EMPTIED messages to be sent.
 	 * <br/>
-	 * Outbound: Notifies data change listeners that a listable has been deleted. Gives the
-	 * absolute index of the listable in the arg1 field.
+	 * Outbound: Notifies data change listeners that a listable has been deleted. Output messages are
+	 * of the same form as input messages.
 	 */
 	public static final int MSG_DELETE_LISTABLE = 5;
 
@@ -145,40 +135,40 @@ public class AlarmDataService extends Service {
 	 * Listable should be in the arg1 field. May unsnooze the alarm if it was snoozed before and is
 	 * being turned off.
 	 * <br/>
-	 * Outbound: Notifies data change listeners that a listable has been toggled active. Includes
-	 * the listable and its absIndex in the ListableInfo.
+	 * Outbound: Notifies data change listeners that a listable has been toggled active. Output
+	 * messages are of the same form as input messages.
 	 */
 	public static final int MSG_TOGGLE_ACTIVE = 6;
 	/**
 	 * Inbound: The client wants to toggle an AlarmGroup open/closed. The absolute index of the
 	 * AlarmGroup should be in the arg1 field.
 	 * <br/>
-	 * Outbound: Notifies data change listeners that a listable has been opened/closed. Gives the
-	 * absolute index of the listable in the arg1 field.
+	 * Outbound: Notifies data change listeners that a listable has been opened/closed. Output
+	 * messages are of the same form as input messages.
 	 */
 	public static final int MSG_TOGGLE_OPEN_FOLDER = 7;
 	/**
 	 * Inbound: The client wants to snooze an Alarm. The absolute index of the Alarm should be
 	 * in the arg1 field.
 	 * <br/>
-	 * Outbound: Notifies data change listeners that a listable has been snoozed. Includes the
-	 * listable and its absIndex in the ListableInfo.
+	 * Outbound: Notifies data change listeners that a listable has been snoozed. Output messages are
+	 * of the same form as input messages.
 	 */
 	public static final int MSG_SNOOZE_ALARM = 8;
 	/**
 	 * Inbound: The client wants to unsnooze an Alarm. The absolute index of the Alarm should be
 	 * in the arg1 field.
 	 * <br/>
-	 * Outbound: Notifies data change listeners that a listable has been unsnoozed. Includes the
-	 * listable and its absIndex in the ListableInfo.
+	 * Outbound: Notifies data change listeners that a listable has been unsnoozed. Output messages
+	 * are of the same form as input messages.
 	 */
 	public static final int MSG_UNSNOOZE_ALARM = 9;
 	/**
 	 * Inbound: The client wants to dismiss an Alarm. The absolute index of the Alarm should be
 	 * in the arg1 field.
 	 * <br/>
-	 * Outbound: Notifies data change listeners that a listable has been dismissed. Includes the
-	 * listable and its absIndex in the ListableInfo.
+	 * Outbound: Notifies data change listeners that a listable has been dismissed. Output messages
+	 * are of the same form as input messages.
 	 */
 	public static final int MSG_DISMISS_ALARM = 10;
 
@@ -330,7 +320,7 @@ public class AlarmDataService extends Service {
 	 * @return A populated ArrayList of Listables or an empty one in the case of an error
 	 */
 	@NotNull
-	static ArrayList<Listable> getAlarmsFromDisk(@NotNull Context context) {
+	public static ArrayList<Listable> getAlarmsFromDisk(@NotNull Context context) {
 		ArrayList<Listable> data = new ArrayList<>();
 
 		try {
@@ -416,47 +406,6 @@ public class AlarmDataService extends Service {
 	}
 
 	/* ********************************  Handle Message Methods  ******************************** */
-
-	/**
-	 * Responds to an inbound MSG_GET_LISTABLE message. Using the replyTo field from the message,
-	 * sends the requested Listable to that Messenger, or if null sends it to the Handler specified
-	 * by the getTarget() method.
-	 * @see #MSG_GET_LISTABLE
-	 * @param inMsg the inbound MSG_GET_LISTABLE message
-	 */
-	private void handleGetListable(@NotNull Message inMsg) {
-		if (inMsg.replyTo == null && inMsg.getTarget() == null) {
-			if (BuildConfig.DEBUG) Log.e(TAG, "MSG_GET_LISTABLE: Message had a null reply to field and no target.");
-			return;
-		}
-
-		// get listable with abs index in arg1
-		ListableInfo info = rootFolder.getListableInfo(inMsg.arg1);
-		if (info == null || info.listable == null) {
-			if (BuildConfig.DEBUG) Log.e(TAG, "MSG_GET_LISTABLE: Couldn't find the specified listable.");
-			return;
-		}
-		info.listable = info.listable.clone();
-		if (info.parent != null) info.parent = (AlarmGroup) info.parent.clone();
-
-		Message outMsg = Message.obtain(null, MSG_GET_LISTABLE);
-		Bundle bundle = new Bundle();
-		bundle.putParcelable(BUNDLE_INFO_KEY, info);
-		outMsg.setData(bundle);
-		outMsg.arg1 = inMsg.arg1;
-
-		if (inMsg.replyTo != null) {
-			try {
-				inMsg.replyTo.send(outMsg);
-			}
-			catch (RemoteException e) {
-				e.printStackTrace();
-			}
-		}
-		else {
-			inMsg.getTarget().dispatchMessage(outMsg);
-		}
-	}
 
 	/**
 	 * Responds to an inbound MSG_GET_LISTABLE message. Using the replyTo field from the message,
@@ -549,32 +498,14 @@ public class AlarmDataService extends Service {
 			return;
 		}
 
-		String[] folders = info.path.split("/");	// ignore the first one (root folder name)
-		AlarmGroup currFolder = rootFolder;
-
-		// absIndex of the new listable
-		// the -1 counteracts +1 for the root folder (would throw off calculations)
-		int absIndex = -1;
-		for (int i = 1; i < folders.length; i++) {
-			absIndex += currFolder.getListableIndex(folders[i]) + 1;
-			currFolder = currFolder.getFolder(folders[i]);
-			if (currFolder == null) {
-				if (BuildConfig.DEBUG) Log.e(TAG, "MSG_ADD_LISTABLE: Couldn't find the specified path.");
-				return;
-			}
-		}
-		absIndex += currFolder.size();
-
-		currFolder.addListable(info.listable);
-		rootFolder.refreshLookup();
+		rootFolder.addListableAbs(info.listable, info.path);
 		save();
 
 		Message outMsg = Message.obtain(null, MSG_ADD_LISTABLE);
 		Bundle b = new Bundle();
-		ListableInfo outInfo = rootFolder.getListableInfo(absIndex);
-		outInfo.listable = info.listable.clone();
+		info.listable = info.listable.clone();
 
-		b.putParcelable(BUNDLE_INFO_KEY, outInfo);
+		b.putParcelable(BUNDLE_INFO_KEY, info);
 		outMsg.setData(b);
 
 		sendDataChanged(outMsg);
@@ -601,49 +532,15 @@ public class AlarmDataService extends Service {
 			return;
 		}
 
-		String[] folders = info.path.split("/");	// ignore the first one (root folder name)
-		AlarmGroup currFolder = rootFolder;
-
-		// absIndex of the new place of the listable
-		// the -1 counteracts +1 for the root folder (would throw off calculations)
-		int absIndex = -1;
-		for (int i = 1; i < folders.length; i++) {
-			absIndex += currFolder.getListableIndex(folders[i]) + 1;
-			currFolder = currFolder.getFolder(folders[i]);
-			if (currFolder == null) {
-				if (BuildConfig.DEBUG) Log.e(TAG, "MSG_MOVE_LISTABLE: Couldn't find the specified path.");
-				return;
-			}
-		}
-		absIndex += currFolder.size();
-
-		Listable newListable = info.listable;
-		if (newListable == null) {
-			// replace with what's currently at the abs index
-			newListable = rootFolder.deleteListableAbs(inMsg.arg1);
-			if (newListable == null) {
-				if (BuildConfig.DEBUG) Log.e(TAG, "MSG_MOVE_LISTABLE: Couldn't find the listable to move.");
-				return;
-			}
-		}
-		else {
-			// replace with the new listable
-			rootFolder.deleteListableAbs(inMsg.arg1);
-		}
-
-		currFolder.addListable(newListable);
-		rootFolder.refreshLookup();
-
-		ListableInfo outInfo = rootFolder.getListableInfo(absIndex);
-		outInfo.listable = info.listable.clone();
-
+		rootFolder.moveListableAbs(info.listable, info.path, inMsg.arg1);
 		save();
+
+		if (info.listable != null) info.listable = info.listable.clone();
 		
 		Bundle b = new Bundle();
-		b.putParcelable(BUNDLE_INFO_KEY, outInfo);
+		b.putParcelable(BUNDLE_INFO_KEY, info);
 		
-		Message outMsg = Message.obtain(null, MSG_MOVE_LISTABLE);
-		outMsg.arg1 = inMsg.arg1;
+		Message outMsg = Message.obtain(inMsg);
 		outMsg.setData(b);
 		sendDataChanged(outMsg);
 	}
@@ -657,15 +554,10 @@ public class AlarmDataService extends Service {
 	private void handleDeleteListable(@NotNull Message inMsg) {
 		rootFolder.deleteListableAbs(inMsg.arg1);
 		save();
-
-		Message outMsg = Message.obtain(null, MSG_DELETE_LISTABLE);
-		outMsg.arg1 = inMsg.arg1;
-		sendDataChanged(outMsg);
+		sendDataChanged(Message.obtain(inMsg));
 
 		// just deleted the last Listable
-		if (rootFolder.size() == 1) {
-			sendDataEmptied();
-		}
+		if (rootFolder.size() == 1) sendDataEmptied();
 	}
 
 	/**
@@ -681,21 +573,8 @@ public class AlarmDataService extends Service {
 			return;
 		}
 		l.toggleActive();
-
-		if (l.isAlarm() && ((Alarm) l).getIsSnoozed()) ((Alarm) l).unsnooze();
-
 		save();
-
-		ListableInfo info = new ListableInfo();
-		info.absIndex = inMsg.arg1;
-		info.listable = l.clone();
-
-		Bundle b = new Bundle();
-		b.putParcelable(BUNDLE_INFO_KEY, info);
-
-		Message outMsg = Message.obtain(null, MSG_TOGGLE_ACTIVE);
-		outMsg.setData(b);
-		sendDataChanged(outMsg);
+		sendDataChanged(Message.obtain(inMsg));
 	}
 
 	/**
@@ -719,9 +598,7 @@ public class AlarmDataService extends Service {
 		writeAlarmsToDisk(this, rootFolder);
 		rootFolder.refreshLookup();
 
-		Message outMsg = Message.obtain(null, MSG_TOGGLE_OPEN_FOLDER);
-		outMsg.arg1 = inMsg.arg1;
-		sendDataChanged(outMsg);
+		sendDataChanged(Message.obtain(inMsg));
 	}
 
 	/**
@@ -739,20 +616,10 @@ public class AlarmDataService extends Service {
 			if (BuildConfig.DEBUG) Log.e(TAG, "MSG_SNOOZE_ALARM: Listable was a folder.");
 			return;
 		}
+
 		((Alarm) l).snooze();
-
 		save();
-
-		ListableInfo info = new ListableInfo();
-		info.absIndex = inMsg.arg1;
-		info.listable = l.clone();
-
-		Bundle b = new Bundle();
-		b.putParcelable(BUNDLE_INFO_KEY, info);
-
-		Message outMsg = Message.obtain(null, MSG_TOGGLE_ACTIVE);
-		outMsg.setData(b);
-		sendDataChanged(outMsg);
+		sendDataChanged(Message.obtain(inMsg));
 	}
 
 	/**
@@ -771,20 +638,10 @@ public class AlarmDataService extends Service {
 			if (BuildConfig.DEBUG) Log.e(TAG, "MSG_UNSNOOZE_ALARM: Listable was a folder.");
 			return;
 		}
+
 		((Alarm) l).unsnooze();
-
 		save();
-
-		ListableInfo info = new ListableInfo();
-		info.absIndex = inMsg.arg1;
-		info.listable = l.clone();
-
-		Bundle b = new Bundle();
-		b.putParcelable(BUNDLE_INFO_KEY, info);
-
-		Message outMsg = Message.obtain(null, MSG_TOGGLE_ACTIVE);
-		outMsg.setData(b);
-		sendDataChanged(outMsg);
+		sendDataChanged(Message.obtain(inMsg));
 	}
 
 	/**
@@ -804,37 +661,9 @@ public class AlarmDataService extends Service {
 			return;
 		}
 
-		((Alarm) l).unsnooze();
-
-		switch (((Alarm) l).getRepeatType()) {
-			case Alarm.REPEAT_ONCE_ABS:
-			case Alarm.REPEAT_ONCE_REL:
-				l.turnOff();
-				break;
-			case Alarm.REPEAT_DAY_WEEKLY:
-			case Alarm.REPEAT_DATE_MONTHLY:
-			case Alarm.REPEAT_DAY_MONTHLY:
-			case Alarm.REPEAT_DATE_YEARLY:
-			case Alarm.REPEAT_OFFSET:
-				((Alarm) l).updateRingTime();
-				break;
-			default:
-				if (BuildConfig.DEBUG) Log.wtf(TAG, "MSG_DISMISS_ALARM: The alarm repeat type was invalid...?");
-				break;
-		}
-
+		((Alarm) l).dismiss();
 		save();
-
-		ListableInfo info = new ListableInfo();
-		info.absIndex = inMsg.arg1;
-		info.listable = l.clone();
-
-		Bundle b = new Bundle();
-		b.putParcelable(BUNDLE_INFO_KEY, info);
-
-		Message outMsg = Message.obtain(null, MSG_TOGGLE_ACTIVE);
-		outMsg.setData(b);
-		sendDataChanged(outMsg);
+		sendDataChanged(Message.obtain(inMsg));
 	}
 
 	/**
@@ -1113,7 +942,7 @@ public class AlarmDataService extends Service {
 				if (nextAlarm.listable == null || ((Alarm) possible.listable).getAlarmTimeMillis() <
 						((Alarm) nextAlarm.listable).getAlarmTimeMillis()) {
 					nextAlarm.listable = possible.listable;
-					nextAlarm.absIndex = absIndex + possible.absIndex;
+					nextAlarm.absIndex = absIndex + possible.absIndex + 1;
 				}
 				absIndex += l.size();
 			}
@@ -1190,10 +1019,6 @@ public class AlarmDataService extends Service {
 			}
 
 			switch(msg.what) {
-				case MSG_GET_LISTABLE:
-					service.handleGetListable(msg);
-					if (BuildConfig.DEBUG) Log.d(TAG, "Got a listable for a client.");
-					break;
 				case MSG_GET_FOLDERS:
 					service.handleGetFolders(msg);
 					if (BuildConfig.DEBUG) Log.d(TAG, "Got folder structure for a client.");

@@ -257,6 +257,13 @@ public final class AlarmGroup implements Listable, Cloneable {
 	/* ***************************  Getter and Setter Methods  ****************************** */
 
 	/**
+	 * Gets the size of the folder, regardless of whether it's open or not.
+	 * @return the number of items in the folder, including itself (always at least 1)
+	 */
+	@Contract(pure = true)
+	public int realSize() { return totalNumItems; }
+
+	/**
 	 * Gets whether the folder is open or closed.
 	 */
 	@Contract(pure = true)
@@ -300,7 +307,7 @@ public final class AlarmGroup implements Listable, Cloneable {
 	 * within it are null), will not do anything.
 	 * @param listables a new list of listables to use, can be null
 	 */
-	private void setListables(@Nullable ArrayList<Listable> listables) {
+	public void setListables(@Nullable ArrayList<Listable> listables) {
 		if (listables == null) {
 			if (BuildConfig.DEBUG) Log.v(TAG, "New list of Listables is null.");
 			return;
@@ -315,8 +322,6 @@ public final class AlarmGroup implements Listable, Cloneable {
 		this.listables = listables;
 		refreshLookup();
 	}
-
-	// there is no setter for totalNumItems
 
 	/* ************************************  Static Methods  ********************************** */
 
@@ -678,7 +683,7 @@ public final class AlarmGroup implements Listable, Cloneable {
 	 * @return the folder with the given name, or null if not found
 	 */
 	@Nullable @Contract(pure = true)
-	AlarmGroup getFolder(@NotNull final String name) {
+	private AlarmGroup getFolder(@NotNull final String name) {
 		for (Listable l : listables) {
 			if (l instanceof AlarmGroup && l.getListableName().equals(name))
 				return (AlarmGroup) l;
@@ -692,7 +697,7 @@ public final class AlarmGroup implements Listable, Cloneable {
 	 * @return the index of the first Listable with that name, or -1 if not found
 	 */
 	@Contract(pure = true)
-	int getListableIndex(@Nullable final String name) {
+	private int getListableIndex(@Nullable final String name) {
 		if (name == null) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "Couldn't look for the index. Name is null.");
 			return -1;
@@ -769,7 +774,7 @@ public final class AlarmGroup implements Listable, Cloneable {
 	 * @return the Listable or null if not found
 	 */
 	@Nullable
-	Listable getListableAbs(final int absIndex) {
+	public Listable getListableAbs(final int absIndex) {
 		ListableInfo i = getListableInfo(absIndex);
 		if (i == null) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "Listable at absolute index " + absIndex + " was not found.");
@@ -787,7 +792,7 @@ public final class AlarmGroup implements Listable, Cloneable {
 	 * @return the listable that was deleted, or null if there was none
 	 */
 	@Nullable
-	Listable setListableAbs(final int absIndex, final Listable item) {
+	public Listable setListableAbs(final int absIndex, final Listable item) {
 		ListableInfo i = getListableInfo(absIndex);
 		if (i == null) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "Listable at absolute index " + absIndex + " was not found.");
@@ -810,7 +815,7 @@ public final class AlarmGroup implements Listable, Cloneable {
 	 * @return the listable that was deleted or null if there was an error
 	 */
 	@Nullable
-	Listable deleteListableAbs(final int absIndex) {
+	public Listable deleteListableAbs(final int absIndex) {
 		ListableInfo i = getListableInfo(absIndex);
 		if (i == null) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "Listable at absolute index " + absIndex + " was not found.");
@@ -826,6 +831,88 @@ public final class AlarmGroup implements Listable, Cloneable {
 		}
 		refreshLookup();
 		return l;
+	}
+
+	/**
+	 * Adds a listable to this folder at the given path.
+	 * @param listable the info given about the listable to add, should include the listable and path
+	 * @param path the path to add the listable to
+	 * @return the absolute index of the new listable
+	 */
+	public int addListableAbs(@Nullable Listable listable, @Nullable String path) {
+		if (listable == null) {
+			if (BuildConfig.DEBUG) Log.e(TAG, "addListableAbs: The listable specified was null.");
+			return -1;
+		}
+		if (path == null) {
+			if (BuildConfig.DEBUG) Log.e(TAG, "addListableAbs: The path specified was null.");
+			return -1;
+		}
+		String[] folders = path.split("/");	// ignore the first one (this folder)
+		AlarmGroup currFolder = this;
+
+		// absIndex of the new place of the listable
+		// the -1 counteracts +1 for the root folder (would throw off calculations)
+		int absIndex = -1;
+		for (int i = 1; i < folders.length; i++) {
+			absIndex += currFolder.getListableIndex(folders[i]) + 1;
+			currFolder = currFolder.getFolder(folders[i]);
+			if (currFolder == null) {
+				if (BuildConfig.DEBUG) Log.e(TAG, "moveListableAbs: Couldn't find the specified path.");
+				return -1;
+			}
+		}
+		absIndex += currFolder.size();
+
+		currFolder.addListable(listable);
+		refreshLookup();
+		return absIndex;
+	}
+
+	/**
+	 * Moves the listable specified by index to the new path
+	 * @param listable the new listable to replace with (will just use the old one if it's null)
+	 * @param path the path to move the listable to
+	 * @param oldAbsIndex the previous absolute index of the listable
+	 */
+	public int moveListableAbs(@Nullable Listable listable, @Nullable String path, int oldAbsIndex) {
+		if (path == null) {
+			if (BuildConfig.DEBUG) Log.e(TAG, "moveListableAbs: The path specified was null.");
+			return -1;
+		}
+		String[] folders = path.split("/");	// ignore the first one (root folder name)
+		AlarmGroup currFolder = this;
+
+		// absIndex of the new place of the listable
+		// the -1 counteracts +1 for the root folder (would throw off calculations)
+		int absIndex = -1;
+		for (int i = 1; i < folders.length; i++) {
+			absIndex += currFolder.getListableIndex(folders[i]) + 1;
+			currFolder = currFolder.getFolder(folders[i]);
+			if (currFolder == null) {
+				if (BuildConfig.DEBUG) Log.e(TAG, "moveListableAbs: Couldn't find the specified path.");
+				return -1;
+			}
+		}
+		absIndex += currFolder.size();
+
+		Listable newListable = listable;
+		if (newListable == null) {
+			// replace with what's currently at the abs index
+			newListable = deleteListableAbs(oldAbsIndex);
+			if (newListable == null) {
+				if (BuildConfig.DEBUG) Log.e(TAG, "moveListableAbs: Couldn't find the listable to move.");
+				return -1;
+			}
+		}
+		else {
+			// replace with the new listable
+			deleteListableAbs(oldAbsIndex);
+		}
+
+		currFolder.addListable(newListable);
+		refreshLookup();
+		return absIndex;
 	}
 
 	/* ***********************************  Other Methods  ************************************** */
@@ -884,7 +971,7 @@ public final class AlarmGroup implements Listable, Cloneable {
 	/**
 	 * Updates the lookup list and the total number of items in the AlarmGroup.
 	 */
-	void refreshLookup() {
+	public void refreshLookup() {
 		lookup = generateLookup(listables);
 		totalNumItems = getSizeOfList(listables) + 1;
 	}
