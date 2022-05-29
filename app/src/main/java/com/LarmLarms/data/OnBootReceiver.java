@@ -3,7 +3,6 @@ package com.LarmLarms.data;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.util.Log;
 
 import com.LarmLarms.R;
 
@@ -27,7 +26,6 @@ public class OnBootReceiver extends BroadcastReceiver {
 			AlarmGroup rootFolder = new AlarmGroup(context.getResources().getString(R.string.root_folder), AlarmDataService.getAlarmsFromDisk(context));
 			AlarmDataService.createNotificationChannel(context);
 			AlarmDataService.setNextAlarmToRing(context, rootFolder);
-			Log.i(TAG, "Done~");
 		}
 	}
 }
