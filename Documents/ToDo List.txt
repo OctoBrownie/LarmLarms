@@ -50,12 +50,11 @@ Maybe could use a single ListableInfo field for ListableEditor instead of saving
 BUGS
 Vibration only occurs right when the alarm starts ringing (doesn't loop)
 Will stop ringing if the notification is clicked in the notifications bar (a feature, not a bug?)
-It is possible to duplicate an alarm notification if the user interacts with the app during an
+It may be possible to duplicate an alarm notification if the user interacts with the app during an
 	active ringing alarm (like setting or deleting something)
 	Possible solution: make the dataService "silent" and have it not change the PendingIntent until
 		it is not silenced anymore (or it dies and restarts)
 		In that case, the flag would automatically set it to be "silent" from the start
-Animations for folder opening/closing should only be played when the folder in question is clicked
 Sometimes requires you to unlock your phone to turn off the alarm (when off)
 For February 29 in particular, REPEAT_DATE_MONTHLY may fail if it's ONLY February for repeat months
 	Should repeat every 4 years, with some exceptions...
@@ -63,7 +62,4 @@ For February 29 in particular, REPEAT_DATE_MONTHLY may fail if it's ONLY Februar
 If the date doesn't currently exist, will use an incorrect date
 	Ex: trying to set an alarm (like a REPEAT_YEARLY) for Feb 29 on a non-leap year
 	Doesn't check if the date exists when saving to the alarm in the first place (Alarm.ringTime)
-Might not update time of an ONCE_REL alarm if you turn it on and it's overdue (offsets from current
-time correctly but doesn't show it on the alarm itself until something else triggers a refresh)
-If adding a new alarm, doesn't nest it correctly (just becomes the last alarm)
 

@@ -581,6 +581,7 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.Recyc
 						return;
 					}
 					l.toggleActive();
+					((Alarm) l).updateRingTime();
 					adapter.notifyItemChanged(msg.arg1);
 					break;
 				case AlarmDataService.MSG_SNOOZE_ALARM:
