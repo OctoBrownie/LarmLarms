@@ -589,7 +589,7 @@ public class AlarmDataService extends Service {
 			if (BuildConfig.DEBUG) Log.e(TAG, "MSG_TOGGLE_OPEN_FOLDER: Listable index was out of bounds.");
 			return;
 		}
-		else if (l.isAlarm()) {
+		else if (!(l instanceof AlarmGroup)) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "MSG_TOGGLE_OPEN_FOLDER: Listable was an alarm.");
 			return;
 		}
@@ -612,7 +612,7 @@ public class AlarmDataService extends Service {
 			if (BuildConfig.DEBUG) Log.e(TAG, "MSG_SNOOZE_ALARM: Listable index was out of bounds.");
 			return;
 		}
-		else if (!l.isAlarm()) {
+		else if (!(l instanceof Alarm)) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "MSG_SNOOZE_ALARM: Listable was a folder.");
 			return;
 		}
@@ -634,7 +634,7 @@ public class AlarmDataService extends Service {
 			if (BuildConfig.DEBUG) Log.e(TAG, "MSG_UNSNOOZE_ALARM: Listable index was out of bounds.");
 			return;
 		}
-		else if (!l.isAlarm()) {
+		else if (!(l instanceof Alarm)) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "MSG_UNSNOOZE_ALARM: Listable was a folder.");
 			return;
 		}
@@ -656,7 +656,7 @@ public class AlarmDataService extends Service {
 			if (BuildConfig.DEBUG) Log.e(TAG, "MSG_DISMISS_ALARM: Listable index was out of bounds.");
 			return;
 		}
-		else if (!l.isAlarm()) {
+		else if (!(l instanceof Alarm)) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "MSG_DISMISS_ALARM: Listable was a folder.");
 			return;
 		}
@@ -920,7 +920,7 @@ public class AlarmDataService extends Service {
 				continue;
 			}
 
-			if (l.isAlarm()) {
+			if (l instanceof Alarm) {
 				((Alarm) l).updateRingTime();
 
 				// check whether it could be the next listable

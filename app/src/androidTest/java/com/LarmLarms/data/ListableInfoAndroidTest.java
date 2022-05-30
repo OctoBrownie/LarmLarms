@@ -41,11 +41,10 @@ public class ListableInfoAndroidTest {
 
 		assert dest.listable != null;
 		assertEquals("Hello", dest.listable.getListableName());
-		assertEquals(true, dest.listable.isAlarm());
+		assertEquals(true, dest.listable instanceof Alarm);
 
 		assert dest.parent != null;
 		assertEquals("Goodbye", dest.parent.getListableName());
-		assertEquals(false, dest.parent.isAlarm());
 
 		assertEquals(src.path, dest.path);
 	}

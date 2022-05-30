@@ -19,7 +19,7 @@ public class ListableInfo implements Parcelable {
 	/**
 	 * The relative index of a Listable.
 	 */
-	public int relIndex;
+	int relIndex;
 
 	/**
 	 * The number of indents for a Listable.
@@ -29,7 +29,7 @@ public class ListableInfo implements Parcelable {
 	/**
 	 * The absolute index of a Listable's parent. Should be -1 if there is no parent.
 	 */
-	public int absParentIndex;
+	int absParentIndex;
 
 	/**
 	 * Represents a Listable, and implies the other fields are describing this listable. Not
@@ -98,6 +98,7 @@ public class ListableInfo implements Parcelable {
 	/**
 	 * Creator that creates parcels of ListableInfo objects.
 	 */
+	@SuppressWarnings("WeakerAccess")
 	public static final Parcelable.Creator<ListableInfo> CREATOR =
 		new Parcelable.Creator<ListableInfo>() {
 			@NotNull @Contract(pure = true)
@@ -138,7 +139,7 @@ public class ListableInfo implements Parcelable {
 		}
 		else {
 			dest.writeString(listable.toEditString());
-			dest.writeString(Boolean.toString(listable.isAlarm()));
+			dest.writeString(Boolean.toString(listable instanceof Alarm));
 		}
 
 		// parent

@@ -214,7 +214,7 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.Recyc
 		intent.putExtra(ListableEditorActivity.EXTRA_LISTABLE_INFO, info);
 
 		String action;
-		if (info.listable.isAlarm()) { action = ListableEditorActivity.ACTION_EDIT_ALARM; }
+		if (info.listable instanceof Alarm) { action = ListableEditorActivity.ACTION_EDIT_ALARM; }
 		else { action = ListableEditorActivity.ACTION_EDIT_FOLDER; }
 
 		intent.setAction(action);
@@ -435,8 +435,8 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.Recyc
 				return false;
 			}
 
-			RecyclerDialogFrag diag = new RecyclerDialogFrag(this, listable.isAlarm());
-			diag.show(((MainActivity) context).getSupportFragmentManager(), DIALOG_FRAG_TAG);
+			RecyclerDialogFrag dialog = new RecyclerDialogFrag(this, listable instanceof Alarm);
+			dialog.show(((MainActivity) context).getSupportFragmentManager(), DIALOG_FRAG_TAG);
 			return true;
 		}
 
@@ -458,7 +458,7 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.Recyc
 			getOnSwitch().setChecked(l.isActive());
 
 			listable = l;
-			if (l.isAlarm()) {
+			if (l instanceof Alarm) {
 				getImageView().setVisibility(View.GONE);
 				getTimeText().setVisibility(View.VISIBLE);
 			}
@@ -571,7 +571,7 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.Recyc
 						return;
 					}
 					adapter.data.deleteListableAbs(msg.arg1);
-					if (l.isAlarm()) adapter.notifyItemRemoved(msg.arg1);
+					if (l instanceof Alarm) adapter.notifyItemRemoved(msg.arg1);
 					else adapter.notifyItemRangeRemoved(msg.arg1, l.size());
 					break;
 				case AlarmDataService.MSG_TOGGLE_ACTIVE:

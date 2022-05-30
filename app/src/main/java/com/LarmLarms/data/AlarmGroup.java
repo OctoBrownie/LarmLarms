@@ -93,13 +93,6 @@ public final class AlarmGroup implements Listable, Cloneable {
 	/* *******************************  Methods from Listable  ****************************** */
 
 	/**
-	 * Returns whether this is an alarm or not.
-	 * @return always returns false
-	 */
-	@Override @Contract(pure = true)
-	public boolean isAlarm() { return false; }
-
-	/**
 	 * Gets the name of the listable.
 	 * @return the name, will not be null
 	 */
@@ -485,7 +478,7 @@ public final class AlarmGroup implements Listable, Cloneable {
 				if (BuildConfig.DEBUG) Log.e(TAG, "Listable within given data was null.");
 				return new ArrayList<>();
 			}
-			if (!l.isAlarm()) { ((AlarmGroup) l).refreshLookup(); }
+			if (l instanceof AlarmGroup) { ((AlarmGroup) l).refreshLookup(); }
 
 			currIndex += l.size();
 		}
@@ -961,7 +954,7 @@ public final class AlarmGroup implements Listable, Cloneable {
 		prefix += storeString;
 
 		for (Listable child : parent.listables) {
-			if (!child.isAlarm()) {
+			if (child instanceof AlarmGroup) {
 				pathList.addAll(toPathList(prefix, (AlarmGroup) child));
 			}
 		}

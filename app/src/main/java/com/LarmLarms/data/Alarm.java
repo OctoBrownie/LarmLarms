@@ -241,13 +241,6 @@ public final class Alarm implements Listable, Cloneable {
 	/* ********************************  Methods from Listable  ********************************** */
 
 	/**
-	 * Returns whether this is an alarm or not. 
-	 * @return always returns true 
-	 */
-	@Override @Contract(pure = true)
-	public boolean isAlarm() { return true; }
-
-	/**
 	 * Returns the name of the alarm. 
 	 * @return the name, will not be null 
 	 */

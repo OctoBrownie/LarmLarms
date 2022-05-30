@@ -11,13 +11,6 @@ import org.jetbrains.annotations.Nullable;
  */
 public interface Listable {
 	/**
-	 * Differentiates between alarms and folders.
-	 * @return whether the Listable is an alarm or folder
-	 */
-	@Contract(pure = true)
-	boolean isAlarm();
-
-	/**
 	 * Gets the name of the listable.
 	 * @return the name of the listable, cannot be null 
 	 */
