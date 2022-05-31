@@ -405,6 +405,13 @@ public final class Alarm implements Listable, Cloneable {
 	}
 
 	/**
+	 * Returns the size of the Listable. Alarms don't contain child listables and never collapses,
+	 * so this always returns 1.
+	 */
+	@Override @Contract(pure = true)
+	public int visibleSize() { return 1; }
+
+	/**
 	 * Returns the size of the Listable. Alarms don't contain child listables, so this always
 	 * returns 1.
 	 */

@@ -460,7 +460,7 @@ public class AlarmDataService extends Service {
 			return;
 		}
 
-		Listable removed = rootFolder.setListableAbs(info.absIndex, info.listable);
+		Listable removed = rootFolder.setListableAbs(info.absIndex, info.listable, true);
 		if (removed == null) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "MSG_SET_LISTABLE: There was no listable to set.");
 			return;
@@ -498,7 +498,7 @@ public class AlarmDataService extends Service {
 			return;
 		}
 
-		rootFolder.addListableAbs(info.listable, info.path);
+		rootFolder.addListableAbs(info.listable, info.path, true);
 		save();
 
 		Message outMsg = Message.obtain(null, MSG_ADD_LISTABLE);
@@ -511,7 +511,7 @@ public class AlarmDataService extends Service {
 		sendDataChanged(outMsg);
 
 		// just added the first new Listable
-		if (rootFolder.size() == 2) {
+		if (rootFolder.visibleSize() == 2) {
 			sendDataFilled();
 		}
 	}
@@ -532,7 +532,7 @@ public class AlarmDataService extends Service {
 			return;
 		}
 
-		rootFolder.moveListableAbs(info.listable, info.path, inMsg.arg1);
+		rootFolder.moveListableAbs(info.listable, info.path, inMsg.arg1, true);
 		save();
 
 		if (info.listable != null) info.listable = info.listable.clone();
@@ -552,12 +552,12 @@ public class AlarmDataService extends Service {
 	 * @param inMsg the inbound MSG_DELETE_LISTABLE message
 	 */
 	private void handleDeleteListable(@NotNull Message inMsg) {
-		rootFolder.deleteListableAbs(inMsg.arg1);
+		rootFolder.deleteListableAbs(inMsg.arg1, true);
 		save();
 		sendDataChanged(Message.obtain(inMsg));
 
 		// just deleted the last Listable
-		if (rootFolder.size() == 1) sendDataEmptied();
+		if (rootFolder.visibleSize() == 1) sendDataEmptied();
 	}
 
 	/**
@@ -567,7 +567,7 @@ public class AlarmDataService extends Service {
 	 * @param inMsg the inbound MSG_TOGGLE_ACTIVE message
 	 */
 	private void handleToggleActive(@NotNull Message inMsg) {
-		Listable l = rootFolder.getListableAbs(inMsg.arg1);
+		Listable l = rootFolder.getListableAbs(inMsg.arg1, true);
 		if (l == null) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "MSG_TOGGLE_ACTIVE: Index of listable was out of bounds.");
 			return;
@@ -584,7 +584,7 @@ public class AlarmDataService extends Service {
 	 * @param inMsg the inbound MSG_TOGGLE_OPEN_FOLDER message
 	 */
 	private void handleToggleOpen(@NotNull Message inMsg) {
-		Listable l = rootFolder.getListableAbs(inMsg.arg1);
+		Listable l = rootFolder.getListableAbs(inMsg.arg1, true);
 		if (l == null) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "MSG_TOGGLE_OPEN_FOLDER: Listable index was out of bounds.");
 			return;
@@ -596,7 +596,7 @@ public class AlarmDataService extends Service {
 		((AlarmGroup) l).toggleOpen();
 
 		writeAlarmsToDisk(this, rootFolder);
-		rootFolder.refreshLookup();
+		rootFolder.refreshLookups();
 
 		sendDataChanged(Message.obtain(inMsg));
 	}
@@ -607,7 +607,7 @@ public class AlarmDataService extends Service {
 	 * @param inMsg the inbound MSG_SNOOZE_ALARM message
 	 */
 	private void handleSnoozeAlarm(@NotNull Message inMsg) {
-		Listable l = rootFolder.getListableAbs(inMsg.arg1);
+		Listable l = rootFolder.getListableAbs(inMsg.arg1, false);
 		if (l == null) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "MSG_SNOOZE_ALARM: Listable index was out of bounds.");
 			return;
@@ -629,7 +629,7 @@ public class AlarmDataService extends Service {
 	 * @param inMsg the inbound MSG_UNSNOOZE_ALARM message
 	 */
 	private void handleUnsnoozeAlarm(@NotNull Message inMsg) {
-		Listable l = rootFolder.getListableAbs(inMsg.arg1);
+		Listable l = rootFolder.getListableAbs(inMsg.arg1, false);
 		if (l == null) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "MSG_UNSNOOZE_ALARM: Listable index was out of bounds.");
 			return;
@@ -651,7 +651,7 @@ public class AlarmDataService extends Service {
 	 * @param inMsg the inbound MSG_DISMISS_ALARM message
 	 */
 	private void handleDismissAlarm(@NotNull Message inMsg) {
-		Listable l = rootFolder.getListableAbs(inMsg.arg1);
+		Listable l = rootFolder.getListableAbs(inMsg.arg1, false);
 		if (l == null) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "MSG_DISMISS_ALARM: Listable index was out of bounds.");
 			return;
@@ -684,7 +684,7 @@ public class AlarmDataService extends Service {
 		if (index == -1) {
 			dataChangeListeners.add(inMsg.replyTo);
 			Message outMsg = Message.obtain(null, MSG_DATA_CHANGED);
-			outMsg.arg1 = rootFolder.size() - 1;
+			outMsg.arg1 = rootFolder.visibleSize() - 1;
 			sendDataChanged(outMsg);
 		}
 		else dataChangeListeners.remove(index);
@@ -709,7 +709,7 @@ public class AlarmDataService extends Service {
 			emptyListeners.add(inMsg.replyTo);
 
 			// send a DATA_EMPTIED or DATA_FILLED to the new listener
-			if (rootFolder.size() == 1)
+			if (rootFolder.visibleSize() == 1)
 				sendDataEmptied(inMsg.replyTo);
 			else
 				sendDataFilled(inMsg.replyTo);
@@ -901,16 +901,14 @@ public class AlarmDataService extends Service {
 	 * Searches for the next Alarm that will ring. Returns the listable and absolute index of the
 	 * listable (within the current dataset) within a ListableInfo struct.
 	 * @param data the dataset to look through, cannot be null
-	 * @return a ListableInfo with alarm and absolute index filled correctly, alarm can be null if
-	 * there is no active alarm within the data given
+	 * @return a ListableInfo with alarm and absolute index (real index) filled correctly, alarm can
+	 * be null if there is no active alarm within the data given
 	 */
 	@NotNull
 	private static ListableInfo getNextRingingAlarm(@NotNull ArrayList<Listable> data) {
 		ListableInfo nextAlarm = new ListableInfo();
-		// represents the current listable being searched
-		Listable l;
-		// represents the absolute index currently being searched
-		int absIndex = 0;
+		Listable l;				// represents the current listable being searched
+		int absIndex = 0;		// represents the absolute index currently being searched (real index)
 
 		for (int i = 0; i < data.size(); i++) {
 			l = data.get(i);

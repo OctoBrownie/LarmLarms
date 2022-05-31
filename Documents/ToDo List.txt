@@ -1,6 +1,6 @@
 To do list for new features or bugs to be fixed
 
-CURRENTLY WORKING ON: creating a difference between visible size/lookups/etc and actual for listables
+CURRENTLY WORKING ON: requesting & releasing audio focus
 
 Make the UI look prettier
 	Some repeat strings don't really look nice (ex: offset strings are always plural + sound funky,

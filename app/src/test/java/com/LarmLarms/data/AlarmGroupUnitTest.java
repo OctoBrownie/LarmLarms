@@ -38,15 +38,15 @@ public class AlarmGroupUnitTest {
 		anotherFolder.addListable(new Alarm(null, "alarm 5"));
 		folder.addListable(anotherFolder);
 
-		assertEquals(-1, AlarmGroup.findOuterListableIndex(folder.getLookup(), -1, folder.size() - 1));
-		assertEquals(0, AlarmGroup.findOuterListableIndex(folder.getLookup(), 0, folder.size() - 1));
-		assertEquals(1, AlarmGroup.findOuterListableIndex(folder.getLookup(), 1, folder.size() - 1));
-		assertEquals(2, AlarmGroup.findOuterListableIndex(folder.getLookup(), 2, folder.size() - 1));
-		assertEquals(2, AlarmGroup.findOuterListableIndex(folder.getLookup(), 3, folder.size() - 1));
-		assertEquals(3, AlarmGroup.findOuterListableIndex(folder.getLookup(), 4, folder.size() - 1));
-		assertEquals(4, AlarmGroup.findOuterListableIndex(folder.getLookup(), 5, folder.size() - 1));
-		assertEquals(4, AlarmGroup.findOuterListableIndex(folder.getLookup(), 6, folder.size() - 1));
-		assertEquals(-1, AlarmGroup.findOuterListableIndex(folder.getLookup(), 7, folder.size() - 1));
+		assertEquals(-1, AlarmGroup.findOuterListableIndex(folder.getVisibleLookup(), -1, folder.visibleSize() - 1));
+		assertEquals(0, AlarmGroup.findOuterListableIndex(folder.getVisibleLookup(), 0, folder.visibleSize() - 1));
+		assertEquals(1, AlarmGroup.findOuterListableIndex(folder.getVisibleLookup(), 1, folder.visibleSize() - 1));
+		assertEquals(2, AlarmGroup.findOuterListableIndex(folder.getVisibleLookup(), 2, folder.visibleSize() - 1));
+		assertEquals(2, AlarmGroup.findOuterListableIndex(folder.getVisibleLookup(), 3, folder.visibleSize() - 1));
+		assertEquals(3, AlarmGroup.findOuterListableIndex(folder.getVisibleLookup(), 4, folder.visibleSize() - 1));
+		assertEquals(4, AlarmGroup.findOuterListableIndex(folder.getVisibleLookup(), 5, folder.visibleSize() - 1));
+		assertEquals(4, AlarmGroup.findOuterListableIndex(folder.getVisibleLookup(), 6, folder.visibleSize() - 1));
+		assertEquals(-1, AlarmGroup.findOuterListableIndex(folder.getVisibleLookup(), 7, folder.visibleSize() - 1));
 	}
 
 	@Test
@@ -70,113 +70,33 @@ public class AlarmGroupUnitTest {
 		folder.addListable(innerFolder);
 		folder.addListable(new Alarm(null, "alarm 4"));
 
-		Listable testListable = folder.getListableAbs(-1);
+		Listable testListable = folder.getListableAbs(-1, false);
 		assert testListable != null;
 		assertEquals(null, testListable);
 
-		testListable = folder.getListableAbs(0);
+		testListable = folder.getListableAbs(0, false);
 		assert testListable != null;
 		assertEquals("alarm 1", testListable.getListableName());
 
-		testListable = folder.getListableAbs(1);
+		testListable = folder.getListableAbs(1, false);
 		assert testListable != null;
 		assertEquals("alarm 2", testListable.getListableName());
 
-		testListable = folder.getListableAbs(2);
+		testListable = folder.getListableAbs(2, false);
 		assert testListable != null;
 		assertEquals("inner", testListable.getListableName());
 
-		testListable = folder.getListableAbs(3);
+		testListable = folder.getListableAbs(3, false);
 		assert testListable != null;
 		assertEquals("alarm 3", testListable.getListableName());
 
-		testListable = folder.getListableAbs(4);
+		testListable = folder.getListableAbs(4, false);
 		assert testListable != null;
 		assertEquals("alarm 4", testListable.getListableName());
 
-		testListable = folder.getListableAbs(5);
+		testListable = folder.getListableAbs(5, false);
 		assert testListable != null;
 		assertEquals(null, testListable);
-	}
-
-	@Test
-	public void findIndentsTest() throws Exception {
-		/*
-		 * FOLDER STRUCTURE:
-		 * test
-		 * 	alarm 1
-		 * 	alarm 2
-		 * 	inner
-		 * 		alarm 3
-		 * 		alarm 4
-		 * 		double double
-		 * 			alarm 5
-		 *	 		alarm 6
-		 * 			alarm 7
-		 * 	alarm 8
-		 */
-		AlarmGroup folder = new AlarmGroup("test");
-		folder.addListable(new Alarm(null, "alarm 1"));
-		folder.addListable(new Alarm(null, "alarm 2"));
-
-		AlarmGroup innerFolder = new AlarmGroup("inner");
-		innerFolder.addListable(new Alarm(null, "alarm 3"));
-		innerFolder.addListable(new Alarm(null, "alarm 4"));
-
-		AlarmGroup doubleInner = new AlarmGroup("double double");
-		doubleInner.addListable(new Alarm(null, "alarm 5"));
-		doubleInner.addListable(new Alarm(null, "alarm 6"));
-		doubleInner.addListable(new Alarm(null, "alarm 7"));
-
-		innerFolder.addListable(doubleInner);
-		folder.addListable(innerFolder);
-		folder.addListable(new Alarm(null, "alarm 8"));
-
-		assertEquals(-1, folder.getNumIndents(-1));
-		assertEquals(0, folder.getNumIndents(0));
-		assertEquals(0, folder.getNumIndents(1));
-		assertEquals(0, folder.getNumIndents(2));
-		assertEquals(1, folder.getNumIndents(3));
-		assertEquals(1, folder.getNumIndents(4));
-		assertEquals(1, folder.getNumIndents(5));
-		assertEquals(2, folder.getNumIndents(6));
-		assertEquals(2, folder.getNumIndents(7));
-		assertEquals(2, folder.getNumIndents(8));
-		assertEquals(0, folder.getNumIndents(9));
-		assertEquals(-1, folder.getNumIndents(10));
-	}
-
-	@Test
-	public void getRelIndexTest() throws Exception {
-		AlarmGroup folder = new AlarmGroup("test");
-		folder.addListable(new Alarm(null, "alarm 1"));		// index 0
-		folder.addListable(new Alarm(null, "alarm 2"));		// index 1
-
-		AlarmGroup innerFolder = new AlarmGroup("inner");	// index 2
-		innerFolder.addListable(new Alarm(null, "alarm 3"));		// index 3
-		innerFolder.addListable(new Alarm(null, "alarm 4"));		// index 4
-
-		AlarmGroup doubleInner = new AlarmGroup("double double");	// index 5
-		doubleInner.addListable(new Alarm(null, "alarm 5"));				// index 6
-		doubleInner.addListable(new Alarm(null, "alarm 6"));				// index 7
-		doubleInner.addListable(new Alarm(null, "alarm 7"));				// index 8
-
-		innerFolder.addListable(doubleInner);
-		folder.addListable(innerFolder);
-		folder.addListable(new Alarm(null, "alarm 8"));		// index 9
-
-		assertEquals(-1, folder.getListableIndexAtAbsIndex(-1));
-		assertEquals(0, folder.getListableIndexAtAbsIndex(0));
-		assertEquals(1, folder.getListableIndexAtAbsIndex(1));
-		assertEquals(2, folder.getListableIndexAtAbsIndex(2));
-		assertEquals(0, folder.getListableIndexAtAbsIndex(3));
-		assertEquals(1, folder.getListableIndexAtAbsIndex(4));
-		assertEquals(2, folder.getListableIndexAtAbsIndex(5));
-		assertEquals(0, folder.getListableIndexAtAbsIndex(6));
-		assertEquals(1, folder.getListableIndexAtAbsIndex(7));
-		assertEquals(2, folder.getListableIndexAtAbsIndex(8));
-		assertEquals(3, folder.getListableIndexAtAbsIndex(9));
-		assertEquals(-1, folder.getListableIndexAtAbsIndex(10));
 	}
 
 	/* ********************************  Basic Function Tests  ***************************** */
@@ -189,29 +109,29 @@ public class AlarmGroupUnitTest {
 	public void addTest() throws Exception {
 		AlarmGroup folder = new AlarmGroup("test");
 		ArrayList<Integer> lookupAnswer = new ArrayList<>();
-		assertEquals(true, lookupAnswer.equals(folder.getLookup()));
+		assertEquals(true, lookupAnswer.equals(folder.getVisibleLookup()));
 
 		folder.addListable(new Alarm(null, "alarm 1"));
-		assertEquals(2, folder.size());
+		assertEquals(2, folder.visibleSize());
 		lookupAnswer.add(0);
-		assertEquals(true, lookupAnswer.equals(folder.getLookup()));
+		assertEquals(true, lookupAnswer.equals(folder.getVisibleLookup()));
 
 		folder.addListable(new Alarm(null, "alarm 2"));
-		assertEquals(3, folder.size());
+		assertEquals(3, folder.visibleSize());
 		lookupAnswer.add(1);
-		assertEquals(true, lookupAnswer.equals(folder.getLookup()));
+		assertEquals(true, lookupAnswer.equals(folder.getVisibleLookup()));
 
 		AlarmGroup innerFolder = new AlarmGroup("inner");
 		innerFolder.addListable(new Alarm(null, "alarm 3"));
 		folder.addListable(innerFolder);
-		assertEquals(5, folder.size());
+		assertEquals(5, folder.visibleSize());
 		lookupAnswer.add(2);
-		assertEquals(true, lookupAnswer.equals(folder.getLookup()));
+		assertEquals(true, lookupAnswer.equals(folder.getVisibleLookup()));
 
 		folder.addListable(new Alarm(null, "alarm 4"));
-		assertEquals(6, folder.size());
+		assertEquals(6, folder.visibleSize());
 		lookupAnswer.add(4);
-		assertEquals(true, lookupAnswer.equals(folder.getLookup()));
+		assertEquals(true, lookupAnswer.equals(folder.getVisibleLookup()));
 
 		Listable testListable = folder.getListable(0);
 		assert testListable != null;
@@ -250,7 +170,7 @@ public class AlarmGroupUnitTest {
 		answer.add(1);
 		answer.add(2);
 		answer.add(4);
-		ArrayList<Integer> tester = folder.getLookup();
+		ArrayList<Integer> tester = folder.getVisibleLookup();
 
 		assertEquals(true, answer.equals(tester));
 	}

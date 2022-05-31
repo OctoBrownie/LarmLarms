@@ -113,7 +113,7 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.Recyc
 	 */
 	@Override
 	public void onBindViewHolder (@NotNull RecyclerViewHolder holder, final int position) {
-		ListableInfo i = data.getListableInfo(position);
+		ListableInfo i = data.getListableInfo(position, true);
 		if (i == null || i.listable == null) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "The listable to display doesn't exist as far as the adapter knows.");
 			return;
@@ -121,7 +121,7 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.Recyc
 
 		holder.changeListable(i.listable);
 
-		// TODO: max indentation based on screen size?
+		// TODO: max indentation based on screen visibleSize?
 		float dp = i.numIndents * context.getResources().getDimension(R.dimen.marginIncrement);
 		ViewGroup.MarginLayoutParams params =
 				new ViewGroup.MarginLayoutParams(holder.getCardView().getLayoutParams());
@@ -139,7 +139,7 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.Recyc
 	 * @return number of items
 	 */
 	@Override
-	public int getItemCount() { return data.size() - 1; }
+	public int getItemCount() { return data.visibleSize() - 1; }
 
 	/* ******************************  Getter and Setter Methods  ***************************** */
 
@@ -205,7 +205,7 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.Recyc
 	void editExistingListable(final int index) {
 		// start ListableEditor
 		Intent intent = new Intent(context, ListableEditorActivity.class);
-		ListableInfo info = data.getListableInfo(index);
+		ListableInfo info = data.getListableInfo(index, true);
 		if (info == null || info.listable == null) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "The listable is null so it cannot be edited.");
 			return;
@@ -514,6 +514,7 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.Recyc
 
 			ListableInfo info;
 			Listable l;
+			int index;
 			switch (msg.what) {
 				case AlarmDataService.MSG_SET_LISTABLE:
 					// assumes new listable has nothing in it if it's an AlarmGroup
@@ -522,23 +523,26 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.Recyc
 						if (BuildConfig.DEBUG) Log.e(TAG, "Info sent back from the data service was null.");
 						return;
 					}
-					l = adapter.data.getListableAbs(info.absIndex);	// old listable
-					adapter.data.setListableAbs(info.absIndex, info.listable);
-					if (l != null && l.size() != 1) adapter.notifyItemRangeRemoved(info.absIndex + 1, l.size() - 1);
+					l = adapter.data.getListableAbs(info.absIndex, true);	// old listable
+					adapter.data.setListableAbs(info.absIndex, info.listable, true);
+					if (l != null && l.visibleSize() != 1) adapter.notifyItemRangeRemoved(info.absIndex + 1, l.visibleSize() - 1);
 					adapter.notifyItemChanged(info.absIndex);
 					break;
-				case AlarmDataService.MSG_ADD_LISTABLE: {
+				case AlarmDataService.MSG_ADD_LISTABLE:
 					info = msg.getData().getParcelable(AlarmDataService.BUNDLE_INFO_KEY);
 					if (info == null || info.listable == null) {
 						if (BuildConfig.DEBUG)
 							Log.e(TAG, "Info sent back from the data service was null.");
 						return;
 					}
-					int newIndex = adapter.data.addListableAbs(info.listable, info.path);
-					adapter.notifyItemInserted(newIndex);
+					index = adapter.data.addListableAbs(info.listable, info.path, true);
+					if (index == -1) {
+						if (BuildConfig.DEBUG) Log.e(TAG, "Listable couldn't be found.");
+						return;
+					}
+					adapter.notifyItemInserted(index);
 					break;
-				}
-				case AlarmDataService.MSG_MOVE_LISTABLE: {
+				case AlarmDataService.MSG_MOVE_LISTABLE:
 					info = msg.getData().getParcelable(AlarmDataService.BUNDLE_INFO_KEY);
 					if (info == null) {
 						if (BuildConfig.DEBUG)
@@ -546,36 +550,38 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.Recyc
 						return;
 					}
 
-					l = adapter.data.getListableAbs(msg.arg1);    // old listable
+					l = adapter.data.getListableAbs(msg.arg1, true);    // old listable
 					if (l == null) {
 						if (BuildConfig.DEBUG) Log.e(TAG, "Listable in the list was null.");
 						return;
 					}
 
 					// move stuff
-					int newIndex = adapter.data.moveListableAbs(info.listable, info.path, msg.arg1);
+					index = adapter.data.moveListableAbs(info.listable, info.path, msg.arg1, true);
+					if (index == -1) {
+						if (BuildConfig.DEBUG) Log.e(TAG, "Listable couldn't be found.");
+						return;
+					}
 					if (info.listable == null) info.listable = l;
 
 					// notify adapter that things have moved
-					if (l.size() == 1) adapter.notifyItemRemoved(msg.arg1);
-					else adapter.notifyItemRangeRemoved(msg.arg1, l.size());
+					if (l.visibleSize() == 1) adapter.notifyItemRemoved(msg.arg1);
+					else adapter.notifyItemRangeRemoved(msg.arg1, l.visibleSize());
 
-					if (info.listable.size() == 1) adapter.notifyItemInserted(newIndex);
-					else adapter.notifyItemRangeInserted(newIndex, info.listable.size());
+					if (info.listable.visibleSize() == 1) adapter.notifyItemInserted(index);
+					else adapter.notifyItemRangeInserted(index, info.listable.visibleSize());
 					break;
-				}
 				case AlarmDataService.MSG_DELETE_LISTABLE:
-					l = adapter.data.getListableAbs(msg.arg1);
+					l = adapter.data.deleteListableAbs(msg.arg1, true);
 					if (l == null) {
 						if (BuildConfig.DEBUG) Log.e(TAG, "Listable in the list was null.");
 						return;
 					}
-					adapter.data.deleteListableAbs(msg.arg1);
 					if (l instanceof Alarm) adapter.notifyItemRemoved(msg.arg1);
-					else adapter.notifyItemRangeRemoved(msg.arg1, l.size());
+					else adapter.notifyItemRangeRemoved(msg.arg1, l.visibleSize());
 					break;
 				case AlarmDataService.MSG_TOGGLE_ACTIVE:
-					l = adapter.data.getListableAbs(msg.arg1);
+					l = adapter.data.getListableAbs(msg.arg1, true);
 					if (l == null) {
 						if (BuildConfig.DEBUG) Log.e(TAG, "Listable in the list was null.");
 						return;
@@ -585,44 +591,47 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.Recyc
 					adapter.notifyItemChanged(msg.arg1);
 					break;
 				case AlarmDataService.MSG_SNOOZE_ALARM:
-					l = adapter.data.getListableAbs(msg.arg1);
+					l = adapter.data.getListableAbs(msg.arg1, false);
 					if (l == null || !(l instanceof Alarm)) {
 						if (BuildConfig.DEBUG) Log.e(TAG, "Listable in the list was invalid.");
 						return;
 					}
 					((Alarm) l).snooze();
-					adapter.notifyItemChanged(msg.arg1);
+					index = adapter.data.realToVisibleIndex(msg.arg1);
+					adapter.notifyItemChanged(index);
 					break;
 				case AlarmDataService.MSG_UNSNOOZE_ALARM:
-					l = adapter.data.getListableAbs(msg.arg1);
+					l = adapter.data.getListableAbs(msg.arg1, false);
 					if (l == null || !(l instanceof Alarm)) {
 						if (BuildConfig.DEBUG) Log.e(TAG, "Listable in the list was invalid.");
 						return;
 					}
 					((Alarm) l).unsnooze();
-					adapter.notifyItemChanged(msg.arg1);
+					index = adapter.data.realToVisibleIndex(msg.arg1);
+					adapter.notifyItemChanged(index);
 					break;
 				case AlarmDataService.MSG_DISMISS_ALARM:
-					l = adapter.data.getListableAbs(msg.arg1);
+					l = adapter.data.getListableAbs(msg.arg1, false);
 					if (l == null || !(l instanceof Alarm)) {
 						if (BuildConfig.DEBUG) Log.e(TAG, "Listable in the list was invalid.");
 						return;
 					}
 					((Alarm) l).dismiss();
-					adapter.notifyItemChanged(msg.arg1);
+					index = adapter.data.realToVisibleIndex(msg.arg1);
+					adapter.notifyItemChanged(index);
 					break;
 				case AlarmDataService.MSG_TOGGLE_OPEN_FOLDER: {
 					// gotta insert/delete new listables
-					l = adapter.data.getListableAbs(msg.arg1);
+					l = adapter.data.getListableAbs(msg.arg1, true);
 					if (l == null || !(l instanceof AlarmGroup)) {
 						if (BuildConfig.DEBUG) Log.e(TAG, "Listable in the list was invalid.");
 						return;
 					}
 
-					int n = ((AlarmGroup) l).realSize() - 1;
+					int n = l.size() - 1;
 
 					((AlarmGroup) l).toggleOpen();
-					adapter.data.refreshLookup();
+					adapter.data.refreshLookups();
 
 					adapter.notifyItemChanged(msg.arg1);
 					if (n == 0) break;

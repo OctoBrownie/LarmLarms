@@ -62,6 +62,12 @@ public interface Listable {
 	void toggleActive();
 
 	/**
+	 * Returns the number of visible items within the Listable, including the Listable itself.
+	 */
+	@Contract(pure = true)
+	int visibleSize();
+
+	/**
 	 * Returns the number of items within the Listable, including the Listable itself.
 	 */
 	@Contract(pure = true)
