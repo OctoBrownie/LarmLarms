@@ -460,7 +460,7 @@ public class AlarmDataService extends Service {
 			return;
 		}
 
-		Listable removed = rootFolder.setListableAbs(info.absIndex, info.listable, true);
+		Listable removed = rootFolder.setListableAbs(info.absIndex, info.listable);
 		if (removed == null) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "MSG_SET_LISTABLE: There was no listable to set.");
 			return;
@@ -498,7 +498,7 @@ public class AlarmDataService extends Service {
 			return;
 		}
 
-		rootFolder.addListableAbs(info.listable, info.path, true);
+		rootFolder.addListableAbs(info.listable, info.path);
 		save();
 
 		Message outMsg = Message.obtain(null, MSG_ADD_LISTABLE);
@@ -532,7 +532,7 @@ public class AlarmDataService extends Service {
 			return;
 		}
 
-		rootFolder.moveListableAbs(info.listable, info.path, inMsg.arg1, true);
+		rootFolder.moveListableAbs(info.listable, info.path, inMsg.arg1);
 		save();
 
 		if (info.listable != null) info.listable = info.listable.clone();
@@ -552,7 +552,7 @@ public class AlarmDataService extends Service {
 	 * @param inMsg the inbound MSG_DELETE_LISTABLE message
 	 */
 	private void handleDeleteListable(@NotNull Message inMsg) {
-		rootFolder.deleteListableAbs(inMsg.arg1, true);
+		rootFolder.deleteListableAbs(inMsg.arg1);
 		save();
 		sendDataChanged(Message.obtain(inMsg));
 

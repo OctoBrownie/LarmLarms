@@ -524,7 +524,7 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.Recyc
 						return;
 					}
 					l = adapter.data.getListableAbs(info.absIndex, true);	// old listable
-					adapter.data.setListableAbs(info.absIndex, info.listable, true);
+					adapter.data.setListableAbs(info.absIndex, info.listable);
 					if (l != null && l.visibleSize() != 1) adapter.notifyItemRangeRemoved(info.absIndex + 1, l.visibleSize() - 1);
 					adapter.notifyItemChanged(info.absIndex);
 					break;
@@ -535,7 +535,7 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.Recyc
 							Log.e(TAG, "Info sent back from the data service was null.");
 						return;
 					}
-					index = adapter.data.addListableAbs(info.listable, info.path, true);
+					index = adapter.data.addListableAbs(info.listable, info.path);
 					if (index == -1) {
 						if (BuildConfig.DEBUG) Log.e(TAG, "Listable couldn't be found.");
 						return;
@@ -557,7 +557,7 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.Recyc
 					}
 
 					// move stuff
-					index = adapter.data.moveListableAbs(info.listable, info.path, msg.arg1, true);
+					index = adapter.data.moveListableAbs(info.listable, info.path, msg.arg1);
 					if (index == -1) {
 						if (BuildConfig.DEBUG) Log.e(TAG, "Listable couldn't be found.");
 						return;
@@ -572,7 +572,7 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.Recyc
 					else adapter.notifyItemRangeInserted(index, info.listable.visibleSize());
 					break;
 				case AlarmDataService.MSG_DELETE_LISTABLE:
-					l = adapter.data.deleteListableAbs(msg.arg1, true);
+					l = adapter.data.deleteListableAbs(msg.arg1);
 					if (l == null) {
 						if (BuildConfig.DEBUG) Log.e(TAG, "Listable in the list was null.");
 						return;
@@ -587,8 +587,24 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.Recyc
 						return;
 					}
 					l.toggleActive();
-					((Alarm) l).updateRingTime();
-					adapter.notifyItemChanged(msg.arg1);
+					if (l instanceof Alarm) {
+						((Alarm) l).updateRingTime();
+						adapter.notifyItemChanged(msg.arg1);
+					}
+					else {
+						// update all alarms inside
+						Listable a;
+						for (int i = 0; i < l.size() - 1; i++) {
+							a = ((AlarmGroup) l).getListableAbs(i, false);
+							if (a instanceof Alarm) ((Alarm) a).updateRingTime();
+						}
+
+						// notify possible item changes
+						if (((AlarmGroup) l).getIsOpen())
+							adapter.notifyItemRangeChanged(msg.arg1, l.size());
+						else
+							adapter.notifyItemChanged(msg.arg1);
+					}
 					break;
 				case AlarmDataService.MSG_SNOOZE_ALARM:
 					l = adapter.data.getListableAbs(msg.arg1, false);
