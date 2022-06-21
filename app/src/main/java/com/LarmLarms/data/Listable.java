@@ -11,6 +11,11 @@ import org.jetbrains.annotations.Nullable;
  */
 public interface Listable {
 	/**
+	 * Returns the ID of the listable.
+	 */
+	@Contract(pure = true)
+	long getId();
+	/**
 	 * Gets the name of the listable.
 	 * @return the name of the listable, cannot be null 
 	 */

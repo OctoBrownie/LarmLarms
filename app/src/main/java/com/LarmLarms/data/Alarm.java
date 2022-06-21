@@ -90,6 +90,11 @@ public final class Alarm implements Listable, Cloneable {
 	private Context context;
 
 	/**
+	 * The id of the Alarm, which is filled by the created time.
+	 */
+	private final long id;
+
+	/**
 	 * Stores the name of the alarm, cannot be null. Only restricted character: tabs.
 	 */
 	@NotNull
@@ -191,7 +196,7 @@ public final class Alarm implements Listable, Cloneable {
 	 * have valid data, though they have lots of dummy data when first created. 
 	 */
 	public Alarm() {
-		this(null, "default name");
+		this(null, "default name", GregorianCalendar.getInstance().getTimeInMillis());
 	}
 	
 	/**
@@ -200,7 +205,7 @@ public final class Alarm implements Listable, Cloneable {
 	 * @param currContext the context this alarm exists in
 	 */
 	public Alarm(@Nullable Context currContext) {
-		this(currContext, "default name");
+		this(currContext, "default name", GregorianCalendar.getInstance().getTimeInMillis());
 	}
 
 	/**
@@ -209,8 +214,9 @@ public final class Alarm implements Listable, Cloneable {
 	 * @param currContext the context this alarm exists in, can be null
 	 * @param title the name of the alarm, shouldn't be null
 	 */
-	public Alarm(@Nullable Context currContext, @Nullable String title) {
+	public Alarm(@Nullable Context currContext, @Nullable String title, long id) {
 		context = currContext;
+		this.id = id;
 		if (title == null) name = "default name";
 		else name = title;
 
@@ -239,6 +245,12 @@ public final class Alarm implements Listable, Cloneable {
 	}
 
 	/* ********************************  Methods from Listable  ********************************** */
+
+	/**
+	 * Returns the ID of the alarm.
+	 */
+	@Override @Contract(pure = true)
+	public long getId() { return id; }
 
 	/**
 	 * Returns the name of the alarm. 
@@ -492,7 +504,7 @@ public final class Alarm implements Listable, Cloneable {
 	 * or threads. To get an Alarm back from an edit string, use fromEditString(String).
 	 * <br/>
 	 * Current edit string format (separated by TABS):
-	 * [alarm title] [active] [repeat info] [next ring time] [ringtone uri] [is snoozed]
+	 * [id] [alarm title] [active] [repeat info] [next ring time] [ringtone uri] [is snoozed]
 	 * [# of snoozes] [volume]
 	 * <br/>
 	 * Repeat type format (separated by SPACES): [type] [type-specific data]
@@ -508,7 +520,9 @@ public final class Alarm implements Listable, Cloneable {
 	 */
 	@NotNull @Override @Contract(pure = true)
 	public String toEditString() {
-		StringBuilder alarmString = new StringBuilder(name).append('\t');
+		StringBuilder alarmString = new StringBuilder();
+		alarmString.append(id).append('\t');
+		alarmString.append(name).append('\t');
 		alarmString.append(alarmIsActive).append('\t');
 
 		switch (repeatType) {
@@ -832,15 +846,15 @@ public final class Alarm implements Listable, Cloneable {
 		}
 
 		String[] fields = src.split("\t");
-		if (fields.length != 8) {
+		if (fields.length != 8 && fields.length != 9) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "Edit string didn't have a correct number of fields.");
 			return null;
 		}
 
-		Alarm res = new Alarm(context, fields[0]);
-		res.setActive(Boolean.parseBoolean(fields[1]));		// doesn't throw anything
+		Alarm res = new Alarm(context, fields[1], Long.parseLong(fields[0]));
+		res.setActive(Boolean.parseBoolean(fields[2]));		// doesn't throw anything
 
-		String[] repeatTypeInfo = fields[2].split(" ");
+		String[] repeatTypeInfo = fields[3].split(" ");
 		try {
 			res.setRepeatType(Integer.parseInt(repeatTypeInfo[0]));
 		}
@@ -907,15 +921,15 @@ public final class Alarm implements Listable, Cloneable {
 				return null;
 		}
 
-		res.ringTime.setTimeInMillis(Long.parseLong(fields[3]));
+		res.ringTime.setTimeInMillis(Long.parseLong(fields[4]));
 
 		if ("null".equals(fields[4])) res.setRingtoneUri(null);
-		else res.setRingtoneUri(Uri.parse(fields[4]));
+		else res.setRingtoneUri(Uri.parse(fields[5]));
 
-		res.alarmSnoozed = Boolean.parseBoolean(fields[5]);
+		res.alarmSnoozed = Boolean.parseBoolean(fields[6]);
 
 		try {
-			res.numSnoozes = Integer.parseInt(fields[6]);
+			res.numSnoozes = Integer.parseInt(fields[7]);
 		}
 		catch (NumberFormatException e) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "Edit string has an invalid number of snoozes.");
@@ -923,7 +937,7 @@ public final class Alarm implements Listable, Cloneable {
 		}
 
 		try {
-			res.setVolume(Integer.parseInt(fields[7]));
+			res.setVolume(Integer.parseInt(fields[8]));
 		}
 		catch (NumberFormatException e) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "Edit string has an invalid volume.");

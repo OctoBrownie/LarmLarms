@@ -10,6 +10,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.GregorianCalendar;
 
 /**
  * Holds a list of Alarms and can mask Alarms.
@@ -24,8 +25,12 @@ public final class AlarmGroup implements Listable, Cloneable {
 	 * Number of fields in a single edit string (don't have one for store strings because they can
 	 * span multiple lines and can have a different number of fields dependent on type)
 	 */
-	private static final int NUM_EDIT_FIELDS = 3;
+	private static final int NUM_EDIT_FIELDS = 4;
 
+	/**
+	 * The ID of the folder, filled by its created time.
+	 */
+	private final long id;
 	/**
 	 * Stores the name of the folder. Restricted characters: tabs and backslashes. If the user tries
 	 * to set them as part of the name, they will be automatically stripped out.
@@ -79,21 +84,30 @@ public final class AlarmGroup implements Listable, Cloneable {
 	/**
 	 * Initializes a new AlarmGroup with all dummy data.
 	 */
-	public AlarmGroup() { this("", new ArrayList<Listable>()); }
+	public AlarmGroup() {
+		this("", new ArrayList<Listable>(), GregorianCalendar.getInstance().getTimeInMillis());
+	}
 
 	/**
 	 * Initializes a new AlarmGroup with a name.
 	 * @param title the new name of the folder
 	 */
-	public AlarmGroup(@NotNull String title) { this(title, new ArrayList<Listable>()); }
+	public AlarmGroup(@NotNull String title) {
+		this(title, new ArrayList<Listable>(), GregorianCalendar.getInstance().getTimeInMillis());
+	}
+
+	public AlarmGroup (@NotNull String title, @NotNull ArrayList<Listable> children) {
+		this(title, children, GregorianCalendar.getInstance().getTimeInMillis());
+	}
 
 	/**
 	 * Initializes a new AlarmGroup with a name and contents.
 	 * @param title the new name of the folder
 	 * @param children the new Listables within the folder
 	 */
-	public AlarmGroup(@NotNull String title, @NotNull ArrayList<Listable> children) {
-		// invalid data for now
+	public AlarmGroup(@NotNull String title, @NotNull ArrayList<Listable> children, long id) {
+		// (mostly) invalid data for now
+		this.id = id;
 		name = "";
 		listables = new ArrayList<>();
 		lookup = new ArrayList<>();
@@ -108,6 +122,12 @@ public final class AlarmGroup implements Listable, Cloneable {
 	}
 
 	/* *******************************  Methods from Listable  ****************************** */
+
+	/**
+	 * Gets the ID of the listable.
+	 */
+	@Override @Contract(pure = true)
+	public long getId() { return id; }
 
 	/**
 	 * Gets the name of the listable.
@@ -241,10 +261,10 @@ public final class AlarmGroup implements Listable, Cloneable {
 	 * Creates an edit string for the current folder.
 	 * <br/>
 	 * Current edit string format (separated by tabs):
-	 * [name] [isActive] [isOpen]
+	 * [id] [name] [isActive] [isOpen]
 	 */
 	@NotNull @Override @Contract(pure = true)
-	public String toEditString() { return name + '\t' + isActive + '\t' + isOpen; }
+	public String toEditString() { return "" + id + '\t' + name + '\t' + isActive + '\t' + isOpen; }
 
 	/**
 	 * Creates a string for storing the current folder. Stores folder with type identifier and
@@ -351,14 +371,14 @@ public final class AlarmGroup implements Listable, Cloneable {
 		}
 
 		String[] fields = src.split("\t");
-		if (fields.length != NUM_EDIT_FIELDS) {
+		if (fields.length != NUM_EDIT_FIELDS && fields.length != 3) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "Edit string didn't have a correct number of fields.");
 			return null;
 		}
 
-		AlarmGroup dest = new AlarmGroup(fields[0]);
-		dest.setActive(Boolean.parseBoolean(fields[1]));
-		dest.setOpen(Boolean.parseBoolean(fields[2]));
+		AlarmGroup dest = new AlarmGroup(fields[1], new ArrayList<Listable>(), Long.parseLong(fields[0]));
+		dest.setActive(Boolean.parseBoolean(fields[2]));
+		dest.setOpen(Boolean.parseBoolean(fields[3]));
 
 		return dest;
 	}
