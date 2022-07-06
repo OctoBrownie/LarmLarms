@@ -1160,10 +1160,11 @@ public final class Alarm implements Listable, Cloneable {
 
 	/**
 	 * Updates the ring time, setting it to the next time it should ring. Will not update if the alarm
-	 * is not active. If the alarm is ONCE_ABS, the method will not do anything. If the alarm is ONCE_REL,
-	 * and ringTime has passed, will reset to offset after current time. Tries not to rely on the
-	 * previous value of ringTime, but will take values of guaranteed stored constants (except OFFSET,
-	 * which will use the entirety of the previous ring time).
+	 * is not active. If the alarm is ONCE_ABS and ringTime has passed, the method will reset it to
+	 * ring on the earliest day with the same time (it will stay 13:00 if it was 13:00 originally).
+	 * If the alarm is ONCE_REL, and ringTime has passed, will reset to offset after current time.
+	 * Tries not to rely on the previous value of ringTime, but will take values of guaranteed stored
+	 * constants (except OFFSET, which will use the entirety of the previous ring time).
 	 *
 	 * NOTE: if the date doesn't exist (ex. April 31 for DATE_MONTHLY), it will simply skip it (will
 	 * not schedule an alarm for May 1)
@@ -1195,7 +1196,13 @@ public final class Alarm implements Listable, Cloneable {
 		// use break to set workingClock to ringTime, return to not
 		switch(repeatType) {
 			case REPEAT_ONCE_ABS:
-				return;
+				// only changes if the alarm is overdue
+				if (ringTime.after(workingClock)) { return; }
+
+				while (workingClock.before(currTime)) {
+					workingClock.add(Calendar.DAY_OF_MONTH, 1);
+				}
+				break;
 			case REPEAT_ONCE_REL:
 				// only changes if the alarm is overdue
 				if (ringTime.after(workingClock)) { return; }
