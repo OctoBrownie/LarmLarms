@@ -89,6 +89,8 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.Recyc
 		dataService = null;
 		dataChangedMessenger = new Messenger(new MsgHandler(this));
 		unsentMessages = new LinkedList<>();
+
+		setHasStableIds(true);
 	}
 
 	/* ***************************  RecyclerView.Adapter Methods  ***************************** */
@@ -129,9 +131,6 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.Recyc
 		params.setMarginStart((int) (context.getResources().getDisplayMetrics().density * dp));
 		holder.getCardView().setLayoutParams(params);
 		holder.getCardView().requestLayout();
-
-		// TODO: if this layout passing ends up being a bottleneck, can cache the current indent of
-		// a ViewHolder to reduce the # of layout passes necessary (if same indent)
 	}
 
 	/**
@@ -140,6 +139,18 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.Recyc
 	 */
 	@Override
 	public int getItemCount() { return data.visibleSize() - 1; }
+
+	/**
+	 * Gets the id for the item at the given position.
+	 * @return returns the id of the given Listable, or -1 if it couldn't be found
+	 */
+	@Override
+	public long getItemId(int position) {
+		Listable l = data.getListableAbs(position, true);
+
+		if (l == null) return -1;
+		return l.getId();
+	}
 
 	/* ******************************  Getter and Setter Methods  ***************************** */
 
@@ -257,7 +268,7 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.Recyc
 
 		/**
 		 * Is the listable it currently represents. Don't modify it, since it's actually a pointer
-		 * to the data service listable itself.
+		 * to the listable in the adapter too.
 		 */
 		@Nullable
 		private Listable listable;
@@ -536,9 +547,13 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.Recyc
 						return;
 					}
 					index = adapter.data.addListableAbs(info.listable, info.path);
-					if (index == -1) {
+					if (index == -2) {
 						if (BuildConfig.DEBUG) Log.e(TAG, "Listable couldn't be found.");
 						return;
+					}
+					else if (index == -1) {
+						if (BuildConfig.DEBUG) Log.i(TAG, "Listable isn't visible.");
+						break;
 					}
 					adapter.notifyItemInserted(index);
 					break;
@@ -644,7 +659,7 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.Recyc
 						return;
 					}
 
-					int n = l.size() - 1;
+					int n = l.visibleSize() - 1;
 
 					((AlarmGroup) l).toggleOpen();
 					adapter.data.refreshLookups();
