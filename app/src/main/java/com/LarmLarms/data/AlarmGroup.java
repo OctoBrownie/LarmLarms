@@ -819,17 +819,17 @@ public final class AlarmGroup implements Listable, Cloneable {
 	 * Adds a listable to this folder at the given path. Assumes visible only.
 	 * @param listable the info given about the listable to add, should include the listable and path
 	 * @param path the path to add the listable to
-	 * @return the absolute index of the new listable (visible index). Will return -1 if there was
-	 * an error or if it's not visible
+	 * @return the absolute index of the new listable (visible index). Will return -2 if there was
+	 * an error or -1 if it's not visible
 	 */
 	public int addListableAbs(@Nullable Listable listable, @Nullable String path) {
 		if (listable == null) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "addListableAbs: The listable specified was null.");
-			return -1;
+			return -2;
 		}
 		if (path == null) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "addListableAbs: The path specified was null.");
-			return -1;
+			return -2;
 		}
 		String[] folders = path.split("/");	// ignore the first one (this folder)
 		AlarmGroup currFolder = this;
@@ -838,7 +838,7 @@ public final class AlarmGroup implements Listable, Cloneable {
 		// the -1 counteracts +1 for the root folder (would throw off calculations)
 		int index = -1;
 		boolean isVisible = true;
-		ArrayList<Integer> lookup = currFolder.getVisibleLookup();
+		ArrayList<Integer> lookup = currFolder.getLookup();
 
 		for (int i = 1; i < folders.length; i++) {
 			isVisible &= currFolder.getIsOpen();
@@ -846,8 +846,9 @@ public final class AlarmGroup implements Listable, Cloneable {
 			currFolder = currFolder.getFolder(folders[i]);		// doesn't care about open status
 			if (currFolder == null) {
 				if (BuildConfig.DEBUG) Log.e(TAG, "addListableAbs: Couldn't find the specified path.");
-				return -1;
+				return -2;
 			}
+			lookup = currFolder.getLookup();
 		}
 		index += currFolder.visibleSize();
 
