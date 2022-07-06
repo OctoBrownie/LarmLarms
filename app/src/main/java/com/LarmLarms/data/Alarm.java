@@ -923,7 +923,7 @@ public final class Alarm implements Listable, Cloneable {
 
 		res.ringTime.setTimeInMillis(Long.parseLong(fields[4]));
 
-		if ("null".equals(fields[4])) res.setRingtoneUri(null);
+		if ("null".equals(fields[5])) res.setRingtoneUri(null);
 		else res.setRingtoneUri(Uri.parse(fields[5]));
 
 		res.alarmSnoozed = Boolean.parseBoolean(fields[6]);
