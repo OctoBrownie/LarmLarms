@@ -466,6 +466,11 @@ public class AlarmDataService extends Service {
 			return;
 		}
 
+		// transfer listables if possible/necessary
+		if (removed instanceof AlarmGroup && info.listable instanceof AlarmGroup) {
+			((AlarmGroup) info.listable).setListables(((AlarmGroup) removed).getListables());
+		}
+
 		save();
 
 		Message outMsg = Message.obtain(inMsg);
