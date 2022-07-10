@@ -38,7 +38,7 @@ public class RingingService extends Service implements MediaPlayer.OnPreparedLis
 	/**
 	 * Tag of the class for logging purposes.
 	 */
-	private static final String TAG = "AlarmRingingService";
+	private static final String TAG = "RingingService";
 
 	/* ***********************************  Intent extras *************************************** */
 	/**
