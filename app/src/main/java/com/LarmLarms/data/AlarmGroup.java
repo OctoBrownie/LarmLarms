@@ -49,7 +49,8 @@ public final class AlarmGroup implements Listable, Cloneable {
 	private boolean isOpen;
 
 	/**
-	 * Contains the child Alarms and AlarmGroups stored within this folder. Will not be null.
+	 * Contains the child Alarms and AlarmGroups stored within this folder. Should always be nonnull
+	 * and sorted.
 	 */
 	@NotNull
 	private ArrayList<Listable> listables;
@@ -258,6 +259,24 @@ public final class AlarmGroup implements Listable, Cloneable {
 
 		AlarmGroup that = (AlarmGroup) other;
 		return this.name.equals(that.name) && this.isActive == that.isActive;
+	}
+	
+	/**
+	 * Compares this folder with the other object. Alarms are always considered "after" folders.
+	 * Folders are compared with this precedence: name, then id (the lower id is first). It 
+	 * shouldn't be necessary to compare anything further since their ids should always be unique. 
+	 * @return this folder compared to the listable (negative if this is first, positive if this is 
+	 * second, 0 if they're equal).
+	 */
+	@Override
+	public int compareTo(@NotNull Object other) {
+		if (other instanceof Alarm) return -1;
+		
+		AlarmGroup that = (AlarmGroup) other;
+		int temp = this.name.compareTo(that.name);
+		if (temp != 0) return temp;
+		
+		return this.id - that.id;
 	}
 
 	/**
@@ -691,7 +710,7 @@ public final class AlarmGroup implements Listable, Cloneable {
 
 	/**
 	 * Sets a listable in the dataset using its relative index.
-	 * @param relIndex the relative index to set with
+	 * @param relIndex the old relative index to set with
 	 * @param item the new Listable to set relIndex to
 	 */
 	private void setListable(final int relIndex, @Nullable final Listable item) {

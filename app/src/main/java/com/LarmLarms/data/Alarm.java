@@ -500,6 +500,159 @@ public final class Alarm implements Listable, Cloneable {
 		return this.volume == that.volume && this.alarmIsActive == that.alarmIsActive &&
 				this.alarmVibrateIsOn == that.alarmVibrateIsOn;
 	}
+	
+	/**
+	 * Compares this alarm with the other object. Folders are always considered "before" alarms.
+	 * Alarms are compared with this precedence: name, type (uses the values of the constants, 
+	 * lower is first), time fields (depends on the type, see below), then id. It shouldn't be 
+	 * necessary to compare anything further since their ids should always be unique. Doesn't quite
+	 * correlate with the equals method, since they check different things (for example, equals
+	 * doesn't check for id). 
+	 * 
+	 * For time fields based on alarm type:
+	 * ONCE_ABS - checks ring date/time
+	 * ONCE_REL and OFFSET - checks offsets (higher frequencies are first), offsetFromNow (alarms 
+	 * offset from now are first), and ring date/time 
+	 * DAY_WEEKLY - checks repeatDays (higher number of repeating days first, but if equal it's 
+	 * whichever rings more earliest in the week), and ring time
+	 * DATE_MONTHLY - checks repeatMonths (higher number of repeating months first, but if equal 
+	 * it's whichever rings more earliest in the year), and ring date/time (controls for month/year)
+	 * DAY_MONTHLY - checks repeatMonths (higher number of repeating months first, but if equal 
+	 * it's whichever rings more earliest in the year), day of the month (week then day), and ring 
+	 * time 
+	 * DATE_YEARLY - checks ring date/time (controls for year)
+	 * 
+	 * @param other the object to compare with
+	 * @return this alarm compared to the listable (negative if this is first, positive if this is 
+	 * second, 0 if they're equal).
+	 */
+	@Override
+	public int compareTo(@NotNull Object other) {
+		if (other instanceof AlarmGroup) return 1;
+		
+		Alarm that = (Alarm) other;
+		int temp = this.name.compareTo(that.name);
+		if (temp != 0) return temp;
+		
+		temp = this.repeatType - that.repeatType;
+		if (temp != 0) return temp;
+		
+		// for certain repeat types requiring manipulating ringTime
+		Calendar thisTime, thatTime, sysClock = Calendar.getInstance(); 
+		switch(this.repeatType) {
+		case REPEAT_ONCE_ABS:
+			temp = this.ringTime.compareTo(that.ringTime);
+			if (temp != 0) return temp;
+			break;
+		case REPEAT_ONCE_REL:
+		case REPEAT_OFFSET:
+			temp = this.offsetDays - that.offsetDays;
+			if (temp != 0) return temp;
+			
+			temp = this.offsetHours - that.offsetHours;
+			if (temp != 0) return temp;
+			
+			temp = this.offsetMins - that.offsetMins;
+			if (temp != 0) return temp;
+			
+			if (this.offsetFromNow ^ that.offsetFromNow) 
+				return this.offsetFromNow ? -1 : 1;
+			
+			temp = this.ringTime.compareTo(that.ringTime);
+			if (temp != 0) return temp;
+			break;
+		case REPEAT_DAY_WEEKLY: {
+			boolean thisFirst = true, set = false;
+			
+			for (int i = 0; i < 7; i++) {
+				if (this.repeatDays[i]) temp--;
+				if (that.repeatDays[i]) temp++;
+				if (!set && temp != 0) {
+					thisFirst = temp <= 0;
+					set = true;
+				}
+			}
+			if (temp != 0) return temp;
+			if (set) return thisFirst ? -1 : 1;
+			
+			temp = this.ringTime.get(Calendar.HOUR_OF_DAY) - 
+					that.ringTime.get(Calendar.HOUR_OF_DAY);
+			if (temp != 0) return temp;
+			
+			temp = this.ringTime.get(Calendar.MINUTE) - 
+					that.ringTime.get(Calendar.MINUTE);
+			if (temp != 0) return temp;
+			break;
+		}
+		case REPEAT_DATE_MONTHLY: {
+			boolean thisFirst = true, set = false;
+			
+			for (int i = 0; i < 12; i++) {
+				if (this.repeatMonths[i]) temp--;
+				if (that.repeatMonths[i]) temp++;
+				if (!set && temp != 0) {
+					thisFirst = temp <= 0;
+					set = true;
+				}
+			}
+			if (temp != 0) return temp;
+			if (set) return thisFirst ? -1 : 1;
+			
+			thisTime = (Calendar) this.ringTime.clone();
+			thatTime = (Calendar) that.ringTime.clone();
+			thisTime.set(Calendar.MONTH, sysClock.get(Calendar.MONTH));
+			thisTime.set(Calendar.YEAR, sysClock.get(Calendar.YEAR));
+			thatTime.set(Calendar.MONTH, sysClock.get(Calendar.MONTH));
+			thatTime.set(Calendar.YEAR, sysClock.get(Calendar.YEAR));
+			
+			temp = thisTime.compareTo(thatTime);
+			if (temp != 0) return temp;
+			break;
+		}
+		case REPEAT_DAY_MONTHLY: {
+			boolean thisFirst = true, set = false;
+			
+			for (int i = 0; i < 12; i++) {
+				if (this.repeatMonths[i]) temp--;
+				if (that.repeatMonths[i]) temp++;
+				if (!set && temp != 0) {
+					thisFirst = temp <= 0;
+					set = true;
+				}
+			}
+			if (temp != 0) return temp;
+			if (set) return thisFirst ? -1 : 1;
+			
+			temp = this.ringTime.get(Calendar.DAY_OF_WEEK_IN_MONTH) - 
+					that.ringTime.get(Calendar.DAY_OF_WEEK_IN_MONTH);
+			if (temp != 0) return temp;
+			
+			temp = this.ringTime.get(Calendar.DAY_OF_WEEK) - 
+					that.ringTime.get(Calendar.DAY_OF_WEEK);
+			if (temp != 0) return temp;
+			
+			temp = this.ringTime.get(Calendar.HOUR_OF_DAY) - 
+					that.ringTime.get(Calendar.HOUR_OF_DAY);
+			if (temp != 0) return temp;
+			
+			temp = this.ringTime.get(Calendar.MINUTE) - 
+					that.ringTime.get(Calendar.MINUTE);
+			if (temp != 0) return temp;
+			break;
+		}
+		case REPEAT_DATE_YEARLY:
+			thisTime = (Calendar) this.ringTime.clone();
+			thatTime = (Calendar) that.ringTime.clone();
+			thisTime.set(Calendar.YEAR, sysClock.get(Calendar.YEAR));
+			thatTime.set(Calendar.YEAR, sysClock.get(Calendar.YEAR));
+			
+			temp = thisTime.compareTo(thatTime);
+			if (temp != 0) return temp;
+			break;
+		}
+		
+		return this.id - that.id;
+	}
 
 	/**
 	 * Creates an edit string from the current alarm. Often used to pass an Alarm between Activities
@@ -994,9 +1147,9 @@ public final class Alarm implements Listable, Cloneable {
 	public String toString() { return name; }
 
 	/**
-	 * Gets the display string for REPEAT_WEEKLY, specifically representing which days the alarm
-	 * repeats on. Will return "Weekly on [days]" unless it's a special set of days (every day,
-	 * weekends, weekdays, or none).
+	 * Gets the display string for REPEAT_DAY_WEEKLY, specifically representing which days the 
+	 * alarm repeats on. Will return "Weekly on [days]" unless it's a special set of days (every 
+	 * day, weekends, weekdays, or none).
 	 * @return formatted string resource alarm_weekly, special cases, or empty
 	 */
 	@NotNull @Contract(pure = true)
