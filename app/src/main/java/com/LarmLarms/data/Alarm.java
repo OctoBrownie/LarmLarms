@@ -92,7 +92,7 @@ public final class Alarm implements Listable, Cloneable {
 	/**
 	 * The id of the Alarm, which is filled by the created time.
 	 */
-	private final long id;
+	private final int id;
 
 	/**
 	 * Stores the name of the alarm, cannot be null. Only restricted character: tabs.
@@ -196,7 +196,8 @@ public final class Alarm implements Listable, Cloneable {
 	 * have valid data, though they have lots of dummy data when first created. 
 	 */
 	public Alarm() {
-		this(null, "default name", GregorianCalendar.getInstance().getTimeInMillis());
+		this(null, "default name",
+				(int) (Calendar.getInstance().getTimeInMillis() % Integer.MAX_VALUE));
 	}
 	
 	/**
@@ -205,7 +206,8 @@ public final class Alarm implements Listable, Cloneable {
 	 * @param currContext the context this alarm exists in
 	 */
 	public Alarm(@Nullable Context currContext) {
-		this(currContext, "default name", GregorianCalendar.getInstance().getTimeInMillis());
+		this(currContext, "default name",
+				(int) (Calendar.getInstance().getTimeInMillis() % Integer.MAX_VALUE));
 	}
 
 	/**
@@ -214,7 +216,7 @@ public final class Alarm implements Listable, Cloneable {
 	 * @param currContext the context this alarm exists in, can be null
 	 * @param title the name of the alarm, shouldn't be null
 	 */
-	public Alarm(@Nullable Context currContext, @Nullable String title, long id) {
+	public Alarm(@Nullable Context currContext, @Nullable String title, int id) {
 		context = currContext;
 		this.id = id;
 		if (title == null) name = "default name";
@@ -250,7 +252,7 @@ public final class Alarm implements Listable, Cloneable {
 	 * Returns the ID of the alarm.
 	 */
 	@Override @Contract(pure = true)
-	public long getId() { return id; }
+	public int getId() { return id; }
 
 	/**
 	 * Returns the name of the alarm. 
@@ -851,7 +853,16 @@ public final class Alarm implements Listable, Cloneable {
 			return null;
 		}
 
-		Alarm res = new Alarm(context, fields[1], Long.parseLong(fields[0]));
+		Alarm res;
+
+		try {
+			res = new Alarm(context, fields[1], Integer.parseInt(fields[0]));
+		}
+		catch (NumberFormatException e) {
+			if (BuildConfig.DEBUG) Log.e(TAG, "Edit string has an invalid id.");
+			return null;
+		}
+
 		res.setActive(Boolean.parseBoolean(fields[2]));		// doesn't throw anything
 
 		String[] repeatTypeInfo = fields[3].split(" ");

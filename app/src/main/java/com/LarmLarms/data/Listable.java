@@ -14,7 +14,7 @@ public interface Listable {
 	 * Returns the ID of the listable.
 	 */
 	@Contract(pure = true)
-	long getId();
+	int getId();
 	/**
 	 * Gets the name of the listable.
 	 * @return the name of the listable, cannot be null 
