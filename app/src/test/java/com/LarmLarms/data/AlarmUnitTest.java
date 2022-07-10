@@ -108,7 +108,6 @@ public class AlarmUnitTest {
 		alarm1.setOffsetHours(5);
 		alarm1.setOffsetMins(2);
 		alarm1.setActive(false);
-		alarm1.setSoundOn(false);
 		alarm1.setVibrateOn(false);
 
 		Alarm alarm2 = new Alarm(null, "Title");
@@ -117,7 +116,6 @@ public class AlarmUnitTest {
 		alarm2.setOffsetHours(5);
 		alarm2.setOffsetMins(2);
 		alarm2.setActive(false);
-		alarm2.setSoundOn(false);
 		alarm2.setVibrateOn(false);
 
 		// differences between the alarms that shouldn't throw off the equals method
@@ -142,7 +140,6 @@ public class AlarmUnitTest {
 		alarm.setOffsetHours(5);
 		alarm.setOffsetMins(2);
 		alarm.setActive(false);
-		alarm.setSoundOn(false);
 		alarm.setVibrateOn(false);
 
 		Object clone = alarm.clone();
@@ -165,7 +162,6 @@ public class AlarmUnitTest {
 		days[5] = false;
 
 		alarm.setActive(false);
-		alarm.setSoundOn(false);
 		alarm.setVibrateOn(false);
 
 		Alarm clone = (Alarm) alarm.clone();
@@ -181,12 +177,10 @@ public class AlarmUnitTest {
 
 		clone.setAlarmTimeMillis(alarm.getAlarmTimeMillis() + 1);
 		clone.setActive(true);
-		clone.setSoundOn(true);
 
 		assertEquals(false, alarm.getListableName().equals(clone.getListableName()));
 		assertEquals(false, alarm.getAlarmTimeCalendar().equals(clone.getAlarmTimeCalendar()));
 		assertEquals(false, Arrays.equals(alarm.getRepeatDays(), clone.getRepeatDays()));
 		assertEquals(false, alarm.isActive());
-		assertEquals(false, alarm.isSoundOn());
 	}
 }

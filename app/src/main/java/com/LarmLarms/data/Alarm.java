@@ -190,15 +190,6 @@ public final class Alarm implements Listable, Cloneable {
 	private Uri ringtoneUri;
 
 	/* **********************************  Constructors  ********************************* */
-
-	/**
-	 * Creates a new alarm with a null context and a default name. Created Alarms should always 
-	 * have valid data, though they have lots of dummy data when first created. 
-	 */
-	public Alarm() {
-		this(null, "default name",
-				(int) (Calendar.getInstance().getTimeInMillis() % Integer.MAX_VALUE));
-	}
 	
 	/**
 	 * Creates a new alarm with the current context. Created Alarms should always have valid data,
@@ -211,12 +202,22 @@ public final class Alarm implements Listable, Cloneable {
 	}
 
 	/**
+	 * Creates a new alarm with the current context. Created Alarms should always have valid data,
+	 * though they have lots of dummy data when first created.
+	 * @param currContext the context this alarm exists in
+	 * @param title the name of the alarm
+	 */
+	public Alarm(@Nullable Context currContext, @Nullable String title) {
+		this(currContext, title, (int) (Calendar.getInstance().getTimeInMillis() % Integer.MAX_VALUE));
+	}
+
+	/**
 	 * Creates a new alarm with the current context and the given title. Created Alarms should 
 	 * always have valid data, though they have lots of dummy data when first created. 
 	 * @param currContext the context this alarm exists in, can be null
 	 * @param title the name of the alarm, shouldn't be null
 	 */
-	public Alarm(@Nullable Context currContext, @Nullable String title, int id) {
+	private Alarm(@Nullable Context currContext, @Nullable String title, int id) {
 		context = currContext;
 		this.id = id;
 		if (title == null) name = "default name";

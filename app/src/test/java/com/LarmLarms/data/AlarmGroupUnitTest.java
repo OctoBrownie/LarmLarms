@@ -293,7 +293,7 @@ public class AlarmGroupUnitTest {
 
 		// differences between the alarms that shouldn't throw off the equals method
 		folder1.addListable(new AlarmGroup());
-		folder2.addListable(new Alarm());
+		folder2.addListable(new Alarm(null));
 		folder2.addListable(new AlarmGroup());
 
 		assertEquals(folder1, folder2);
