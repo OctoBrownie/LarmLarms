@@ -528,7 +528,7 @@ public final class Alarm implements Listable, Cloneable {
 	 * second, 0 if they're equal).
 	 */
 	@Override
-	public int compareTo(@NotNull Object other) {
+	public int compareTo(@NotNull Listable other) {
 		if (other instanceof AlarmGroup) return 1;
 		
 		Alarm that = (Alarm) other;

@@ -11,6 +11,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 
 /**
  * Holds a list of Alarms and can mask Alarms.
@@ -269,7 +270,7 @@ public final class AlarmGroup implements Listable, Cloneable {
 	 * second, 0 if they're equal).
 	 */
 	@Override
-	public int compareTo(@NotNull Object other) {
+	public int compareTo(@NotNull Listable other) {
 		if (other instanceof Alarm) return -1;
 		
 		AlarmGroup that = (AlarmGroup) other;
@@ -372,6 +373,7 @@ public final class AlarmGroup implements Listable, Cloneable {
 			}
 		}
 
+		Collections.sort(listables);
 		this.listables = listables;
 		refreshLookups();
 	}
@@ -709,7 +711,8 @@ public final class AlarmGroup implements Listable, Cloneable {
 	}
 
 	/**
-	 * Sets a listable in the dataset using its relative index.
+	 * Sets a listable in the dataset using its relative index. The listable may move within the list
+	 * to maintain sorted order.
 	 * @param relIndex the old relative index to set with
 	 * @param item the new Listable to set relIndex to
 	 */
@@ -722,14 +725,22 @@ public final class AlarmGroup implements Listable, Cloneable {
 			return;
 		}
 
-		int indexChange = item.visibleSize() - listables.get(relIndex).visibleSize();
-		listables.set(relIndex, item);
+		Listable old = listables.remove(relIndex);
+		int di = 0, dv = 0;
+		int newIndex = AlarmGroup.insertIndex(listables, item);
+
+		listables.add(newIndex, item);
 
 		// add index change to all lookup indices and size
-		for (int i = relIndex + 1; i < listables.size(); i++) {
-			lookup.set(i, lookup.get(i) + indexChange);
+		for (int i = Math.min(newIndex, relIndex) + 1; i < listables.size(); i++) {
+			di = (i > newIndex ? item.size() : 0) - (i > relIndex ? old.size() : 0);
+			dv = (i > newIndex ? item.visibleSize() : 0) - (i > relIndex ? old.visibleSize() : 0);
+
+			lookup.set(i, lookup.get(i) + di);
+			visibleLookup.set(i, visibleLookup.get(i) + dv);
 		}
-		size += indexChange;
+		size += di;
+		visibleSize += dv;
 	}
 
 	/**
@@ -742,9 +753,25 @@ public final class AlarmGroup implements Listable, Cloneable {
 			return;
 		}
 
-		lookup.add(size - 1);
-		listables.add(item);
-		size += item.visibleSize();
+		int newIndex = AlarmGroup.insertIndex(listables, item);
+		int ds = item.size(), dv = item.visibleSize();
+		listables.add(newIndex, item);
+
+		if (newIndex == lookup.size()) {
+			lookup.add(size - 1);
+			visibleLookup.add(visibleSize - 1);
+		}
+		else {
+			lookup.add(newIndex, lookup.get(newIndex));
+			visibleLookup.add(newIndex, visibleLookup.get(newIndex));
+			for (int i = newIndex + 1; i < listables.size(); i++) {
+				lookup.set(i, lookup.get(i) + ds);
+				visibleLookup.set(i, visibleLookup.get(i) + dv);
+			}
+		}
+
+		size += ds;
+		visibleSize += dv;
 	}
 
 	/**
@@ -759,7 +786,19 @@ public final class AlarmGroup implements Listable, Cloneable {
 			return null;
 		}
 		Listable l = listables.remove(relIndex);
-		refreshLookups();
+		int ds = l.size(), dv = l.visibleSize();
+
+		// add index change to all lookup indices and sizes
+		for (int i = relIndex; i < listables.size()-1; i++) {
+			// updating and moving back an entry at the same time
+			lookup.set(i, lookup.get(i+1) - ds);
+			visibleLookup.set(i, visibleLookup.get(i+1) - dv);
+		}
+		lookup.remove(lookup.size() - 1);
+		visibleLookup.remove(visibleLookup.size() - 1);
+
+		size -= ds;
+		visibleSize -= dv;
 		return l;
 	}
 
@@ -814,8 +853,8 @@ public final class AlarmGroup implements Listable, Cloneable {
 		}
 		else {
 			i.parent.setListable(i.relIndex, item);
+			refreshLookups();
 		}
-		refreshLookups();
 		return i.listable;
 	}
 
@@ -839,8 +878,8 @@ public final class AlarmGroup implements Listable, Cloneable {
 		}
 		else {
 			l = i.parent.deleteListable(i.relIndex);
+			refreshLookups();
 		}
-		refreshLookups();
 		return l;
 	}
 
@@ -993,6 +1032,30 @@ public final class AlarmGroup implements Listable, Cloneable {
 			}
 		}
 		return pathList;
+	}
+
+	/**
+	 * Returns the correct index to insert the given listable into the list at.
+	 * @param listables the list to insert into
+	 * @param l the item to insert
+	 * @return which index to insert the item into, or -1 if there was an error
+	 */
+	@Contract(pure = true)
+	private static int insertIndex(@NotNull final ArrayList<Listable> listables, @NotNull final Listable l) {
+		if (listables.size() == 0) return 0;
+		int left = 0, right = listables.size() - 1, mid, comp;
+
+		while (right >= left) {
+			mid = (left + right) / 2;
+			comp = l.compareTo(listables.get(mid));
+			if (comp == 0) return mid;
+			else if (comp < 0) right = mid - 1;
+			else left = mid + 1;
+		}
+
+		// they "cross over" and represent an inverted but correct range that l sits between
+		// this is the usual case (we don't usually find l)
+		return Math.max(left, right);
 	}
 
 	/**

@@ -9,7 +9,7 @@ import org.jetbrains.annotations.Nullable;
  * Using isAlarm(), it can also discriminate between Alarms and AlarmGroups. This is meant mostly
  * to expose the data necessary for displaying alarms on the main page.
  */
-public interface Listable extends Comparable {
+public interface Listable extends Comparable<Listable> {
 	/**
 	 * Returns the ID of the listable.
 	 */
