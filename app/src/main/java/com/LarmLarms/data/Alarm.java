@@ -1478,6 +1478,10 @@ public final class Alarm implements Listable, Cloneable {
 				}
 				break;
 			case REPEAT_OFFSET:
+				if (offsetDays == 0 && offsetHours == 0 && offsetMins == 0) {
+					if (BuildConfig.DEBUG) Log.e(TAG, "This alarm has no offset, so won't be updated.");
+					return;
+				}
 				while (ringTime.before(workingClock)) {
 					ringTime.add(Calendar.DAY_OF_MONTH, offsetDays);
 					ringTime.add(Calendar.HOUR_OF_DAY, offsetHours);

@@ -1039,6 +1039,12 @@ public class ListableEditorActivity extends AppCompatActivity
 						mins = 0;
 					}
 
+					if (days + hours + mins == 0) {
+						Toast.makeText(this, getResources().getString(R.string.alarm_editor_toast_offset),
+								Toast.LENGTH_SHORT).show();
+						return false;		// don't exit, let the user fix it
+					}
+
 					Calendar newCalendar = Calendar.getInstance();
 
 					// offset from the given date/time

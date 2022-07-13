@@ -8,10 +8,13 @@
 	<string name="editor_name_text">"Title: "</string>
 	<string name="editor_parent_folder_text">"Parent folder: "</string>
 
-	<!-- toasts for naming errors -->
+	<!-- toasts for alarm creation errors -->
 	<string name="alarm_editor_toast_empty">Please create a name for the alarm.</string>
-	<string name="folder_editor_toast_empty">Please create a name for the folder.</string>
 	<string name="alarm_editor_toast_restricted">Alarm names cannot contain tabs or forward slashes (/).</string>
+	<string name="alarm_editor_toast_offset">Please make a nonzero offset.</string>
+
+	<!-- toasts for folder creation errors -->
+	<string name="folder_editor_toast_empty">Please create a name for the folder.</string>
 	<string name="folder_editor_toast_restricted">Folder names cannot contain tabs or forward slashes (/).</string>
 	<string name="folder_editor_toast_duplicate">There cannot be two folders with the same name in the same folder.</string>
 
