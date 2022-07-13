@@ -183,4 +183,22 @@ public class AlarmUnitTest {
 		assertEquals(false, Arrays.equals(alarm.getRepeatDays(), clone.getRepeatDays()));
 		assertEquals(false, alarm.isActive());
 	}
+
+	/**
+	 * Tests the capabilities of compareTo
+	 */
+	@Test
+	public void testCompareTo() {
+		Alarm a = new Alarm(null, "Test");
+		a.setRepeatType(Alarm.REPEAT_ONCE_REL);
+
+		Listable b = a.clone();
+		assertEquals(true, b != null && a.compareTo(b) == 0);
+
+		b = new AlarmGroup("ZZZ");
+		assertEquals(true, a.compareTo(b) > 0);
+
+		b = new Alarm(null, "Zest");
+		assertEquals(true, a.compareTo(b) < 0);
+	}
 }

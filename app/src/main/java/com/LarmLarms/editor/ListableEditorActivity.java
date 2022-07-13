@@ -47,7 +47,6 @@ import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.GregorianCalendar;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -614,7 +613,7 @@ public class ListableEditorActivity extends AppCompatActivity
 	 */
 	private void setupTimePicker() {
 		int timePickerHour, timePickerMin;
-		GregorianCalendar sysClock = new GregorianCalendar();
+		Calendar sysClock = Calendar.getInstance();
 
 		if (isEditing) {
 			// sets it to the current alarm time first
@@ -646,7 +645,7 @@ public class ListableEditorActivity extends AppCompatActivity
 	private void setupDatePicker() {
 		// used temp variable because otherwise the IDE says there's a possible null ptr exception
 		DatePicker picker = findViewById(R.id.alarmDateInput);
-		picker.setMinDate(new GregorianCalendar().getTimeInMillis());
+		picker.setMinDate(Calendar.getInstance().getTimeInMillis());
 		// picker.updateDate();
 		Calendar c = ((Alarm) workingListable).getAlarmTimeCalendar();
 		if (isEditing) {
@@ -800,7 +799,7 @@ public class ListableEditorActivity extends AppCompatActivity
 					}
 					if (alarmDatePicker != null) {
 						// gotta set it back to the right minimum date
-						alarmDatePicker.setMinDate(new GregorianCalendar().getTimeInMillis());
+						alarmDatePicker.setMinDate(Calendar.getInstance().getTimeInMillis());
 					}
 					alarmTimePicker.setVisibility(View.GONE);
 					alarmDaysLayout.setVisibility(View.GONE);
@@ -851,16 +850,20 @@ public class ListableEditorActivity extends AppCompatActivity
 				// only really need to check one offset field, since they essentially come as a set
 				if (alarmOffsetLayout == null) {
 					EditText curr;
+					int temp;
 
 					alarmOffsetLayout = findViewById(R.id.alarmOffsetLayout);
 					curr = alarmOffsetLayout.findViewById(R.id.alarmOffsetDaysInput);
-					curr.setText(String.format("%d", ((Alarm) workingListable).getOffsetDays()));
+					temp = ((Alarm) workingListable).getOffsetDays();
+					if (temp != 0) curr.setText(String.format("%d", temp));
 
 					curr = alarmOffsetLayout.findViewById(R.id.alarmOffsetHoursInput);
-					curr.setText(String.format("%d", ((Alarm) workingListable).getOffsetHours()));
+					temp = ((Alarm) workingListable).getOffsetHours();
+					if (temp != 0) curr.setText(String.format("%d", temp));
 
 					curr = alarmOffsetLayout.findViewById(R.id.alarmOffsetMinsInput);
-					curr.setText(String.format("%d", ((Alarm) workingListable).getOffsetMins()));
+					temp = ((Alarm) workingListable).getOffsetMins();
+					if (temp != 0) curr.setText(String.format("%d", temp));
 
 					if (!((Alarm) workingListable).isOffsetFromNow()) {
 						CheckBox checkBox = alarmOffsetLayout.findViewById(R.id.alarmOffsetFromNowCheckbox);
@@ -874,7 +877,7 @@ public class ListableEditorActivity extends AppCompatActivity
 						c.add(Calendar.MINUTE, -((Alarm) workingListable).getOffsetMins());
 
 						if (alarmTimePicker == null) setupTimePicker();
-						alarmTimePicker.setCurrentHour(c.get(Calendar.HOUR));
+						alarmTimePicker.setCurrentHour(c.get(Calendar.HOUR_OF_DAY));
 						alarmTimePicker.setCurrentMinute(c.get(Calendar.MINUTE));
 
 						if (alarmDatePicker == null) setupDatePicker();
@@ -1036,7 +1039,7 @@ public class ListableEditorActivity extends AppCompatActivity
 						mins = 0;
 					}
 
-					GregorianCalendar newCalendar = new GregorianCalendar();
+					Calendar newCalendar = Calendar.getInstance();
 
 					// offset from the given date/time
 					if (!((Alarm) workingListable).isOffsetFromNow()) pickerToCalendar(newCalendar);

@@ -19,7 +19,6 @@ import org.jetbrains.annotations.Nullable;
 import java.text.DateFormatSymbols;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.GregorianCalendar;
 import java.util.List;
 
 /**
@@ -223,7 +222,7 @@ public final class Alarm implements Listable, Cloneable {
 		if (title == null) name = "default name";
 		else name = title;
 
-		ringTime = new GregorianCalendar();
+		ringTime = Calendar.getInstance();
 
 		repeatType = REPEAT_ONCE_ABS;
 
@@ -232,7 +231,7 @@ public final class Alarm implements Listable, Cloneable {
 		repeatMonths = new boolean[] {true, true, true, true, true, true, true, true, true, true, true, true};
 		repeatWeek = 0;
 
-		offsetDays = 1;
+		offsetDays = 0;
 		offsetHours = 0;
 		offsetMins = 0;
 		offsetFromNow = true;
@@ -504,11 +503,11 @@ public final class Alarm implements Listable, Cloneable {
 	
 	/**
 	 * Compares this alarm with the other object. Folders are always considered "before" alarms.
-	 * Alarms are compared with this precedence: name, type (uses the values of the constants, 
-	 * lower is first), time fields (depends on the type, see below), then id. It shouldn't be 
-	 * necessary to compare anything further since their ids should always be unique. Doesn't quite
+	 * Alarms are compared with this precedence: name (ignores case), type (uses the values of the
+	 * constants, lower is first), time fields (depends on the type, see below), then id. It shouldn't
+	 * be necessary to compare anything further since their ids should always be unique. Doesn't quite
 	 * correlate with the equals method, since they check different things (for example, equals
-	 * doesn't check for id). 
+	 * doesn't check for id).
 	 * 
 	 * For time fields based on alarm type:
 	 * ONCE_ABS - checks ring date/time
@@ -532,7 +531,7 @@ public final class Alarm implements Listable, Cloneable {
 		if (other instanceof AlarmGroup) return 1;
 		
 		Alarm that = (Alarm) other;
-		int temp = this.name.compareTo(that.name);
+		int temp = this.name.toUpperCase().compareTo(that.name.toUpperCase());
 		if (temp != 0) return temp;
 		
 		temp = this.repeatType - that.repeatType;
@@ -1337,8 +1336,8 @@ public final class Alarm implements Listable, Cloneable {
 	public void updateRingTime() {
 		if (!alarmIsActive || alarmSnoozed) { return; }
 
-		GregorianCalendar workingClock = new GregorianCalendar();
-		final GregorianCalendar currTime = new GregorianCalendar();
+		Calendar workingClock = Calendar.getInstance();
+		final Calendar currTime = Calendar.getInstance();
 
 		int currMonth = workingClock.get(Calendar.MONTH);
 		final int thisMonth = currMonth;

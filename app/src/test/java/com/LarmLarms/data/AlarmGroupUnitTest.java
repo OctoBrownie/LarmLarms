@@ -349,4 +349,24 @@ public class AlarmGroupUnitTest {
 		assert cloneL != null;
 		assertEquals(false, folderL.isActive() == cloneL.isActive());
 	}
+
+	/**
+	 * Tests the capabilities of compareTo
+	 */
+	@Test
+	public void testCompareTo() {
+		AlarmGroup a = new AlarmGroup("Test");
+
+		Listable b = a.clone();
+		assertEquals(true, b != null && a.compareTo(b) == 0);
+
+		b = new Alarm(null, "AAA");
+		assertEquals(true, a.compareTo(b) < 0);
+
+		b = new AlarmGroup("Zest");
+		assertEquals(true, a.compareTo(b) < 0);
+
+		b = new AlarmGroup("Test");
+		assertEquals(true, a.compareTo(b) < 0);
+	}
 }
