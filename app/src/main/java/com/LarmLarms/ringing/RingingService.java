@@ -8,7 +8,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.media.AudioAttributes;
+import android.media.AudioFocusRequest;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
@@ -34,7 +37,7 @@ import androidx.core.app.NotificationCompat;
  * notification for the alarm and playing the alarm sounds.
  */
 public class RingingService extends Service implements MediaPlayer.OnPreparedListener,
-		MediaPlayer.OnErrorListener {
+		MediaPlayer.OnErrorListener, AudioManager.OnAudioFocusChangeListener {
 	/**
 	 * Tag of the class for logging purposes.
 	 */
@@ -63,12 +66,6 @@ public class RingingService extends Service implements MediaPlayer.OnPreparedLis
 	public static final int NOTIFICATION_ID = 42;
 
 	/* ***********************************  Non-static fields ********************************* */
-
-	/**
-	 * Plays the ringtone of the alarm. Can be null if the alarm is silent.
-	 */
-	@Nullable
-	private MediaPlayer mediaPlayer;
 
 	/**
 	 * The current alarm being presented.
@@ -101,10 +98,40 @@ public class RingingService extends Service implements MediaPlayer.OnPreparedLis
 	private Message unsentMessage;
 
 	/**
+	 * Plays the ringtone of the alarm. Can be null if the alarm is silent.
+	 */
+	@Nullable
+	private MediaPlayer mediaPlayer;
+
+	/**
+	 * Shows whether audio focus is currently granted to us.
+	 */
+	private boolean audioFocused;
+
+	/**
+	 * Shows whether the media player is prepared for playback or not.
+	 */
+	private boolean playerPrepared;
+
+	/**
+	 * Audio focus request to gain/abandon audio focus.
+	 */
+	@Nullable
+	private AudioFocusRequest audioFocusRequest;
+
+	/**
+	 * Cached reference to the audio manager.
+	 */
+	@Nullable
+	private AudioManager audioManager;
+
+	/**
 	 * Creates a new AlarmRingingService and initializes a connection to the data service.
 	 */
 	public RingingService() {
 		dataConn = new DataServiceConnection();
+		audioFocused = false;
+		playerPrepared = false;
 	}
 
 	/**
@@ -171,14 +198,16 @@ public class RingingService extends Service implements MediaPlayer.OnPreparedLis
 				.setCustomBigContentView(notifView)
 				.setCustomHeadsUpContentView(notifView);
 
+
 		if (alarm.getRingtoneUri() != null && alarm.getVolume() != 0) {
-			// media player setup
-			mediaPlayer = new MediaPlayer();
-			mediaPlayer.setAudioAttributes(new AudioAttributes.Builder()
+			AudioAttributes attributes = new AudioAttributes.Builder()
 					.setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
 					.setUsage(AudioAttributes.USAGE_ALARM)
-					.build()
-			);
+					.build();
+
+			// media player setup
+			mediaPlayer = new MediaPlayer();
+			mediaPlayer.setAudioAttributes(attributes);
 			mediaPlayer.setLooping(true);
 			mediaPlayer.setWakeMode(this, PowerManager.PARTIAL_WAKE_LOCK);
 
@@ -191,6 +220,39 @@ public class RingingService extends Service implements MediaPlayer.OnPreparedLis
 				if (BuildConfig.DEBUG) Log.e(TAG, "Something went wrong while initializing the alarm sounds.");
 				stopSelf();
 				return Service.START_NOT_STICKY;
+			}
+
+			// audio focus request
+			if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+				AudioFocusRequest.Builder requestBuilder = new AudioFocusRequest.Builder(
+						AudioManager.AUDIOFOCUS_GAIN_TRANSIENT);
+				requestBuilder.setAudioAttributes(attributes)
+						.setAcceptsDelayedFocusGain(true)
+						.setOnAudioFocusChangeListener(this);
+				audioFocusRequest = requestBuilder.build();
+				if (audioFocusRequest == null) {
+					if (BuildConfig.DEBUG) Log.wtf(TAG, "Audio focus request was null...");
+					stopSelf();
+					return Service.START_NOT_STICKY;
+				}
+
+				audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+				if (audioManager == null) {
+					if (BuildConfig.DEBUG) Log.e(TAG, "Couldn't reach the audio manager.");
+					stopSelf();
+					return Service.START_NOT_STICKY;
+				}
+				int focus = audioManager.requestAudioFocus(audioFocusRequest);
+				switch(focus) {
+					case AudioManager.AUDIOFOCUS_REQUEST_GRANTED:
+						audioFocused = true;
+						if (mediaPlayer != null && playerPrepared) mediaPlayer.start();
+						break;
+					case AudioManager.AUDIOFOCUS_REQUEST_FAILED:
+					case AudioManager.AUDIOFOCUS_REQUEST_DELAYED:
+						audioFocused = false;
+						break;
+				}
 			}
 		}
 
@@ -212,8 +274,8 @@ public class RingingService extends Service implements MediaPlayer.OnPreparedLis
 	}
 
 	/**
-	 * Called when the service is being destroyed. Unbinds from the data service if it is bound and
-	 * releases the media player if it's not null.
+	 * Called when the service is being destroyed. Unbinds from the data service if it is bound,
+	 * releases the media player if it's not null, and releases audio focus if necessary.
 	 */
 	@Override
 	public void onDestroy() {
@@ -222,8 +284,15 @@ public class RingingService extends Service implements MediaPlayer.OnPreparedLis
 			dataService = null;
 			unbindService(dataConn);
 		}
-		if (mediaPlayer != null)
+		if (mediaPlayer != null) {
 			mediaPlayer.release();
+			mediaPlayer = null;
+
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+				if (audioManager != null && audioFocusRequest != null)
+					audioManager.abandonAudioFocusRequest(audioFocusRequest);
+			}
+		}
 	}
 
 	/* ********************************  MediaPlayer Callbacks  ******************************** */
@@ -236,7 +305,8 @@ public class RingingService extends Service implements MediaPlayer.OnPreparedLis
 	public void onPrepared(@NotNull MediaPlayer mp) {
 		float vol = alarm.getVolume() / 100f;
 		mp.setVolume(vol, vol);
-		mp.start();
+		playerPrepared = true;
+		if (audioFocused) mp.start();
 	}
 
 	/**
@@ -253,6 +323,27 @@ public class RingingService extends Service implements MediaPlayer.OnPreparedLis
 			mediaPlayer.release();
 		stopSelf();
 		return false;
+	}
+
+	/**
+	 * For audio focus requests when it becomes not delayed.
+	 * @param focusChange the new focus state
+	 */
+	@Override
+	public void onAudioFocusChange(int focusChange) {
+		switch(focusChange) {
+			case AudioManager.AUDIOFOCUS_GAIN_TRANSIENT:
+				audioFocused = true;
+				if (mediaPlayer != null && playerPrepared && !mediaPlayer.isPlaying())
+					mediaPlayer.start();
+				break;
+			case AudioManager.AUDIOFOCUS_LOSS:
+			case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:
+			case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
+				audioFocused = false;
+				if (mediaPlayer != null && mediaPlayer.isPlaying()) mediaPlayer.stop();
+				break;
+		}
 	}
 
 	/* *************************************  Other Methods  ************************************ */
@@ -339,6 +430,11 @@ public class RingingService extends Service implements MediaPlayer.OnPreparedLis
 				service.mediaPlayer.stop();
 				service.mediaPlayer.release();
 				service.mediaPlayer = null;
+
+				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+					if (service.audioManager != null && service.audioFocusRequest != null)
+						service.audioManager.abandonAudioFocusRequest(service.audioFocusRequest);
+				}
 			}
 
 			service.stopSelf();
@@ -362,6 +458,18 @@ public class RingingService extends Service implements MediaPlayer.OnPreparedLis
 
 			if (unsentMessage != null) {
 				sendMessage(unsentMessage);
+
+				if (mediaPlayer != null) {
+					mediaPlayer.stop();
+					mediaPlayer.release();
+					mediaPlayer = null;
+
+					if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+						if (audioManager != null && audioFocusRequest != null)
+							audioManager.abandonAudioFocusRequest(audioFocusRequest);
+					}
+				}
+
 				stopSelf();
 			}
 		}
@@ -376,6 +484,17 @@ public class RingingService extends Service implements MediaPlayer.OnPreparedLis
 			if (BuildConfig.DEBUG) Log.e(TAG, "The data service crashed.");
 			boundToDataService = false;
 			dataService = null;
+
+			if (mediaPlayer != null) {
+				mediaPlayer.stop();
+				mediaPlayer.release();
+				mediaPlayer = null;
+
+				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+					if (audioManager != null && audioFocusRequest != null)
+						audioManager.abandonAudioFocusRequest(audioFocusRequest);
+				}
+			}
 
 			stopSelf();
 		}
