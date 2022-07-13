@@ -666,7 +666,7 @@ public final class Alarm implements Listable, Cloneable {
 	 * <br/>
 	 * Current edit string format (separated by TABS):
 	 * [id] [alarm title] [active] [repeat info] [next ring time] [ringtone uri] [is snoozed]
-	 * [# of snoozes] [volume]
+	 * [# of snoozes] [volume] [vibrate]
 	 * <br/>
 	 * Repeat type format (separated by SPACES): [type] [type-specific data]
 	 * <br/>
@@ -735,6 +735,7 @@ public final class Alarm implements Listable, Cloneable {
 		alarmString.append('\t').append(alarmSnoozed);
 		alarmString.append('\t').append(numSnoozes);
 		alarmString.append('\t').append(volume);
+		alarmString.append('\t').append(alarmVibrateIsOn);
 
 		return alarmString.toString();
 	}
@@ -917,12 +918,6 @@ public final class Alarm implements Listable, Cloneable {
 	public void setOffsetFromNow(boolean offsetFromNow) { this.offsetFromNow = offsetFromNow; }
 
 	/**
-	 * Gets whether the current alarm is snoozed or not.
-	 */
-	@Contract(pure = true)
-	boolean getIsSnoozed() { return alarmSnoozed; }
-
-	/**
 	 * Gets whether the alarm has vibrate on or not.
 	 */
 	@Contract(pure = true)
@@ -990,6 +985,7 @@ public final class Alarm implements Listable, Cloneable {
 	/**
 	 * Returns a new Alarm based on the given string. For edit string creation and format, see
 	 * toEditString().
+	 * @see #toEditString()
 	 *
 	 * @param context current operating context, can be null
 	 * @param src edit string to build an Alarm out of, can be null
@@ -1007,7 +1003,7 @@ public final class Alarm implements Listable, Cloneable {
 		}
 
 		String[] fields = src.split("\t");
-		if (fields.length != 8 && fields.length != 9) {
+		if (fields.length != 10) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "Edit string didn't have a correct number of fields.");
 			return null;
 		}
@@ -1113,6 +1109,8 @@ public final class Alarm implements Listable, Cloneable {
 			if (BuildConfig.DEBUG) Log.e(TAG, "Edit string has an invalid volume.");
 			return null;
 		}
+
+		res.setVibrateOn(Boolean.parseBoolean(fields[9]));
 
 		return res;
 	}

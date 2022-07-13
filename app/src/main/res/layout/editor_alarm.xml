@@ -292,6 +292,7 @@
 					android:text="@null" />
 			</LinearLayout>
 
+			<!-- volume slider -->
 			<LinearLayout
 				android:layout_width="match_parent"
 				android:layout_height="wrap_content"
@@ -310,6 +311,17 @@
 					android:layout_width="match_parent"
 					android:layout_height="wrap_content" />
 			</LinearLayout>
+
+			<!-- vibrate checkbox -->
+			<CheckBox
+				style="@style/EditorLabelStyle"
+
+				android:id="@+id/alarmVibrateCheckbox"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:text="@string/alarm_editor_vibrate"
+				android:checked="true"
+				android:onClick="onCheckboxClicked"/>
 		</LinearLayout>
 	</ScrollView>
 </LinearLayout>

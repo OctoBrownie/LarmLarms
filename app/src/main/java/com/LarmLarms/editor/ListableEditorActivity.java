@@ -530,24 +530,31 @@ public class ListableEditorActivity extends AppCompatActivity
 	 */
 	public void onCheckboxClicked(@NotNull View view) {
 		boolean checked = ((CheckBox) view).isChecked();
-		((Alarm) workingListable).setOffsetFromNow(checked);
 
-		// FOR NOW, no other checkboxes except offsetFromNowCheckbox
-		if (checked) {
-			// hide the time and date pickers
-			if (alarmTimePicker != null) alarmTimePicker.setVisibility(View.GONE);
-			if (alarmDatePicker != null) alarmDatePicker.setVisibility(View.GONE);
-		}
-		else {
-			// show the time and date pickers
-			if (alarmTimePicker == null) setupTimePicker();
-			alarmTimePicker.setVisibility(View.VISIBLE);
+		switch(view.getId()) {
+			case R.id.alarmOffsetFromNowCheckbox:
+				((Alarm) workingListable).setOffsetFromNow(checked);
 
-			if (alarmDatePicker == null) {
-				setupDatePicker();
-				alarmDatePicker.setMinDate(0);		// in case the date picker hadn't been set up yet
-			}
-			alarmDatePicker.setVisibility(View.VISIBLE);
+				if (checked) {
+					// hide the time and date pickers
+					if (alarmTimePicker != null) alarmTimePicker.setVisibility(View.GONE);
+					if (alarmDatePicker != null) alarmDatePicker.setVisibility(View.GONE);
+				}
+				else {
+					// show the time and date pickers
+					if (alarmTimePicker == null) setupTimePicker();
+					alarmTimePicker.setVisibility(View.VISIBLE);
+
+					if (alarmDatePicker == null) {
+						setupDatePicker();
+						alarmDatePicker.setMinDate(0);		// in case the date picker hadn't been set up yet
+					}
+					alarmDatePicker.setVisibility(View.VISIBLE);
+				}
+				break;
+			case R.id.alarmVibrateCheckbox:
+				((Alarm) workingListable).setVibrateOn(checked);
+				break;
 		}
 	}
 
@@ -600,6 +607,10 @@ public class ListableEditorActivity extends AppCompatActivity
 		SeekBar volumeBar = findViewById(R.id.volumeSeekBar);
 		volumeBar.setProgress(((Alarm) workingListable).getVolume());
 		volumeBar.setOnSeekBarChangeListener(this);
+
+		// vibrate checkbox
+		CheckBox vibrateBox = findViewById(R.id.alarmVibrateCheckbox);
+		vibrateBox.setChecked(((Alarm) workingListable).isVibrateOn());
 	}
 
 	/**

@@ -25,6 +25,7 @@
 	<string name="alarm_editor_sound_button">Set Ringtone</string>
 	<string name="alarm_editor_silent">Silent</string>
 	<string name="alarm_editor_volume_text">Volume</string>
+	<string name="alarm_editor_vibrate">Vibrate?</string>
 
 	<!-- For specific repeat types -->
 	<string name="alarm_editor_offset_days_text">"Days: "</string>
