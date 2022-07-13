@@ -960,12 +960,15 @@ public class AlarmDataService extends Service {
 	static void createNotificationChannel(@NotNull Context context) {
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 			CharSequence name = context.getString(R.string.notif_channel_name);
+			String description = context.getString(R.string.notif_channel_description);
 			int importance = NotificationManager.IMPORTANCE_HIGH;
+
 			NotificationChannel channel = new NotificationChannel(RingingService.CHANNEL_ID, name, importance);
+			channel.setDescription(description);
 			channel.setShowBadge(false);
 			channel.setBypassDnd(true);
 			channel.enableLights(true);
-			channel.enableVibration(true);
+			channel.enableVibration(false);
 			channel.setSound(null, null);
 
 			// Register the channel with the system; can't change the importance or behaviors after this

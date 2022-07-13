@@ -8,6 +8,7 @@
 
 	<!-- notification display strings, prefixed by "notif" -->
 	<string name="notif_channel_name">Alarms</string>
+	<string name="notif_channel_description">Where all of the alarms are sent.</string>
 	<string name="notif_ticker">Ringing alarm</string>
 	<string name="notif_dismiss">dismiss</string>
 	<string name="notif_snooze">snooze</string>
