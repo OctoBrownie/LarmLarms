@@ -46,6 +46,7 @@ Make "offset from now" only a thing in the Editor (the alarms are ALWAYS offset 
 	If it's close enough (within the minute or something), shouldn't change ringTime at all (makes it exact)
 Preview alarm (mostly for volume)?
 Maybe could use a single ListableInfo field for ListableEditor instead of saving to multiple fields
+Keep scroll position on the recycler view?
 
 BUGS
 Vibration only occurs right when the alarm starts ringing (doesn't loop)

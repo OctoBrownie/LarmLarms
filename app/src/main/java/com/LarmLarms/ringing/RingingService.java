@@ -128,7 +128,8 @@ public class RingingService extends Service implements MediaPlayer.OnPreparedLis
 	private AudioManager audioManager;
 
 	/**
-	 * System vibrator.
+	 * Cached reference to the vibrator. Can be null if vibration is disabled or if there is no
+	 * vibrator.
 	 */
 	@Nullable
 	private Vibrator vibrator;
