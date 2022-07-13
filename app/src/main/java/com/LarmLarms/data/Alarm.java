@@ -80,6 +80,12 @@ public final class Alarm implements Listable, Cloneable {
 	 */
 	private static final int NUM_REPEAT_TYPES = 7;
 
+	/**
+	 * Vibration pattern for all alarms.
+	 * @see android.os.VibrationEffect
+	 */
+	public static final long[] VIBRATION_PATTERN = {0, 1000, 1000};
+
 	/* ***********************************  Instance Fields  ******************************** */
 
 	/**

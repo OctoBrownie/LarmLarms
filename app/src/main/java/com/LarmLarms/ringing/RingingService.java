@@ -19,6 +19,8 @@ import android.os.Message;
 import android.os.Messenger;
 import android.os.PowerManager;
 import android.os.RemoteException;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
 import android.util.Log;
 import android.widget.RemoteViews;
 
@@ -126,6 +128,12 @@ public class RingingService extends Service implements MediaPlayer.OnPreparedLis
 	private AudioManager audioManager;
 
 	/**
+	 * System vibrator.
+	 */
+	@Nullable
+	private Vibrator vibrator;
+
+	/**
 	 * Creates a new AlarmRingingService and initializes a connection to the data service.
 	 */
 	public RingingService() {
@@ -186,8 +194,9 @@ public class RingingService extends Service implements MediaPlayer.OnPreparedLis
 				.setContentText(alarm.getListableName())
 				.setTicker(getResources().getString(R.string.notif_ticker))
 				.setPriority(NotificationCompat.PRIORITY_MAX)
-				.setDefaults(Notification.DEFAULT_VIBRATE | Notification.DEFAULT_LIGHTS)
+				.setDefaults(Notification.DEFAULT_LIGHTS)
 				.setSound(null)
+				.setVibrate(new long[]{0})
 				.setContentIntent(fullScreenPendingIntent)
 				.setAutoCancel(true)
 				.setCategory(NotificationCompat.CATEGORY_ALARM)
@@ -199,15 +208,16 @@ public class RingingService extends Service implements MediaPlayer.OnPreparedLis
 				.setCustomHeadsUpContentView(notifView);
 
 
+		// ringtone setup
+		AudioAttributes audioAttributes = new AudioAttributes.Builder()
+				.setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+				.setUsage(AudioAttributes.USAGE_ALARM)
+				.build();
 		if (alarm.getRingtoneUri() != null && alarm.getVolume() != 0) {
-			AudioAttributes attributes = new AudioAttributes.Builder()
-					.setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-					.setUsage(AudioAttributes.USAGE_ALARM)
-					.build();
 
 			// media player setup
 			mediaPlayer = new MediaPlayer();
-			mediaPlayer.setAudioAttributes(attributes);
+			mediaPlayer.setAudioAttributes(audioAttributes);
 			mediaPlayer.setLooping(true);
 			mediaPlayer.setWakeMode(this, PowerManager.PARTIAL_WAKE_LOCK);
 
@@ -226,7 +236,7 @@ public class RingingService extends Service implements MediaPlayer.OnPreparedLis
 			if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
 				AudioFocusRequest.Builder requestBuilder = new AudioFocusRequest.Builder(
 						AudioManager.AUDIOFOCUS_GAIN_TRANSIENT);
-				requestBuilder.setAudioAttributes(attributes)
+				requestBuilder.setAudioAttributes(audioAttributes)
 						.setAcceptsDelayedFocusGain(true)
 						.setOnAudioFocusChangeListener(this);
 				audioFocusRequest = requestBuilder.build();
@@ -239,6 +249,7 @@ public class RingingService extends Service implements MediaPlayer.OnPreparedLis
 				audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
 				if (audioManager == null) {
 					if (BuildConfig.DEBUG) Log.e(TAG, "Couldn't reach the audio manager.");
+					exitService();
 					stopSelf();
 					return Service.START_NOT_STICKY;
 				}
@@ -253,6 +264,25 @@ public class RingingService extends Service implements MediaPlayer.OnPreparedLis
 						audioFocused = false;
 						break;
 				}
+			}
+		}
+
+		if (alarm.isVibrateOn()) {
+			// vibrator setup
+			vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+			if (vibrator == null) {
+				if (BuildConfig.DEBUG) Log.e(TAG, "Couldn't reach the vibrator.");
+				exitService();
+				stopSelf();
+				return Service.START_NOT_STICKY;
+			}
+
+			if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+				VibrationEffect e = VibrationEffect.createWaveform(Alarm.VIBRATION_PATTERN, 1);
+				vibrator.vibrate(e, audioAttributes);
+			}
+			else {
+				vibrator.vibrate(Alarm.VIBRATION_PATTERN, 1);
 			}
 		}
 
@@ -279,11 +309,20 @@ public class RingingService extends Service implements MediaPlayer.OnPreparedLis
 	 */
 	@Override
 	public void onDestroy() {
+		exitService();
+	}
+
+	/**
+	 * Closes everything. Takes care of the data connection, media player, audio focus, and vibrator.
+	 * Doesn't stop the service, though.
+	 */
+	private void exitService() {
 		if (boundToDataService) {
 			boundToDataService = false;
 			dataService = null;
 			unbindService(dataConn);
 		}
+
 		if (mediaPlayer != null) {
 			mediaPlayer.release();
 			mediaPlayer = null;
@@ -292,6 +331,10 @@ public class RingingService extends Service implements MediaPlayer.OnPreparedLis
 				if (audioManager != null && audioFocusRequest != null)
 					audioManager.abandonAudioFocusRequest(audioFocusRequest);
 			}
+		}
+
+		if (vibrator != null) {
+			vibrator.cancel();
 		}
 	}
 
@@ -319,8 +362,7 @@ public class RingingService extends Service implements MediaPlayer.OnPreparedLis
 	@Override
 	public boolean onError(@NotNull MediaPlayer mp, int what, int extra) {
 		if (BuildConfig.DEBUG) Log.e(TAG, "Something went wrong while playing the alarm sounds.");
-		if (mediaPlayer != null)
-			mediaPlayer.release();
+		exitService();
 		stopSelf();
 		return false;
 	}
@@ -425,18 +467,7 @@ public class RingingService extends Service implements MediaPlayer.OnPreparedLis
 				return;
 			}
 			service.stopForeground(true);
-
-			if (service.mediaPlayer != null) {
-				service.mediaPlayer.stop();
-				service.mediaPlayer.release();
-				service.mediaPlayer = null;
-
-				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-					if (service.audioManager != null && service.audioFocusRequest != null)
-						service.audioManager.abandonAudioFocusRequest(service.audioFocusRequest);
-				}
-			}
-
+			service.exitService();
 			service.stopSelf();
 		}
 	}
@@ -459,17 +490,7 @@ public class RingingService extends Service implements MediaPlayer.OnPreparedLis
 			if (unsentMessage != null) {
 				sendMessage(unsentMessage);
 
-				if (mediaPlayer != null) {
-					mediaPlayer.stop();
-					mediaPlayer.release();
-					mediaPlayer = null;
-
-					if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-						if (audioManager != null && audioFocusRequest != null)
-							audioManager.abandonAudioFocusRequest(audioFocusRequest);
-					}
-				}
-
+				exitService();
 				stopSelf();
 			}
 		}
@@ -482,20 +503,8 @@ public class RingingService extends Service implements MediaPlayer.OnPreparedLis
 		@Override
 		public void onServiceDisconnected(@NotNull ComponentName className) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "The data service crashed.");
-			boundToDataService = false;
-			dataService = null;
 
-			if (mediaPlayer != null) {
-				mediaPlayer.stop();
-				mediaPlayer.release();
-				mediaPlayer = null;
-
-				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-					if (audioManager != null && audioFocusRequest != null)
-						audioManager.abandonAudioFocusRequest(audioFocusRequest);
-				}
-			}
-
+			exitService();
 			stopSelf();
 		}
 	}
