@@ -9,8 +9,6 @@ Make the UI look prettier
 New ListableEditor features
 	Switches for ringtone and vibration (?)
 	Customizable vibrations?
-		If we do this, probably want to manage our own Vibrator instead of relying on the
-		NotificationChannel's (can't change per alarm, is editable by user in settings)
 Settings activity and some ideas for settings:
 	Uppercase/lowercase for time strings (PM vs pm, currently hardcoded to lowercase)
 	Theme changes
@@ -22,24 +20,18 @@ Style all components
 	Also ensure all components of a single type all have the same style (or children of it)
 Make documentation less... conversational?
 Make snake_case and camelCase variables and stuff all consistent?
-Make CardViews draggable (to reorder within folders??)
-	Helpful Android documentation: https://developer.android.com/guide/topics/ui/drag-drop
-	Dragging items would interfere with the dragging of the list view so maybe not
 Perhaps make setter functions return a ref to the object (allow chain setting)
 Remove superfluous methods and unnecessary fields
 	Same with styles or strings or colors or attr or dimens or...
 Silent exiting (+ logging) when encountering issues or raising exceptions?
 	Could also print stack trace
 Make more tests
-Could use DiffUtil perhaps for differences between versions of lists (minimal animations)
 Show multiple alarms if they ring near the same time (in a notification? together with the other alarm?)
 	What happens right now is that they will ring one after the other (a feature, not a bug?)
 Confirm permissions haven't been revoked?
-Could use created time as a key for listables
 Between versions, transfer alarms list (so data isn't lost)
-Fade in alarm sounds
+Fade in alarm sounds?
 Perhaps the folder animation looks a bit stiff because the folder itself doesn't move
-Reorder alarms within a folder
 Make "offset from now" only a thing in the Editor (the alarms are ALWAYS offset from a specific time)
 	Makes it so that when you're trying to edit an alarm, it will KEEP the same offset if you don't
 	change the offset time
@@ -49,13 +41,6 @@ Maybe could use a single ListableInfo field for ListableEditor instead of saving
 Keep scroll position on the recycler view?
 
 BUGS
-Vibration only occurs right when the alarm starts ringing (doesn't loop)
-Will stop ringing if the notification is clicked in the notifications bar (a feature, not a bug?)
-It may be possible to duplicate an alarm notification if the user interacts with the app during an
-	active ringing alarm (like setting or deleting something)
-	Possible solution: make the dataService "silent" and have it not change the PendingIntent until
-		it is not silenced anymore (or it dies and restarts)
-		In that case, the flag would automatically set it to be "silent" from the start
 Sometimes requires you to unlock your phone to turn off the alarm (when off)
 For February 29 in particular, REPEAT_DATE_MONTHLY may fail if it's ONLY February for repeat months
 	Should repeat every 4 years, with some exceptions...
