@@ -10,6 +10,7 @@
 	<string name="notif_channel_name">Alarms</string>
 	<string name="notif_channel_description">Where all of the alarms are sent.</string>
 	<string name="notif_ticker">Ringing alarm</string>
+	<string name="notif_description">Click here to snooze or dismiss the alarm.</string>
 	<string name="notif_dismiss">dismiss</string>
 	<string name="notif_snooze">snooze</string>
 	<string name="notif_service_description">Starts alarms and plays alarm ringtones.</string>

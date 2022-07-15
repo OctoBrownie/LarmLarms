@@ -188,17 +188,19 @@ public class RingingService extends Service implements MediaPlayer.OnPreparedLis
 		RemoteViews notifView = new RemoteViews(getPackageName(), R.layout.alarm_notification);
 		notifView.setTextViewText(R.id.alarm_name_text, alarm.getListableName());
 
+		// we need this line to ensure actions pop up on the heads up notification
+		notifView.setOnClickPendingIntent(R.id.snoozeButton, snoozePendingIntent);
+		notifView.setOnClickPendingIntent(R.id.dismissButton, dismissPendingIntent);
+
 		NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
 				.setSmallIcon(R.mipmap.ic_launcher)
-				.setContentTitle(getResources().getString(R.string.app_name))
-				.setContentText(alarm.getListableName())
+				.setContentTitle(alarm.getListableName())
+				.setContentText(getResources().getString(R.string.notif_description))
 				.setTicker(getResources().getString(R.string.notif_ticker))
 				.setPriority(NotificationCompat.PRIORITY_MAX)
 				.setDefaults(Notification.DEFAULT_LIGHTS)
 				.setSound(Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE + "://" +
 						getPackageName() + "/raw/silence"))
-				.addAction(0, getResources().getString(R.string.notif_snooze), snoozePendingIntent)
-				.addAction(0, getResources().getString(R.string.notif_dismiss), dismissPendingIntent)
 				.setVibrate(new long[]{0})
 				.setContentIntent(fullScreenPendingIntent)
 				.setAutoCancel(true)

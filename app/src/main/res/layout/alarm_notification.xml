@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
 	xmlns:tools="http://schemas.android.com/tools"
+	android:id="@+id/notification"
 	android:orientation="vertical"
 	android:layout_width="match_parent"
 	android:layout_height="wrap_content"
@@ -12,8 +13,35 @@
 		android:id="@+id/alarm_name_text"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
-		android:layout_margin="@dimen/marginSizeDefault"
+		android:layout_margin="@dimen/marginSizeSmall"
 		android:gravity="start"
+		android:textSize="@dimen/fontSizeBig"
 		android:text=""
 		tools:text="Name of Alarm"/>
+
+	<LinearLayout
+		android:orientation="horizontal"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content">
+		<android.widget.Button
+			style="@style/ButtonStyle.Borderless"
+
+			android:id="@+id/snoozeButton"
+			android:text="@string/notif_snooze"
+			android:layout_width="0dp"
+			android:layout_height="wrap_content"
+			android:layout_weight="1" />
+		<LinearLayout
+			android:layout_width="2dp"
+			android:layout_height="match_parent"
+			android:background="?attr/colorPrimary"/>
+		<android.widget.Button
+			style="@style/ButtonStyle.Borderless"
+
+			android:id="@+id/dismissButton"
+			android:text="@string/notif_dismiss"
+			android:layout_width="0dp"
+			android:layout_height="wrap_content"
+			android:layout_weight="1" />
+	</LinearLayout>
 </LinearLayout>

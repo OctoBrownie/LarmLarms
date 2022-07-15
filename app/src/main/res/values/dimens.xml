@@ -15,7 +15,8 @@
 
 	<!-- font sizes -->
 	<dimen name="fontSizeBody">16sp</dimen>
-	<dimen name="fontSizeBig">32sp</dimen>
+	<dimen name="fontSizeBig">24sp</dimen>
+	<dimen name="fontSizeHuge">32sp</dimen>
 
 	<!-- folder icon rotation -->
 	<dimen name="startRotation">0</dimen>
