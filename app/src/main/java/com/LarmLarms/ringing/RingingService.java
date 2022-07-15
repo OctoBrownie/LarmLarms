@@ -4,6 +4,7 @@ import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.ComponentName;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
@@ -11,6 +12,7 @@ import android.media.AudioAttributes;
 import android.media.AudioFocusRequest;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
@@ -186,9 +188,6 @@ public class RingingService extends Service implements MediaPlayer.OnPreparedLis
 		RemoteViews notifView = new RemoteViews(getPackageName(), R.layout.alarm_notification);
 		notifView.setTextViewText(R.id.alarm_name_text, alarm.getListableName());
 
-		notifView.setOnClickPendingIntent(R.id.snooze_button, snoozePendingIntent);
-		notifView.setOnClickPendingIntent(R.id.dismiss_button, dismissPendingIntent);
-
 		NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
 				.setSmallIcon(R.mipmap.ic_launcher)
 				.setContentTitle(getResources().getString(R.string.app_name))
@@ -196,7 +195,10 @@ public class RingingService extends Service implements MediaPlayer.OnPreparedLis
 				.setTicker(getResources().getString(R.string.notif_ticker))
 				.setPriority(NotificationCompat.PRIORITY_MAX)
 				.setDefaults(Notification.DEFAULT_LIGHTS)
-				.setSound(null)
+				.setSound(Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE + "://" +
+						getPackageName() + "/raw/silence"))
+				.addAction(0, getResources().getString(R.string.notif_snooze), snoozePendingIntent)
+				.addAction(0, getResources().getString(R.string.notif_dismiss), dismissPendingIntent)
 				.setVibrate(new long[]{0})
 				.setContentIntent(fullScreenPendingIntent)
 				.setAutoCancel(true)
@@ -204,8 +206,6 @@ public class RingingService extends Service implements MediaPlayer.OnPreparedLis
 				.setOngoing(true)
 				.setFullScreenIntent(fullScreenPendingIntent, true)
 				.setStyle(new NotificationCompat.DecoratedCustomViewStyle())
-				.setCustomContentView(notifView)
-				.setCustomBigContentView(notifView)
 				.setCustomHeadsUpContentView(notifView);
 
 

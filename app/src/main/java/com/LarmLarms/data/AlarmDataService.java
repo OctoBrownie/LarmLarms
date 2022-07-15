@@ -5,8 +5,11 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.media.AudioAttributes;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -968,8 +971,12 @@ public class AlarmDataService extends Service {
 			channel.setShowBadge(false);
 			channel.setBypassDnd(true);
 			channel.enableLights(true);
-			channel.enableVibration(false);
-			channel.setSound(null, null);
+
+			AudioAttributes.Builder attrBuilder = new AudioAttributes.Builder();
+			attrBuilder.setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+					.setUsage(AudioAttributes.USAGE_ALARM);
+			channel.setSound(Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE + "://" +
+					context.getPackageName() + "/raw/silence"), attrBuilder.build());
 
 			// Register the channel with the system; can't change the importance or behaviors after this
 			NotificationManager notificationManager = context.getSystemService(NotificationManager.class);

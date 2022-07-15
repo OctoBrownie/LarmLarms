@@ -313,6 +313,7 @@
 			</LinearLayout>
 
 			<!-- vibrate checkbox -->
+			<!-- TODO: I kinda don't like the look of the checkbox, swap to toggle? -->
 			<CheckBox
 				style="@style/EditorLabelStyle"
 
