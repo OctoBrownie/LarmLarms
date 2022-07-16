@@ -18,7 +18,8 @@
 		<item name="colorSurface">@color/veryLightGrey</item>
 		<item name="colorAccent">@color/seaBlue</item>
 
-		<item name="inactiveTextColor">@color/grey</item>
-		<item name="activeTextColor">?attr/colorOnBackground</item>
+		<!-- for switches -->
+		<item name="inactiveSwitchColor">@color/lightGrey</item>
+		<item name="switchThumbColor">@color/sand</item>
 	</style>
 </resources>

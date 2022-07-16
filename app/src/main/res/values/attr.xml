@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-	<attr name="activeTextColor" format="color" />
-	<attr name="inactiveTextColor" format="color" />
+	<attr name="inactiveSwitchColor" format="color" />
+	<attr name="switchThumbColor" format="color" />
 </resources>

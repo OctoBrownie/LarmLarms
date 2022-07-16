@@ -27,6 +27,13 @@
 		<item name="android:layout_gravity">center</item>
 	</style>
 
+	<style name="Switch" parent="Widget.MaterialComponents.CompoundButton.Switch">
+		<item name="android:layout_margin">@dimen/marginSizeDefault</item>
+
+		<item name="android:thumbTint">?attr/switchThumbColor</item>
+		<item name="android:colorForeground">?attr/inactiveSwitchColor</item>
+	</style>
+
 	<!-- - - - - - - - - - - - - - - -  styles for Buttons  - - - - - - - - - - - - - - - - - - -->
 
 	<style name="ButtonStyle" parent="Widget.MaterialComponents.Button">

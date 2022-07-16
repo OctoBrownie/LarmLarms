@@ -179,7 +179,7 @@
 					android:layout_height="wrap_content"
 					android:text="@string/alarm_editor_offset_from_now"
 					android:checked="true"
-					android:onClick="onCheckboxClicked"/>
+					android:onClick="onCompoundButtonClicked"/>
 
 				<!-- days -->
 				<LinearLayout
@@ -312,17 +312,25 @@
 					android:layout_height="wrap_content" />
 			</LinearLayout>
 
-			<!-- vibrate checkbox -->
-			<!-- TODO: I kinda don't like the look of the checkbox, swap to toggle? -->
-			<CheckBox
-				style="@style/EditorLabelStyle"
-
-				android:id="@+id/alarmVibrateCheckbox"
+			<!-- vibrate switch -->
+			<LinearLayout
+				android:orientation="horizontal"
 				android:layout_width="match_parent"
-				android:layout_height="wrap_content"
-				android:text="@string/alarm_editor_vibrate"
-				android:checked="true"
-				android:onClick="onCheckboxClicked"/>
+				android:layout_height="wrap_content">
+				<Switch
+					style="@style/Switch"
+
+					android:id="@+id/alarmVibrateSwitch"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:onClick="onCompoundButtonClicked" />
+				<TextView
+					style="@style/EditorLabelStyle"
+
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:text="@string/alarm_editor_vibrate" />
+			</LinearLayout>
 		</LinearLayout>
 	</ScrollView>
 </LinearLayout>

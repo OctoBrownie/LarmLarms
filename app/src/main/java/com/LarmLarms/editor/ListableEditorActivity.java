@@ -22,11 +22,13 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.NumberPicker;
 import android.widget.SeekBar;
 import android.widget.Spinner;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
@@ -525,13 +527,14 @@ public class ListableEditorActivity extends AppCompatActivity
 	}
 
 	/**
-	 * Callback for when a checkbox is clicked.
+	 * Callback for when a compound button (checkbox or switch) is clicked.
 	 * @param view the checkbox that was clicked
 	 */
-	public void onCheckboxClicked(@NotNull View view) {
-		boolean checked = ((CheckBox) view).isChecked();
+	public void onCompoundButtonClicked(@NotNull View view) {
+		boolean checked = ((CompoundButton) view).isChecked();
 
-		switch(view.getId()) {
+		int id = view.getId();
+		switch(id) {
 			case R.id.alarmOffsetFromNowCheckbox:
 				((Alarm) workingListable).setOffsetFromNow(checked);
 
@@ -552,7 +555,7 @@ public class ListableEditorActivity extends AppCompatActivity
 					alarmDatePicker.setVisibility(View.VISIBLE);
 				}
 				break;
-			case R.id.alarmVibrateCheckbox:
+			case R.id.alarmVibrateSwitch:
 				((Alarm) workingListable).setVibrateOn(checked);
 				break;
 		}
@@ -608,8 +611,8 @@ public class ListableEditorActivity extends AppCompatActivity
 		volumeBar.setProgress(((Alarm) workingListable).getVolume());
 		volumeBar.setOnSeekBarChangeListener(this);
 
-		// vibrate checkbox
-		CheckBox vibrateBox = findViewById(R.id.alarmVibrateCheckbox);
+		// vibrate switch
+		Switch vibrateBox = findViewById(R.id.alarmVibrateSwitch);
 		vibrateBox.setChecked(((Alarm) workingListable).isVibrateOn());
 	}
 
