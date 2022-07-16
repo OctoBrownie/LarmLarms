@@ -34,6 +34,11 @@ public class RecyclerViewFrag extends Fragment {
 	private static final String TAG = "RecyclerViewFragment";
 
 	/**
+	 * Bundle key for the recycler view's layout manager's instance state.
+	 */
+	private static final String BUNDLE_INSTANCE_STATE = "com.LarmLarms.RECYCLER_STATE_KEY";
+
+	/**
 	 * The adapter for the RecyclerView, recreated every time onCreateView() is called. Can be used
 	 * when not bound to the data service, but not advised without a plan to bind to the service
 	 * soon.
@@ -76,8 +81,14 @@ public class RecyclerViewFrag extends Fragment {
 		recyclerView = rootView.findViewById(R.id.recycler_view);
 
 		LinearLayoutManager myLayoutManager = new LinearLayoutManager(getActivity());
+		if (savedInstanceState != null) {
+			myLayoutManager.onRestoreInstanceState(savedInstanceState.getParcelable(BUNDLE_INSTANCE_STATE));
+		}
+		else {
+			recyclerView.scrollToPosition(0);
+		}
 		recyclerView.setLayoutManager(myLayoutManager);
-		recyclerView.scrollToPosition(0);
+		recyclerView.setAdapter(myAdapter);
 
 		return rootView;
 	}
@@ -94,6 +105,16 @@ public class RecyclerViewFrag extends Fragment {
 	}
 
 	/**
+	 * Called when the fragment is closing and it wants to save its previous state. Saves the recycler
+	 * view's state.
+	 * @param outState the bundle to save things to
+	 */
+	@Override
+	public void onSaveInstanceState(@NotNull Bundle outState) {
+		outState.putParcelable(BUNDLE_INSTANCE_STATE, recyclerView.getLayoutManager().onSaveInstanceState());
+	}
+
+	/**
 	 * Called when the fragment is stopping. Unbinds from the data service.
 	 */
 	@Override
@@ -101,7 +122,6 @@ public class RecyclerViewFrag extends Fragment {
 		super.onStop();
 
 		if (boundToDataService) {
-			recyclerView.setAdapter(null);
 			myAdapter.setDataService(null);
 			getContext().unbindService(dataConn);
 			boundToDataService = false;
@@ -127,7 +147,6 @@ public class RecyclerViewFrag extends Fragment {
 
 			Messenger messenger = new Messenger(service);
 			myAdapter.setDataService(messenger);
-			recyclerView.setAdapter(myAdapter);
 		}
 
 		/**
@@ -138,7 +157,6 @@ public class RecyclerViewFrag extends Fragment {
 		public void onServiceDisconnected(@NotNull ComponentName className) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "The data service crashed.");
 			boundToDataService = false;
-			recyclerView.setAdapter(null);
 			myAdapter.setDataService(null);
 		}
 	}
