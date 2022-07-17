@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 	<!-- mostly for light theme -->
-	<color name="brightBlue">#52dfce</color>
-	<color name="darkerBrightBlue">#2f83a3</color>
+	<color name="brightBlue">#3cb7a8</color>
+	<color name="darkerBrightBlue">#225f76</color>
 	<color name="seaBlue">#165aae</color>
-	<color name="sand">#f1e592</color>
+	<color name="sand">#d2c87e</color>
 
 	<color name="veryLightGrey">#e6e6e6</color>
 	<color name="grey">#393939</color>
 
 	<!-- mostly for dark theme -->
-	<color name="darkerSeaGreen">#136b6c</color>
-	<color name="darkerBlue">#1b496e</color>
+	<color name="darkerBlueGreen">#1096a3</color>
+	<color name="darkerBlue">#184a71</color>
 	<color name="deepBlue">#08428b</color>
 	<color name="darkSand">#b7ac5e</color>
 
