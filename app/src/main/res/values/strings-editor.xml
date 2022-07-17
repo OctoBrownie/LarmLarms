@@ -43,16 +43,32 @@
 	<string name="alarm_editor_days_button">Change days</string>
 	<string name="alarm_editor_months_button">Change months</string>
 
-	<!-- NOTE: it is assumed in ListableEditor that these items correspond (in the same order) to
-		 the repeat type constants defined in Alarm. -->
+	<!-- repeat strings, prefixed by "repeat" -->
+	<string name="repeat_once_abs">ring once (pick a date/time)</string>
+	<string name="repeat_once_rel">ring once (offset of current date/time)</string>
+	<string name="repeat_day_weekly">ring every week on certain days</string>
+	<string name="repeat_date_monthly">ring monthly on a specific date</string>
+	<string name="repeat_day_monthly">ring monthly on a specific day</string>
+	<string name="repeat_date_yearly">ring yearly on a specific date</string>
+	<string name="repeat_offset">ring every _____ minutes/hours/days</string>
+
+	<!-- these have to match the indices in the array alarm_editor_repeat_strings -->
+	<integer name="repeat_once_abs">0</integer>
+	<integer name="repeat_once_rel">1</integer>
+	<integer name="repeat_day_weekly">2</integer>
+	<integer name="repeat_date_monthly">3</integer>
+	<integer name="repeat_day_monthly">4</integer>
+	<integer name="repeat_date_yearly">5</integer>
+	<integer name="repeat_offset">6</integer>
+
 	<string-array name="alarm_editor_repeat_strings">
-		<item>ring once (pick a date/time)</item>
-		<item>ring once (offset of current date/time)</item>
-		<item>ring every week on certain days</item>
-		<item>ring monthly on a specific date</item>
-		<item>ring monthly on a specific day</item>
-		<item>ring yearly on a specific date</item>
-		<item>ring every _____ minutes/hours/days</item>
+		<item>@string/repeat_once_abs</item>
+		<item>@string/repeat_once_rel</item>
+		<item>@string/repeat_day_weekly</item>
+		<item>@string/repeat_date_monthly</item>
+		<item>@string/repeat_day_monthly</item>
+		<item>@string/repeat_date_yearly</item>
+		<item>@string/repeat_offset</item>
 	</string-array>
 
 	<string-array name="alarm_week_strings">

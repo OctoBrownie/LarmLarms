@@ -448,9 +448,31 @@ public class ListableEditorActivity extends AppCompatActivity
 	@Override
 	public void onItemSelected(@NotNull AdapterView<?> parent, View view, int pos, long id) {
 		switch (parent.getId()) {
-			case R.id.alarmRepeatTypeInput:
-				changeRepeatType(pos, false);
+			case R.id.alarmRepeatTypeInput: {
+				String type = (String) parent.getItemAtPosition(pos);
+				if (type.equals(getString(R.string.repeat_once_abs))) {
+					changeRepeatType(Alarm.REPEAT_ONCE_ABS, false);
+				}
+				else if (type.equals(getString(R.string.repeat_once_rel))) {
+					changeRepeatType(Alarm.REPEAT_ONCE_REL, false);
+				}
+				else if (type.equals(getString(R.string.repeat_day_weekly))) {
+					changeRepeatType(Alarm.REPEAT_DAY_WEEKLY, false);
+				}
+				else if (type.equals(getString(R.string.repeat_date_monthly))) {
+					changeRepeatType(Alarm.REPEAT_DATE_MONTHLY, false);
+				}
+				else if (type.equals(getString(R.string.repeat_day_monthly))) {
+					changeRepeatType(Alarm.REPEAT_DAY_MONTHLY, false);
+				}
+				else if (type.equals(getString(R.string.repeat_date_yearly))) {
+					changeRepeatType(Alarm.REPEAT_DATE_YEARLY, false);
+				}
+				else if (type.equals(getString(R.string.repeat_offset))) {
+					changeRepeatType(Alarm.REPEAT_OFFSET, false);
+				}
 				break;
+			}
 			case R.id.alarmWeekOfMonthInput:
 				((Alarm) workingListable).setRepeatWeek(pos);
 				break;
@@ -599,7 +621,32 @@ public class ListableEditorActivity extends AppCompatActivity
 				R.array.alarm_editor_repeat_strings, android.R.layout.simple_spinner_dropdown_item);
 		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		spinner.setAdapter(adapter);
-		spinner.setSelection(((Alarm) workingListable).getRepeatType());
+
+		int typeIndex = 0;
+		switch (((Alarm) workingListable).getRepeatType()) {
+			case Alarm.REPEAT_ONCE_ABS:
+				typeIndex = getResources().getInteger(R.integer.repeat_once_abs);
+				break;
+			case Alarm.REPEAT_ONCE_REL:
+				typeIndex = getResources().getInteger(R.integer.repeat_once_rel);
+				break;
+			case Alarm.REPEAT_DAY_WEEKLY:
+				typeIndex = getResources().getInteger(R.integer.repeat_day_weekly);
+				break;
+			case Alarm.REPEAT_DATE_MONTHLY:
+				typeIndex = getResources().getInteger(R.integer.repeat_date_monthly);
+				break;
+			case Alarm.REPEAT_DAY_MONTHLY:
+				typeIndex = getResources().getInteger(R.integer.repeat_day_monthly);
+				break;
+			case Alarm.REPEAT_DATE_YEARLY:
+				typeIndex = getResources().getInteger(R.integer.repeat_date_yearly);
+				break;
+			case Alarm.REPEAT_OFFSET:
+				typeIndex = getResources().getInteger(R.integer.repeat_offset);
+				break;
+		}
+		spinner.setSelection(typeIndex);
 		spinner.setOnItemSelectedListener(this);
 
 		// set name of the current ringtone
