@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:orientation="vertical"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent"
+	android:theme="@style/AppTheme.Beach">
+	<TextView
+		style="@style/TextStyle"
+
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:textSize="@dimen/fontSizeBig"
+		android:layout_margin="0dp"
+		android:padding="@dimen/marginSizeDefault"
+		android:text="@string/settings_name"
+		android:background="?attr/colorPrimary"
+		android:textColor="?attr/colorOnPrimary"/>
+
+	<include layout="@layout/editor_menu"
+		android:id="@+id/topMenu"
+		android:visibility="gone" />
+
+	<ScrollView
+		android:layout_width="match_parent"
+		android:layout_height="0dp"
+		android:layout_weight="1">
+		<LinearLayout
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:orientation="vertical">
+			<!-- theme spinner -->
+			<LinearLayout
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:orientation="horizontal"
+				android:gravity="center_vertical">
+				<TextView
+					style="@style/TextStyle"
+
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:text="@string/settings_theme" />
+				<Spinner
+					android:id="@+id/themeSpinner"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content" />
+			</LinearLayout>
+
+			<TextView
+				style="@style/TextStyle"
+
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:textSize="@dimen/fontSizeSmall"
+				android:text="@string/settings_theme_description" />
+			<Space
+				android:layout_width="match_parent"
+				android:layout_height="@dimen/spaceSize" />
+
+		</LinearLayout>
+	</ScrollView>
+
+	<include layout="@layout/editor_menu"
+		android:id="@+id/bottomMenu" />
+
+</LinearLayout>

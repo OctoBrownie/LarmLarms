@@ -550,7 +550,7 @@ public class ListableEditorActivity extends AppCompatActivity
 
 	/**
 	 * Callback for when a compound button (checkbox or switch) is clicked.
-	 * @param view the checkbox that was clicked
+	 * @param view the compound button that was clicked
 	 */
 	public void onCompoundButtonClicked(@NotNull View view) {
 		boolean checked = ((CompoundButton) view).isChecked();
@@ -659,8 +659,9 @@ public class ListableEditorActivity extends AppCompatActivity
 		volumeBar.setOnSeekBarChangeListener(this);
 
 		// vibrate switch
-		Switch vibrateBox = findViewById(R.id.alarmVibrateSwitch);
-		vibrateBox.setChecked(((Alarm) workingListable).isVibrateOn());
+		Switch vibrateSwitch = findViewById(R.id.alarmVibrateSwitch);
+		// vibrateSwitch.setOnClickListener(this);
+		vibrateSwitch.setChecked(((Alarm) workingListable).isVibrateOn());
 	}
 
 	/**

@@ -5,7 +5,7 @@
 	android:layout_width="match_parent"
 	android:layout_height="match_parent"
 	android:orientation="vertical"
-	android:theme="@style/Theme.AppTheme"
+	android:theme="@style/AppTheme.Beach"
 	android:background="?android:attr/colorBackground"
 
 	tools:context="com.LarmLarms.main.MainActivity">
@@ -33,29 +33,46 @@
 
 	<!-- top toolbar -->
 	<LinearLayout
-	android:layout_width="wrap_content"
+	android:layout_width="match_parent"
 	android:layout_height="wrap_content"
 	android:orientation="horizontal">
-		<android.widget.Button
-			style="@style/ButtonStyle.Borderless"
+		<ImageButton
+			style="@style/ButtonStyle.ImageView"
 
-			android:id="@+id/addNewAlarmButton"
+			android:id="@+id/addAlarmButton"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
-			android:text="@string/main_add_alarm_button"
-			android:contentDescription="@string/main_add_folder_button_descrip"
+			android:layout_gravity="center_vertical"
+			android:src="@android:drawable/ic_menu_add"
+			android:contentDescription="@string/main_alarm_description"
 			android:onClick="addNewAlarm" />
 
-		<android.widget.ImageButton
+		<ImageButton
 			style="@style/ButtonStyle.ImageView.Borderless"
 
-			android:id="@+id/addNewFolderButton"
+			android:id="@+id/addFolderButton"
 			android:layout_width="wrap_content"
-			android:layout_height="match_parent"
+			android:layout_height="wrap_content"
+			android:layout_gravity="center_vertical"
 			android:src="@drawable/folder_icon_closed"
-			android:contentDescription="@string/main_folder_icon_descrip"
+			android:contentDescription="@string/main_folder_description"
 			android:onClick="addNewFolder" />
 
+		<Space
+			android:layout_height="match_parent"
+			android:layout_width="0dp"
+			android:layout_weight="1" />
+
+		<ImageButton
+			style="@style/ButtonStyle.ImageView.Borderless"
+
+			android:id="@+id/settingsButton"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_gravity="center_vertical"
+			android:src="@android:drawable/ic_menu_preferences"
+			android:contentDescription="@string/main_settings_description"
+			android:onClick="openSettings" />
 	</LinearLayout>
 
 	<!-- In the case that there are no alarms yet -->

@@ -1,13 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- The editor for the folder, meant to be used as a standalone -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-	style="@style/Theme.AppTheme"
+	android:theme="@style/AppTheme.Beach"
 
 	android:layout_width="match_parent"
 	android:layout_height="match_parent"
 	android:orientation="vertical">
 
-	<include layout="@layout/editor_menu" />
+	<include layout="@layout/editor_menu"
+		android:id="@+id/topMenu"
+		android:visibility="gone" />
 
 	<!--
 	Naming conventions for input/text fields (here only):
@@ -18,7 +20,8 @@
 
 	<ScrollView
 		android:layout_width="match_parent"
-		android:layout_height="match_parent">
+		android:layout_height="0dp"
+		android:layout_weight="1">
 		<LinearLayout
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
@@ -50,4 +53,7 @@
 			<include layout="@layout/editor_common_fields" />
 		</LinearLayout>
 	</ScrollView>
+	
+	<include layout="@layout/editor_menu"
+		android:id="@+id/bottomMenu" />
 </LinearLayout>

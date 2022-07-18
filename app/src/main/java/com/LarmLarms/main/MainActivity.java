@@ -4,6 +4,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -15,6 +16,7 @@ import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.LarmLarms.BuildConfig;
 import com.LarmLarms.R;
@@ -33,7 +35,7 @@ import androidx.fragment.app.FragmentTransaction;
 /**
  * The main page of the app, showing a list of alarms/folders that the user can scroll through.
  */
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements View.OnLongClickListener {
 	/**
 	 * Tag of the class for logging purposes.
 	 */
@@ -85,11 +87,18 @@ public class MainActivity extends AppCompatActivity {
 	@Override
 	protected void onCreate(@Nullable Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+
+		SharedPreferences prefs = getSharedPreferences(PrefsActivity.PREFS_KEY, MODE_PRIVATE);
+		setTheme(prefs.getInt(PrefsActivity.PREF_THEME_KEY, R.style.AppTheme_Beach));
 		setContentView(R.layout.activity_main);
 
 		noAlarmsText = findViewById(R.id.no_alarms_text);
 		fragContainer = findViewById(R.id.frag_frame);
 		nextAlarmText = findViewById(R.id.next_alarm_text);
+
+		findViewById(R.id.addAlarmButton).setOnLongClickListener(this);
+		findViewById(R.id.addFolderButton).setOnLongClickListener(this);
+		findViewById(R.id.settingsButton).setOnLongClickListener(this);
 
 		// always need to reinflate the frag
 		FragmentTransaction trans = getSupportFragmentManager().beginTransaction();
@@ -128,8 +137,30 @@ public class MainActivity extends AppCompatActivity {
 	/* ************************************  Callbacks  ************************************** */
 
 	/**
+	 * Callback for long clicks. Shows descriptions of the buttons that are long clicked
+	 * @param view the view that was long clicked
+	 * @return whether this consumed the long click (always returns true)
+	 */
+	@Override
+	public boolean onLongClick(@NotNull View view) {
+		int id = view.getId();
+		switch (id) {
+			case R.id.addAlarmButton:
+				Toast.makeText(this, R.string.main_alarm_description, Toast.LENGTH_SHORT).show();
+				break;
+			case R.id.addFolderButton:
+				Toast.makeText(this, R.string.main_folder_description, Toast.LENGTH_SHORT).show();
+				break;
+			case R.id.settingsButton:
+				Toast.makeText(this, R.string.main_settings_description, Toast.LENGTH_SHORT).show();
+				break;
+		}
+		return true;
+	}
+
+	/**
 	 * Onclick callback for adding a new alarm, bound to the + button.
-	 * @param view the view that was clicked
+	 * @param view the view that was clicked (the add alarm button)
 	 */
 	public void addNewAlarm(@NotNull View view) {
 		// start AlarmCreator activity
@@ -141,13 +172,23 @@ public class MainActivity extends AppCompatActivity {
 
 	/**
 	 * Onclick callback for adding a new folder, bound to the folder button.
-	 * @param view the view that was clicked
+	 * @param view the view that was clicked (the folder button)
 	 */
 	public void addNewFolder(@NotNull View view) {
-		// start AlarmCreator activity
+		// start the listable editor
 		Intent intent = new Intent(this, ListableEditorActivity.class);
 		intent.setAction(ListableEditorActivity.ACTION_CREATE_FOLDER);
 
+		startActivity(intent);
+	}
+
+	/**
+	 * Callback for the settings button. Opens the settings.
+	 * @param view the view that was clicked (the settings button)
+	 */
+	public void openSettings(@NotNull View view) {
+		// start the preferences
+		Intent intent = new Intent(this, PrefsActivity.class);
 		startActivity(intent);
 	}
 

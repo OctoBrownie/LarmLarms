@@ -5,7 +5,7 @@
 	android:orientation="vertical"
 	android:layout_width="match_parent"
 	android:layout_height="wrap_content"
-	android:theme="@style/Theme.AppTheme">
+	android:theme="@style/AppTheme.Beach">
 	<!-- TODO: add text clock? -->
 	<TextView
 		style="@style/TextStyle"

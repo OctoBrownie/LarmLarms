@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-	<style name="Theme.AppTheme" parent="Theme.MaterialComponents.Light.NoActionBar">
+	<style name="AppTheme" parent="Theme.MaterialComponents.Light.NoActionBar" />
+
+	<style name="AppTheme.Beach">
 		<item name="cardViewStyle">@style/CardView.Light</item>
 
 		<!-- for navigation and status bar to also be white -->
@@ -21,5 +23,14 @@
 		<!-- for switches -->
 		<item name="inactiveSwitchColor">@color/lightGrey</item>
 		<item name="switchThumbColor">@color/sand</item>
+	</style>
+
+	<style name="AppTheme.Candy">
+	</style>
+
+	<style name="AppTheme.Mint">
+	</style>
+
+	<style name="AppTheme.Grey">
 	</style>
 </resources>

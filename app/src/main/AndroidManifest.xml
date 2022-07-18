@@ -16,7 +16,7 @@
 		android:label="@string/app_name"
 		android:roundIcon="@mipmap/ic_launcher_round"
 		android:supportsRtl="true"
-		android:theme="@style/Theme.AppTheme">
+		android:theme="@style/AppTheme.Beach">
 		<activity android:name=".main.MainActivity">
 			<intent-filter>
 				<action android:name="android.intent.action.MAIN" />
@@ -27,6 +27,7 @@
 
 		<!-- TODO: add intent filter for ACTION_SET_ALARM? -->
 		<activity android:name=".editor.ListableEditorActivity" />
+		<activity android:name=".main.PrefsActivity" />
 		<activity
 			android:name=".ringing.RingingActivity"
 			android:excludeFromRecents="true"

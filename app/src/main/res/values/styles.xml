@@ -55,6 +55,7 @@
 	</style>
 
 	<style name="ButtonStyle.ImageView">
+		<item name="android:background">@drawable/bordered_ripple</item>
 		<item name="android:scaleType">fitCenter</item>
 		<item name="android:adjustViewBounds">true</item>
 	</style>
@@ -67,7 +68,7 @@
 	<!-- - - - - - - - - - - - - - - -  styles for TextViews  - - - - - - - - - - - - - - - -->
 
 	<style name="TextStyle" parent="Widget.MaterialComponents.TextView">
-		<item name="android:layout_height">wrap_content</item>
+		<item name="android:layout_margin">@dimen/marginSizeDefault</item>
 		<item name="android:textSize">@dimen/fontSizeBody</item>
 		<item name="android:textColor">?attr/colorOnBackground</item>
 	</style>

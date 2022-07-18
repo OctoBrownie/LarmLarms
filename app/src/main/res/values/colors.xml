@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-	<!-- mostly for light theme -->
+	<!-- light beach -->
 	<color name="brightBlue">#3cb7a8</color>
 	<color name="darkerBrightBlue">#225f76</color>
 	<color name="seaBlue">#165aae</color>
@@ -9,7 +9,7 @@
 	<color name="veryLightGrey">#e6e6e6</color>
 	<color name="grey">#393939</color>
 
-	<!-- mostly for dark theme -->
+	<!-- dark beach -->
 	<color name="darkerBlueGreen">#1096a3</color>
 	<color name="darkerBlue">#184a71</color>
 	<color name="deepBlue">#08428b</color>
@@ -17,4 +17,13 @@
 
 	<color name="veryDarkGrey">#1a1a1a</color>
 	<color name="lightGrey">#6c6c6c</color>
+
+	<!-- light candy -->
+	<!-- dark candy -->
+
+	<!-- light mint -->
+	<!-- dark mint -->
+
+	<!-- light grey -->
+	<!-- dark grey -->
 </resources>

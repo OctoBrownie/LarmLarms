@@ -44,7 +44,7 @@
 				android:layout_width="match_parent"
 				android:layout_height="wrap_content"
 				android:src="@drawable/folder_icon_opened"
-				android:contentDescription="@string/main_folder_icon_descrip"
+				android:contentDescription="@string/main_folder_description"
 				android:minWidth="@dimen/minImageSize"
 				android:visibility="gone"/>
 
@@ -71,6 +71,7 @@
 				android:layout_width="wrap_content"
 				android:layout_height="wrap_content"
 				android:layout_gravity="start"
+				android:layout_marginStart="0dp"
 				tools:text="title text" />
 
 			<TextView
@@ -81,6 +82,7 @@
 				android:layout_height="wrap_content"
 				android:layout_gravity="start"
 				android:layout_marginTop="@dimen/marginSizeDefault"
+				android:layout_marginStart="0dp"
 				android:gravity="start"
 				tools:text="repeat text" />
 		</LinearLayout>

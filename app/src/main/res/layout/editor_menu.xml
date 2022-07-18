@@ -3,10 +3,9 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
 	android:layout_width="match_parent"
 	android:layout_height="wrap_content"
-	android:orientation="horizontal"
-	style="@style/Theme.AppTheme">
+	android:orientation="horizontal">
 
-	<android.widget.Button
+	<Button
 		style="@style/ButtonStyle.Borderless"
 
 		android:id="@+id/backButton"
@@ -16,7 +15,7 @@
 		android:onClick="backButtonClicked"
 		android:text="@string/editor_back_button" />
 
-	<android.widget.Button
+	<Button
 		style="@style/ButtonStyle"
 
 		android:id="@+id/saveButton"

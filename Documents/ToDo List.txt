@@ -1,6 +1,6 @@
 To do list for new features or bugs to be fixed
 
-CURRENTLY WORKING ON: requesting & releasing audio focus
+CURRENTLY WORKING ON: themes
 
 Make the UI look prettier
 	Some repeat strings don't really look nice (ex: offset strings are always plural + sound funky,
@@ -9,11 +9,6 @@ Make the UI look prettier
 New ListableEditor features
 	Switches for ringtone and vibration (?)
 	Customizable vibrations?
-Settings activity and some ideas for settings:
-	Uppercase/lowercase for time strings (PM vs pm, currently hardcoded to lowercase)
-	Theme changes
-	Clock or spinner for date or time pickers (see styles.xml)
-	Default alarm settings (repeat type, ringtone, volume, etc)
 Use a (color) selector to make disabled alarms more obvious (MainActivity)
 	See https://programmer.ink/think/a-detailed-explanation-of-the-use-of-selector-in-android.html
 Style all components
@@ -35,10 +30,11 @@ Perhaps the folder animation looks a bit stiff because the folder itself doesn't
 Make "offset from now" only a thing in the Editor (the alarms are ALWAYS offset from a specific time)
 	Makes it so that when you're trying to edit an alarm, it will KEEP the same offset if you don't
 	change the offset time
-	If it's close enough (within the minute or something), shouldn't change ringTime at all (makes it exact)
+	If it's close enough (within the minute or something), shouldn't change ringTime at all (leave it exact)
 Preview alarm (mostly for volume)?
 Maybe could use a single ListableInfo field for ListableEditor instead of saving to multiple fields
 Keep scroll position on the recycler view?
+Maybe use MaterialDatePicker and MaterialTimePicker instead...? They are both dialogs though so there might be more clicking around 
 
 BUGS
 Sometimes requires you to unlock your phone to turn off the alarm (when off)

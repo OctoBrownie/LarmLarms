@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-	<style name="Theme.AppTheme" parent="Theme.MaterialComponents.NoActionBar">
+	<style name="AppTheme" parent="Theme.MaterialComponents.NoActionBar" />
+
+	<style name="AppTheme.Beach">
 		<item name="cardViewStyle">@style/CardView.Dark</item>
 
 		<!-- for navigation and status bar to also be black -->
@@ -21,5 +23,17 @@
 		<!-- for switches -->
 		<item name="inactiveSwitchColor">@color/lightGrey</item>
 		<item name="switchThumbColor">@color/darkSand</item>
+	</style>
+
+	<style name="AppTheme.Candy" parent="AppTheme.Beach">
+		<item name="colorPrimary">@android:color/holo_purple</item>
+	</style>
+
+	<style name="AppTheme.Mint" parent="AppTheme.Beach">
+		<item name="colorPrimary">@android:color/holo_green_dark</item>
+	</style>
+
+	<style name="AppTheme.Grey" parent="AppTheme.Beach">
+		<item name="colorPrimary">@android:color/darker_gray</item>
 	</style>
 </resources>

@@ -4,21 +4,22 @@
 	android:layout_width="match_parent"
 	android:layout_height="match_parent"
 	android:orientation="vertical"
-	style="@style/Theme.AppTheme">
+	android:theme="@style/AppTheme.Beach">
 
-	<include layout="@layout/editor_menu" />
+	<include layout="@layout/editor_menu"
+		android:id="@+id/topMenu"
+		android:visibility="gone" />
 
 	<ScrollView
 		android:layout_width="match_parent"
-		android:layout_height="match_parent">
-
+		android:layout_height="0dp"
+		android:layout_weight="1">
 		<LinearLayout
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
 			android:orientation="vertical">
 
 			<!-- repeat type layout -->
-
 			<LinearLayout
 				android:layout_width="match_parent"
 				android:layout_height="wrap_content"
@@ -323,6 +324,8 @@
 					android:id="@+id/alarmVibrateSwitch"
 					android:layout_width="wrap_content"
 					android:layout_height="wrap_content"
+					android:layout_gravity="center"
+					android:showText="false"
 					android:onClick="onCompoundButtonClicked" />
 				<TextView
 					style="@style/EditorLabelStyle"
@@ -333,4 +336,7 @@
 			</LinearLayout>
 		</LinearLayout>
 	</ScrollView>
+
+	<include layout="@layout/editor_menu"
+		android:id="@+id/bottomMenu" />
 </LinearLayout>
