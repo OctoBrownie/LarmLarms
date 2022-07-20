@@ -112,8 +112,21 @@ public class MainActivity extends AppCompatActivity implements View.OnLongClickL
 	@Override
 	protected void onStart() {
 		super.onStart();
-
 		bindService(new Intent(this, AlarmDataService.class), dataConn, Context.BIND_AUTO_CREATE);
+	}
+
+	/**
+	 * Called when the activity is resuming. Checks if we need to restart to apply a new theme.
+	 */
+	@Override
+	protected void onResume() {
+		super.onResume();
+
+		MainApplication app = (MainApplication) getApplication();
+		if (app.needsRestart) {
+			app.needsRestart = false;
+			recreate();
+		}
 	}
 
 	/**

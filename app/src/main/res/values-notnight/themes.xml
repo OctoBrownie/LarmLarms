@@ -16,7 +16,7 @@
 
 		<item name="colorSecondary">@color/sand</item>
 
-		<!-- android:colorBackground omitted here -->
+		<!-- android:colorBackground and android:colorOnBackground omitted here -->
 		<item name="colorSurface">@color/veryLightGrey</item>
 		<item name="colorAccent">@color/seaBlue</item>
 

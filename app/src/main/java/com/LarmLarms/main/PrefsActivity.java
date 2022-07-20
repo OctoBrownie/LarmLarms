@@ -49,6 +49,14 @@ public class PrefsActivity extends AppCompatActivity implements AdapterView.OnIt
 	 */
 	private SharedPreferences prefs;
 
+	/**
+	 * The theme before any preferences were changed.
+	 */
+	private int originalThemeId;
+
+	/**
+	 * The currently selected theme.
+	 */
 	private int themeId;
 
 	/**
@@ -58,9 +66,13 @@ public class PrefsActivity extends AppCompatActivity implements AdapterView.OnIt
 	@Override
 	protected void onCreate(@Nullable Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_prefs);
 
 		prefs = getSharedPreferences(PREFS_KEY, MODE_PRIVATE);
+		themeId = prefs.getInt(PREF_THEME_KEY, R.style.AppTheme_Beach);
+		setTheme(themeId);
+		originalThemeId = themeId;
+
+		setContentView(R.layout.activity_prefs);
 
 		// theme spinner
 		Spinner spinner = findViewById(R.id.themeSpinner);
@@ -69,8 +81,6 @@ public class PrefsActivity extends AppCompatActivity implements AdapterView.OnIt
 		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		spinner.setAdapter(adapter);
 
-		int themeId = prefs.getInt(PREF_THEME_KEY, R.style.AppTheme_Beach);
-		this.themeId = themeId;
 		switch (themeId) {
 			case R.style.AppTheme_Beach:
 				spinner.setSelection(getResources().getInteger(R.integer.theme_beach));
@@ -85,7 +95,7 @@ public class PrefsActivity extends AppCompatActivity implements AdapterView.OnIt
 				spinner.setSelection(getResources().getInteger(R.integer.theme_grey));
 				break;
 			default:
-				if (BuildConfig.DEBUG) Log.e(TAG, "Unsupported app theme selected!");
+				if (BuildConfig.DEBUG) Log.e(TAG, "Unsupported app theme stored!");
 				break;
 		}
 
@@ -107,10 +117,12 @@ public class PrefsActivity extends AppCompatActivity implements AdapterView.OnIt
 	 * @param view the save button
 	 */
 	public void saveButtonClicked(View view) {
-		// TODO: implement save button things
 		SharedPreferences.Editor editor = prefs.edit();
 		editor.putInt(PREF_THEME_KEY, themeId);
 		editor.apply();
+
+		if (themeId != originalThemeId) ((MainApplication) getApplication()).needsRestart = true;
+
 		finish();
 	}
 

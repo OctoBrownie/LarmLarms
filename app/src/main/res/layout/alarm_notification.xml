@@ -1,11 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
 	xmlns:tools="http://schemas.android.com/tools"
-	android:id="@+id/notification"
 	android:orientation="vertical"
 	android:layout_width="match_parent"
-	android:layout_height="wrap_content"
-	android:theme="@style/AppTheme.Beach">
+	android:layout_height="wrap_content">
 	<!-- TODO: add text clock? -->
 	<TextView
 		style="@style/TextStyle"
@@ -44,4 +42,4 @@
 			android:layout_height="wrap_content"
 			android:layout_weight="1" />
 	</LinearLayout>
-</LinearLayout>
+</merge>

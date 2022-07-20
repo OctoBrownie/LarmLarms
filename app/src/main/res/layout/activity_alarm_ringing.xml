@@ -6,7 +6,6 @@
 	android:layout_height="match_parent"
 	android:layout_gravity="center_vertical|center_horizontal"
 	android:orientation="vertical"
-	android:theme="@style/AppTheme.Beach"
 
 	tools:context="com.LarmLarms.ringing.RingingActivity">
 

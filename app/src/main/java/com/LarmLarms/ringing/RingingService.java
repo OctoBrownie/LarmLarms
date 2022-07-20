@@ -8,6 +8,7 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.media.AudioAttributes;
 import android.media.AudioFocusRequest;
 import android.media.AudioManager;
@@ -30,6 +31,7 @@ import com.LarmLarms.BuildConfig;
 import com.LarmLarms.R;
 import com.LarmLarms.data.Alarm;
 import com.LarmLarms.data.AlarmDataService;
+import com.LarmLarms.main.PrefsActivity;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -185,7 +187,26 @@ public class RingingService extends Service implements MediaPlayer.OnPreparedLis
 		PendingIntent snoozePendingIntent = PendingIntent.getService(this, 0, snoozeIntent,
 				PendingIntent.FLAG_UPDATE_CURRENT);
 
-		RemoteViews notifView = new RemoteViews(getPackageName(), R.layout.alarm_notification);
+		// this is so stupid but we can't change styles of a remote view
+		int notifLayout = R.layout.alarm_notification_beach;
+		SharedPreferences prefs = getSharedPreferences(PrefsActivity.PREFS_KEY, MODE_PRIVATE);
+		int themeId = prefs.getInt(PrefsActivity.PREF_THEME_KEY, R.style.AppTheme_Beach);
+		switch (themeId) {
+			case R.style.AppTheme_Beach:
+				notifLayout = R.layout.alarm_notification_beach;
+				break;
+			case R.style.AppTheme_Candy:
+				notifLayout = R.layout.alarm_notification_candy;
+				break;
+			case R.style.AppTheme_Grey:
+				notifLayout = R.layout.alarm_notification_grey;
+				break;
+			case R.style.AppTheme_Mint:
+				notifLayout = R.layout.alarm_notification_mint;
+				break;
+		}
+
+		RemoteViews notifView = new RemoteViews(getPackageName(), notifLayout);
 		notifView.setTextViewText(R.id.alarm_name_text, alarm.getListableName());
 
 		// we need this line to ensure actions pop up on the heads up notification

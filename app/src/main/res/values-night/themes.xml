@@ -17,6 +17,7 @@
 		<item name="colorSecondary">@color/darkSand</item>
 
 		<item name="android:colorBackground">@android:color/black</item>
+		<item name="colorOnBackground">@android:color/white</item>
 		<item name="colorSurface">@color/veryDarkGrey</item>
 		<item name="colorAccent">@color/darkSand</item>
 
