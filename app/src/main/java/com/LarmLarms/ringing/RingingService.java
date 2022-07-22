@@ -205,6 +205,7 @@ public class RingingService extends Service implements MediaPlayer.OnPreparedLis
 				notifLayout = R.layout.alarm_notification_mint;
 				break;
 		}
+		PrefsActivity.applyPrefs(this);
 
 		RemoteViews notifView = new RemoteViews(getPackageName(), notifLayout);
 		notifView.setTextViewText(R.id.alarm_name_text, alarm.getListableName());

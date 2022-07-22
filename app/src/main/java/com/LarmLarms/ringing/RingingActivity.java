@@ -3,7 +3,6 @@ package com.LarmLarms.ringing;
 import android.app.KeyguardManager;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
@@ -44,8 +43,7 @@ public class RingingActivity extends AppCompatActivity {
 	protected void onCreate(@Nullable Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		SharedPreferences prefs = getSharedPreferences(PrefsActivity.PREFS_KEY, MODE_PRIVATE);
-		setTheme(prefs.getInt(PrefsActivity.PREF_THEME_KEY, R.style.AppTheme_Beach));
+		PrefsActivity.applyPrefs(this);
 		setContentView(R.layout.activity_alarm_ringing);
 
 		// setting fields

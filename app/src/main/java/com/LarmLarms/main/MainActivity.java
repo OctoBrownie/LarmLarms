@@ -4,7 +4,6 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -88,8 +87,7 @@ public class MainActivity extends AppCompatActivity implements View.OnLongClickL
 	protected void onCreate(@Nullable Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		SharedPreferences prefs = getSharedPreferences(PrefsActivity.PREFS_KEY, MODE_PRIVATE);
-		setTheme(prefs.getInt(PrefsActivity.PREF_THEME_KEY, R.style.AppTheme_Beach));
+		PrefsActivity.applyPrefs(this);
 		setContentView(R.layout.activity_main);
 
 		noAlarmsText = findViewById(R.id.no_alarms_text);

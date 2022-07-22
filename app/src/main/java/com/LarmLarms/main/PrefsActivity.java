@@ -1,5 +1,6 @@
 package com.LarmLarms.main;
 
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
@@ -14,6 +15,7 @@ import com.LarmLarms.R;
 import org.jetbrains.annotations.Nullable;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 
 /**
  * Activity for the user to change settings. Doesn't update anything until the user says to save.
@@ -31,16 +33,18 @@ public class PrefsActivity extends AppCompatActivity implements AdapterView.OnIt
 	public final static String PREFS_KEY = "com.LarmLarms.PREFERENCES";
 
 	/**
-	 * Within the shared preferences, this is the key for theme.
+	 * Within the shared preferences, this is the key for theme, stored as an integer which is the
+	 * theme id.
 	 */
 	public final static String PREF_THEME_KEY = "com.LarmLarms.PREFERENCE_THEME";
 	/**
-	 * Within the shared preferences, this is the key for using system settings for dark mode.
+	 * Within the shared preferences, this is the key for using system settings for dark mode, stored
+	 * as a boolean. True translates to following the system-wide dark/light mode.
 	 */
-	public final static String PREF_SYSTEM_DARK_KEY = "com.LarmLarms.PREFERENCE_SYSTEM_DARK";
+	public final static String PREF_SYSTEM_DARK_KEY = "com.LarmLarms.PREFERENCE_USE_SYSTEM_DARK";
 	/**
 	 * Within the shared preferences, this is the key for dark mode (if the app doesn't follow
-	 * system settings).
+	 * system settings), stored as a boolean. True translates to dark mode.
 	 */
 	public final static String PREF_DARK_MODE_KEY = "com.LarmLarms.PREFERENCE_DARK_MODE";
 
@@ -100,8 +104,6 @@ public class PrefsActivity extends AppCompatActivity implements AdapterView.OnIt
 		}
 
 		spinner.setOnItemSelectedListener(this);
-
-		// AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
 	}
 
 	/* ***************************************  Callbacks  ************************************ */
@@ -126,6 +128,8 @@ public class PrefsActivity extends AppCompatActivity implements AdapterView.OnIt
 		finish();
 	}
 
+	/* ************************************  Spinner Callbacks  ********************************** */
+
 	/**
 	 * Spinner callback for when an item is selected
 	 * @param parent the spinner that was selected
@@ -149,4 +153,28 @@ public class PrefsActivity extends AppCompatActivity implements AdapterView.OnIt
 	 */
 	@Override
 	public void onNothingSelected(AdapterView<?> parent) {}
+
+	/* **********************************  Other Methods  *************************************** */
+
+	/**
+	 * Helper method that applies all of the style-related preferences to components for them.
+	 * Includes: theme and night mode (system and forced).
+	 * @param c the context to apply it to, usually set to this within the class
+	 */
+	public static void applyPrefs(Context c) {
+		SharedPreferences prefs = c.getSharedPreferences(PREFS_KEY, MODE_PRIVATE);
+		c.setTheme(prefs.getInt(PrefsActivity.PREF_THEME_KEY, R.style.AppTheme_Beach));
+
+		if (prefs.getBoolean(PREF_SYSTEM_DARK_KEY, true)) {
+			AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
+		}
+		else {
+			if (prefs.getBoolean(PREF_DARK_MODE_KEY, true)) {
+				AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+			}
+			else {
+				AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+			}
+		}
+	}
 }
