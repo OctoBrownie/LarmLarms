@@ -808,17 +808,12 @@ public class ListableEditorActivity extends AppCompatActivity
 		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		spinner.setAdapter(adapter);
 
-		if (isEditing) {
-			int index = paths.indexOf(listablePath);
-			if (listablePath == null) index = paths.indexOf(originalPath);
-			if (index == -1) index = 0;
+		int index;
+		if (listablePath == null) index = paths.indexOf(originalPath);
+		else index = paths.indexOf(listablePath);
+		if (index == -1) index = 0;
 
-			spinner.setSelection(index);
-		}
-		else {
-			spinner.setSelection(0);
-		}
-
+		spinner.setSelection(index);
 		spinner.setOnItemSelectedListener(this);
 	}
 
@@ -833,7 +828,7 @@ public class ListableEditorActivity extends AppCompatActivity
 	@SuppressLint("DefaultLocale")
 	private void changeRepeatType(int type, boolean first) {
 		if (!first) {
-			switch (((Alarm) workingListable).getRepeatType()) {
+			switch(((Alarm) workingListable).getRepeatType()) {
 				case Alarm.REPEAT_DATE_YEARLY:
 				case Alarm.REPEAT_ONCE_ABS:
 					// requires: time picker, date picker
@@ -861,10 +856,6 @@ public class ListableEditorActivity extends AppCompatActivity
 						if (BuildConfig.DEBUG) Log.wtf(TAG, "The alarm time picker or days of week layout is null.");
 						finish();
 						return;
-					}
-					if (alarmDatePicker != null) {
-						// gotta set it back to the right minimum date
-						alarmDatePicker.setMinDate(Calendar.getInstance().getTimeInMillis());
 					}
 					alarmTimePicker.setVisibility(View.GONE);
 					alarmDaysLayout.setVisibility(View.GONE);
@@ -899,7 +890,15 @@ public class ListableEditorActivity extends AppCompatActivity
 			}
 		}
 
-		switch (type) {
+		if (alarmDatePicker != null) {
+			// gotta set it back to the right minimum date
+			if (type == Alarm.REPEAT_ONCE_REL || type == Alarm.REPEAT_OFFSET)
+				alarmDatePicker.setMinDate(0);
+			else
+				alarmDatePicker.setMinDate(Calendar.getInstance().getTimeInMillis());
+		}
+
+		switch(type) {
 			case Alarm.REPEAT_DATE_YEARLY:
 			case Alarm.REPEAT_ONCE_ABS:
 				// requires: time picker, date picker
