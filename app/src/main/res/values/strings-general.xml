@@ -44,11 +44,13 @@
 	<string name="main_folder_description">Add folder</string>
 	<string name="main_settings_description">Settings</string>
 
-	<!-- SettingsActivity strings, prefixed by "settings" -->
-	<string name="settings_name">Settings</string>
-	<string name="settings_theme">Theme: </string>
-	<string name="settings_theme_description">Theme is separate from light/dark mode. Both light and
+	<!-- PrefsActivity strings, prefixed by "prefs" -->
+	<string name="prefs_title">Settings</string>
+	<string name="prefs_theme">Theme: </string>
+	<string name="prefs_theme_description">Theme is separate from light/dark mode. Both light and
 		dark mode have versions of these color palettes.</string>
+	<string name="prefs_system_dark">Use system dark mode</string>
+	<string name="prefs_dark_override">Use dark mode (if not following system settings)</string>
 
 	<!-- themes, prefixed by "theme" -->
 	<string name="theme_beach">Sandy beach</string>

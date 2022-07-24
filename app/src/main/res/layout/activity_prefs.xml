@@ -11,7 +11,7 @@
 		android:textSize="@dimen/fontSizeBig"
 		android:layout_margin="0dp"
 		android:padding="@dimen/marginSizeDefault"
-		android:text="@string/settings_name"
+		android:text="@string/prefs_title"
 		android:background="?attr/colorPrimary"
 		android:textColor="?attr/colorOnPrimary"/>
 
@@ -38,24 +38,68 @@
 
 					android:layout_width="wrap_content"
 					android:layout_height="wrap_content"
-					android:text="@string/settings_theme" />
+					android:text="@string/prefs_theme" />
 				<Spinner
 					android:id="@+id/themeSpinner"
 					android:layout_width="wrap_content"
 					android:layout_height="wrap_content" />
 			</LinearLayout>
-
 			<TextView
 				style="@style/TextStyle"
 
 				android:layout_width="wrap_content"
 				android:layout_height="wrap_content"
 				android:textSize="@dimen/fontSizeSmall"
-				android:text="@string/settings_theme_description" />
+				android:text="@string/prefs_theme_description" />
 			<Space
 				android:layout_width="match_parent"
 				android:layout_height="@dimen/spaceSize" />
 
+			<!-- system dark mode switch -->
+			<LinearLayout
+				android:orientation="horizontal"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content">
+				<TextView
+					style="@style/TextStyle"
+
+					android:layout_width="0dp"
+					android:layout_height="wrap_content"
+					android:layout_weight="1"
+					android:text="@string/prefs_system_dark" />
+				<Switch
+					style="@style/Switch"
+
+					android:id="@+id/systemDarkSwitch"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:layout_gravity="center"
+					android:showText="false"
+					android:onClick="onSwitchFlipped" />
+			</LinearLayout>
+
+			<!-- dark mode override switch -->
+			<LinearLayout
+				android:orientation="horizontal"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content">
+				<TextView
+					style="@style/TextStyle"
+
+					android:layout_width="0dp"
+					android:layout_height="wrap_content"
+					android:layout_weight="1"
+					android:text="@string/prefs_dark_override" />
+				<Switch
+					style="@style/Switch"
+
+					android:id="@+id/darkOverrideSwitch"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:layout_gravity="center"
+					android:showText="false"
+					android:onClick="onSwitchFlipped" />
+			</LinearLayout>
 		</LinearLayout>
 	</ScrollView>
 

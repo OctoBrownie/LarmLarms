@@ -8,6 +8,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
+import android.widget.Switch;
 
 import com.LarmLarms.BuildConfig;
 import com.LarmLarms.R;
@@ -57,11 +58,19 @@ public class PrefsActivity extends AppCompatActivity implements AdapterView.OnIt
 	 * The theme before any preferences were changed.
 	 */
 	private int originalThemeId;
-
 	/**
 	 * The currently selected theme.
 	 */
 	private int themeId;
+
+	/**
+	 * Stores whether to use the system dark mode or not.
+	 */
+	private boolean useSystemDark;
+	/**
+	 * Assuming useSystemDark is false, stores whether to use dark mode or not.
+	 */
+	private boolean darkModeOverride;
 
 	/**
 	 * Creates the activity (sets up all of the UI)
@@ -71,11 +80,7 @@ public class PrefsActivity extends AppCompatActivity implements AdapterView.OnIt
 	protected void onCreate(@Nullable Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		prefs = getSharedPreferences(PREFS_KEY, MODE_PRIVATE);
-		themeId = prefs.getInt(PREF_THEME_KEY, R.style.AppTheme_Beach);
-		setTheme(themeId);
-		originalThemeId = themeId;
-
+		applyPrefs(this);
 		setContentView(R.layout.activity_prefs);
 
 		// theme spinner
@@ -85,6 +90,9 @@ public class PrefsActivity extends AppCompatActivity implements AdapterView.OnIt
 		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		spinner.setAdapter(adapter);
 
+		prefs = getSharedPreferences(PREFS_KEY, MODE_PRIVATE);
+		themeId = prefs.getInt(PREF_THEME_KEY, R.style.AppTheme_Beach);
+		originalThemeId = themeId;
 		switch (themeId) {
 			case R.style.AppTheme_Beach:
 				spinner.setSelection(getResources().getInteger(R.integer.theme_beach));
@@ -104,6 +112,14 @@ public class PrefsActivity extends AppCompatActivity implements AdapterView.OnIt
 		}
 
 		spinner.setOnItemSelectedListener(this);
+
+		Switch s = findViewById(R.id.systemDarkSwitch);
+		useSystemDark = prefs.getBoolean(PREF_SYSTEM_DARK_KEY, true);
+		s.setChecked(useSystemDark);
+
+		s = findViewById(R.id.darkOverrideSwitch);
+		darkModeOverride = prefs.getBoolean(PREF_DARK_MODE_KEY, true);
+		s.setChecked(darkModeOverride);
 	}
 
 	/* ***************************************  Callbacks  ************************************ */
@@ -121,11 +137,42 @@ public class PrefsActivity extends AppCompatActivity implements AdapterView.OnIt
 	public void saveButtonClicked(View view) {
 		SharedPreferences.Editor editor = prefs.edit();
 		editor.putInt(PREF_THEME_KEY, themeId);
+		editor.putBoolean(PREF_SYSTEM_DARK_KEY, useSystemDark);
+		editor.putBoolean(PREF_DARK_MODE_KEY, darkModeOverride);
 		editor.apply();
 
-		if (themeId != originalThemeId) ((MainApplication) getApplication()).needsRestart = true;
+		int currNightMode = AppCompatDelegate.getDefaultNightMode();
+		boolean nightModeOk;
+		if (useSystemDark) nightModeOk = currNightMode == AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM;
+		else {
+			if (darkModeOverride) nightModeOk = currNightMode == AppCompatDelegate.MODE_NIGHT_YES;
+			else nightModeOk = currNightMode == AppCompatDelegate.MODE_NIGHT_NO;
+		}
+
+		if (themeId != originalThemeId || !nightModeOk)
+			((MainApplication) getApplication()).needsRestart = true;
 
 		finish();
+	}
+
+	/**
+	 * Called when a switch is flipped
+	 * @param view the switch that was flipped
+	 */
+	public void onSwitchFlipped(View view) {
+		int id = view.getId();
+		switch(id) {
+			case R.id.systemDarkSwitch:
+				useSystemDark = ((Switch) view).isChecked();
+				break;
+			case R.id.darkOverrideSwitch:
+				darkModeOverride = ((Switch) view).isChecked();
+				break;
+			default:
+				if (BuildConfig.DEBUG) Log.e(TAG, "Unknown switch flipped!");
+				break;
+
+		}
 	}
 
 	/* ************************************  Spinner Callbacks  ********************************** */
