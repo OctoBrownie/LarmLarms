@@ -1,16 +1,16 @@
 To do list for new features or bugs to be fixed
 
-CURRENTLY WORKING ON: themes
+CURRENTLY WORKING ON: themes and color palettes
 
 Make the UI look prettier
 	Some repeat strings don't really look nice (ex: offset strings are always plural + sound funky,
 	months are shorthand)
 		Use quantity strings
 New ListableEditor features
-	Switches for ringtone and vibration (?)
 	Customizable vibrations?
 Use a (color) selector to make disabled alarms more obvious (MainActivity)
 	See https://programmer.ink/think/a-detailed-explanation-of-the-use-of-selector-in-android.html
+	Also for PrefActivity for dark mode override switch perhaps
 Style all components
 	Also ensure all components of a single type all have the same style (or children of it)
 Make documentation less... conversational?
@@ -33,8 +33,8 @@ Make "offset from now" only a thing in the Editor (the alarms are ALWAYS offset 
 	If it's close enough (within the minute or something), shouldn't change ringTime at all (leave it exact)
 Preview alarm (mostly for volume)?
 Maybe could use a single ListableInfo field for ListableEditor instead of saving to multiple fields
-Keep scroll position on the recycler view?
 Maybe use MaterialDatePicker and MaterialTimePicker instead...? They are both dialogs though so there might be more clicking around 
+Speed up activity loading or add a loading screen
 
 BUGS
 Sometimes requires you to unlock your phone to turn off the alarm (when off)
