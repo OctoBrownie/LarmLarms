@@ -34,6 +34,19 @@
 		<item name="android:colorForeground">?attr/inactiveSwitchColor</item>
 	</style>
 
+	<style name="LineStyle">
+		<item name="android:background">?attr/colorPrimary</item>
+	</style>
+	<style name="LineStyle.Horizontal">
+		<item name="android:layout_margin">@dimen/marginSizeLarge</item>
+	</style>
+	<style name="LineStyle.Vertical">
+		<item name="android:layout_marginLeft">@dimen/marginSizeDefault</item>
+		<item name="android:layout_marginRight">@dimen/marginSizeDefault</item>
+		<item name="android:layout_marginTop">@dimen/marginSizeSmall</item>
+		<item name="android:layout_marginBottom">@dimen/marginSizeSmall</item>
+	</style>
+
 	<!-- - - - - - - - - - - - - - - -  styles for Buttons  - - - - - - - - - - - - - - - - - - -->
 
 	<style name="ButtonStyle" parent="Widget.MaterialComponents.Button">

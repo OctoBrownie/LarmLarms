@@ -29,10 +29,10 @@
 			android:layout_width="0dp"
 			android:layout_height="wrap_content"
 			android:layout_weight="1" />
-		<LinearLayout
-			android:layout_width="2dp"
-			android:layout_height="match_parent"
-			android:background="?attr/colorPrimary"/>
+		<LinearLayout style="@style/LineStyle.Vertical"
+
+			android:layout_width="@dimen/lineWidth"
+			android:layout_height="match_parent" />
 		<android.widget.Button
 			style="@style/ButtonStyle.Borderless"
 

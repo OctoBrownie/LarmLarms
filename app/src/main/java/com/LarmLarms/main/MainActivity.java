@@ -87,8 +87,9 @@ public class MainActivity extends AppCompatActivity implements View.OnLongClickL
 	protected void onCreate(@Nullable Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		PrefsActivity.applyPrefs(this);
+		PrefsActivity.applyPrefsStyle(this);
 		setContentView(R.layout.activity_main);
+		PrefsActivity.applyPrefsUI(this);
 
 		noAlarmsText = findViewById(R.id.no_alarms_text);
 		fragContainer = findViewById(R.id.frag_frame);

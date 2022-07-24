@@ -1,5 +1,6 @@
 package com.LarmLarms.main;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -48,6 +49,11 @@ public class PrefsActivity extends AppCompatActivity implements AdapterView.OnIt
 	 * system settings), stored as a boolean. True translates to dark mode.
 	 */
 	public final static String PREF_DARK_MODE_KEY = "com.LarmLarms.PREFERENCE_DARK_MODE";
+	/**
+	 * Stores whether to have the button menu on the top or the bottom for the preferences activity
+	 * and listable editor. True translates to menu on the top.
+	 */
+	public final static String PREF_MENU_POS = "com.LarmLarms.PREFERENCE_MENU_POSITION";
 
 	/**
 	 * The editor for the preferences.
@@ -71,6 +77,10 @@ public class PrefsActivity extends AppCompatActivity implements AdapterView.OnIt
 	 * Assuming useSystemDark is false, stores whether to use dark mode or not.
 	 */
 	private boolean darkModeOverride;
+	/**
+	 * Stores whether the user wants the menu position to be on the top or bottom.
+	 */
+	private boolean menuPosTop;
 
 	/**
 	 * Creates the activity (sets up all of the UI)
@@ -80,8 +90,9 @@ public class PrefsActivity extends AppCompatActivity implements AdapterView.OnIt
 	protected void onCreate(@Nullable Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		applyPrefs(this);
+		applyPrefsStyle(this);
 		setContentView(R.layout.activity_prefs);
+		applyPrefsUI(this);
 
 		// theme spinner
 		Spinner spinner = findViewById(R.id.themeSpinner);
@@ -120,6 +131,10 @@ public class PrefsActivity extends AppCompatActivity implements AdapterView.OnIt
 		s = findViewById(R.id.darkOverrideSwitch);
 		darkModeOverride = prefs.getBoolean(PREF_DARK_MODE_KEY, true);
 		s.setChecked(darkModeOverride);
+
+		s = findViewById(R.id.menuPlacementSwitch);
+		menuPosTop = prefs.getBoolean(PREF_MENU_POS, false);
+		s.setChecked(menuPosTop);
 	}
 
 	/* ***************************************  Callbacks  ************************************ */
@@ -139,6 +154,7 @@ public class PrefsActivity extends AppCompatActivity implements AdapterView.OnIt
 		editor.putInt(PREF_THEME_KEY, themeId);
 		editor.putBoolean(PREF_SYSTEM_DARK_KEY, useSystemDark);
 		editor.putBoolean(PREF_DARK_MODE_KEY, darkModeOverride);
+		editor.putBoolean(PREF_MENU_POS, menuPosTop);
 		editor.apply();
 
 		int currNightMode = AppCompatDelegate.getDefaultNightMode();
@@ -161,12 +177,16 @@ public class PrefsActivity extends AppCompatActivity implements AdapterView.OnIt
 	 */
 	public void onSwitchFlipped(View view) {
 		int id = view.getId();
+		boolean checked = ((Switch) view).isChecked();
 		switch(id) {
 			case R.id.systemDarkSwitch:
-				useSystemDark = ((Switch) view).isChecked();
+				useSystemDark = checked;
 				break;
 			case R.id.darkOverrideSwitch:
-				darkModeOverride = ((Switch) view).isChecked();
+				darkModeOverride = checked;
+				break;
+			case R.id.menuPlacementSwitch:
+				menuPosTop = checked;
 				break;
 			default:
 				if (BuildConfig.DEBUG) Log.e(TAG, "Unknown switch flipped!");
@@ -205,10 +225,11 @@ public class PrefsActivity extends AppCompatActivity implements AdapterView.OnIt
 
 	/**
 	 * Helper method that applies all of the style-related preferences to components for them.
-	 * Includes: theme and night mode (system and forced).
-	 * @param c the context to apply it to, usually set to this within the class
+	 * Includes: theme and night mode (system and forced). Should be called BEFORE inflating any
+	 * views.
+	 * @param c the context to apply preferences to
 	 */
-	public static void applyPrefs(Context c) {
+	public static void applyPrefsStyle(Context c) {
 		SharedPreferences prefs = c.getSharedPreferences(PREFS_KEY, MODE_PRIVATE);
 		c.setTheme(prefs.getInt(PrefsActivity.PREF_THEME_KEY, R.style.AppTheme_Beach));
 
@@ -221,6 +242,28 @@ public class PrefsActivity extends AppCompatActivity implements AdapterView.OnIt
 			}
 			else {
 				AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+			}
+		}
+	}
+
+	/**
+	 * Helper method that applies all UI related preferences to components for them. Applies the
+	 * menu placement. Should be called AFTER inflating views.
+	 * @param a the activity to apply preferences to
+	 */
+	public static void applyPrefsUI(Activity a) {
+		SharedPreferences prefs = a.getSharedPreferences(PREFS_KEY, MODE_PRIVATE);
+
+		View topMenu = a.findViewById(R.id.topMenu);
+		View bottomMenu =  a.findViewById(R.id.bottomMenu);
+		if (topMenu != null && bottomMenu != null) {
+			if (prefs.getBoolean(PREF_MENU_POS, false)) {
+				topMenu.setVisibility(View.VISIBLE);
+				bottomMenu.setVisibility(View.GONE);
+			}
+			else {
+				topMenu.setVisibility(View.GONE);
+				bottomMenu.setVisibility(View.VISIBLE);
 			}
 		}
 	}

@@ -4,10 +4,16 @@
 	<dimen name="marginSizeDefault">16dp</dimen>
 	<dimen name="marginSizeSmall">8dp</dimen>
 	<dimen name="marginSizeSuperSmall">4dp</dimen>
+	<dimen name="marginSizeLarge">24dp</dimen>
 
 	<dimen name="cornerRadius">8dp</dimen>
 	<dimen name="minImageSize">32dp</dimen>
+
+	<!-- size of spaces -->
 	<dimen name="spaceSize">8dp</dimen>
+
+	<!-- width of lines -->
+	<dimen name="lineWidth">2dp</dimen>
 
 	<!-- dimens for cards -->
 	<dimen name="cardCornerRadius">24dp</dimen>

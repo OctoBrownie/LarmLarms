@@ -43,8 +43,9 @@ public class RingingActivity extends AppCompatActivity {
 	protected void onCreate(@Nullable Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		PrefsActivity.applyPrefs(this);
+		PrefsActivity.applyPrefsStyle(this);
 		setContentView(R.layout.activity_alarm_ringing);
+		PrefsActivity.applyPrefsUI(this);
 
 		// setting fields
 		Alarm currAlarm = Alarm.fromEditString(this,

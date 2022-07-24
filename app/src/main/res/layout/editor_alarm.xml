@@ -271,6 +271,11 @@
 
 			<include layout="@layout/editor_common_fields" />
 
+			<LinearLayout style="@style/LineStyle.Horizontal"
+
+				android:layout_width="match_parent"
+				android:layout_height="@dimen/lineWidth"/>
+
 			<!-- ringtone button -->
 			<LinearLayout
 				android:layout_width="match_parent"

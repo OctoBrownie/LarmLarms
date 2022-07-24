@@ -100,6 +100,34 @@
 					android:showText="false"
 					android:onClick="onSwitchFlipped" />
 			</LinearLayout>
+
+			<LinearLayout style="@style/LineStyle.Horizontal"
+
+				android:layout_width="match_parent"
+				android:layout_height="@dimen/lineWidth"/>
+
+			<!-- menu placement switch -->
+			<LinearLayout
+				android:orientation="horizontal"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content">
+				<TextView
+					style="@style/TextStyle"
+
+					android:layout_width="0dp"
+					android:layout_height="wrap_content"
+					android:layout_weight="1"
+					android:text="@string/prefs_menu_placement" />
+				<Switch
+					style="@style/Switch"
+
+					android:id="@+id/menuPlacementSwitch"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:layout_gravity="center"
+					android:showText="false"
+					android:onClick="onSwitchFlipped" />
+			</LinearLayout>
 		</LinearLayout>
 	</ScrollView>
 

@@ -227,8 +227,6 @@ public class ListableEditorActivity extends AppCompatActivity
 	protected void onCreate(@Nullable Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		PrefsActivity.applyPrefs(this);
-
 		Intent intent = getIntent();
 		String action = intent.getAction();
 		if (action == null) {
@@ -288,8 +286,12 @@ public class ListableEditorActivity extends AppCompatActivity
 			originalListable = workingListable.clone();
 		}
 
+		PrefsActivity.applyPrefsStyle(this);
+
 		if (isAlarm) { alarmUISetup(); }
 		else { folderUISetup(); }
+
+		PrefsActivity.applyPrefsUI(this);
 
 		// used for any action-specific UI changes
 		switch(action) {
