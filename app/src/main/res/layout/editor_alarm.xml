@@ -317,6 +317,13 @@
 				android:orientation="horizontal"
 				android:layout_width="match_parent"
 				android:layout_height="wrap_content">
+				<TextView
+					style="@style/EditorLabelStyle"
+
+					android:layout_width="0dp"
+					android:layout_height="wrap_content"
+					android:layout_weight="1"
+					android:text="@string/alarm_editor_vibrate" />
 				<Switch
 					style="@style/Switch"
 
@@ -326,12 +333,6 @@
 					android:layout_gravity="center"
 					android:showText="false"
 					android:onClick="onCompoundButtonClicked" />
-				<TextView
-					style="@style/EditorLabelStyle"
-
-					android:layout_width="wrap_content"
-					android:layout_height="wrap_content"
-					android:text="@string/alarm_editor_vibrate" />
 			</LinearLayout>
 		</LinearLayout>
 	</ScrollView>
