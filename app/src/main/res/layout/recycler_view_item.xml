@@ -9,6 +9,7 @@
 	android:foreground="?android:attr/selectableItemBackground"
 	android:clickable="true"
 	android:focusable="true"
+	android:layout_margin="0dp"
 
 	card_view:cardBackgroundColor="?attr/colorSurface"
 	card_view:cardCornerRadius="@dimen/cardCornerRadius"
@@ -20,13 +21,17 @@
 	<LinearLayout
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
-		android:orientation="horizontal">
+		android:orientation="horizontal"
+		android:gravity="top"
+		android:padding="@dimen/marginSizeDefault"
+		android:baselineAligned="false">
 
+		<!-- icons (folder/time and switch) -->
 		<LinearLayout
 			android:layout_width="wrap_content"
-			android:layout_height="match_parent"
+			android:layout_height="wrap_content"
 			android:orientation="vertical"
-			android:layout_margin="@dimen/marginSizeDefault">
+			android:layout_margin="0dp">
 
 			<TextView
 				style="@style/TextStyle"
@@ -35,19 +40,17 @@
 				android:layout_width="wrap_content"
 				android:layout_height="wrap_content"
 				android:layout_gravity="center"
-				android:gravity="center"
+				android:layout_margin="0dp"
 				tools:text="ti:me am" />
-
-
 			<ImageView
 				android:id="@+id/folder_icon"
 				android:layout_width="match_parent"
 				android:layout_height="wrap_content"
+				android:layout_gravity="center"
 				android:src="@drawable/folder_icon_opened"
 				android:contentDescription="@string/main_folder_description"
 				android:minWidth="@dimen/minImageSize"
 				android:visibility="gone"/>
-
 			<Switch
 				style="@style/Switch"
 
@@ -55,15 +58,18 @@
 				android:layout_width="wrap_content"
 				android:layout_height="wrap_content"
 				android:layout_gravity="center"
+				android:layout_margin="0dp"
 				android:showText="false" />
 		</LinearLayout>
 
+		<!-- text (name and ring time) -->
 		<LinearLayout
-			android:layout_width="match_parent"
-			android:layout_height="match_parent"
+			android:layout_width="0dp"
+			android:layout_height="wrap_content"
 			android:orientation="vertical"
-			android:layout_margin="@dimen/marginSizeDefault">
-
+			android:layout_marginStart="@dimen/marginSizeLarge"
+			android:layout_marginEnd="@dimen/marginSizeDefault"
+			android:layout_weight="1">
 			<TextView
 				style="@style/TextStyle"
 
@@ -71,9 +77,11 @@
 				android:layout_width="wrap_content"
 				android:layout_height="wrap_content"
 				android:layout_gravity="start"
-				android:layout_marginStart="0dp"
+				android:layout_margin="0dp"
 				tools:text="title text" />
-
+			<Space
+				android:layout_width="1dp"
+				android:layout_height="@dimen/marginSizeSmall" />
 			<TextView
 				style="@style/TextStyle"
 
@@ -81,9 +89,7 @@
 				android:layout_width="wrap_content"
 				android:layout_height="wrap_content"
 				android:layout_gravity="start"
-				android:layout_marginTop="@dimen/marginSizeDefault"
-				android:layout_marginStart="0dp"
-				android:gravity="start"
+				android:layout_margin="0dp"
 				tools:text="repeat text" />
 		</LinearLayout>
 	</LinearLayout>
