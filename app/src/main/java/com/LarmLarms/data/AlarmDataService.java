@@ -581,6 +581,7 @@ public class AlarmDataService extends Service {
 			return;
 		}
 		l.toggleActive();
+		if (l instanceof Alarm) ((Alarm) l).updateRingTime();
 		save();
 		sendDataChanged(Message.obtain(inMsg));
 	}
