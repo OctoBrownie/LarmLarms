@@ -1,29 +1,59 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-	<!-- light beach -->
-	<color name="brightBlue">#3cb7a8</color>
-	<color name="darkerBrightBlue">#225f76</color>
-	<color name="seaBlue">#165aae</color>
-	<color name="sand">#d2c87e</color>
-
+	<!-- light -->
 	<color name="veryLightGrey">#e6e6e6</color>
 	<color name="grey">#393939</color>
+
+	<!-- dark -->
+	<color name="veryDarkGrey">#212121</color>
+	<color name="midGrey">#757575</color>
+
+	<!-- light beach -->
+	<color name="seaBlue">#308cfd</color>
+	<color name="darkerBrightBlue">#104771</color>
+	<color name="babyBlue">#c0ebf7</color>
+	<color name="sand">#d2c87e</color>
+	<color name="lightSand">#faf6d6</color>
 
 	<!-- dark beach -->
 	<color name="darkerBlueGreen">#1096a3</color>
 	<color name="darkerBlue">#184a71</color>
-	<color name="deepBlue">#08428b</color>
+	<color name="darkNavyBlue">#152539</color>
 	<color name="darkSand">#b7ac5e</color>
 
-	<color name="veryDarkGrey">#1a1a1a</color>
-	<color name="lightGrey">#6c6c6c</color>
-
 	<!-- light candy -->
+	<color name="lightPurple">#ba68c8</color>
+	<color name="lightPurple2">#9441a3</color>
+	<color name="veryLightPurple">#e8cff7</color>
+	<color name="lightOrange">#d6743c</color>
+	<color name="veryLightOrange">#fae5ce</color>
+
 	<!-- dark candy -->
+	<color name="darkPurple">#6a1978</color>
+	<color name="darkPurple2">#350343</color>
+	<color name="darkMagenta">#2e0a29</color>
+	<color name="darkOrange">#89470c</color>
 
 	<!-- light mint -->
+	<color name="lightMint">#52d664</color>
+	<color name="lightMint2">#40b450</color>
+	<color name="veryLightMint">#cafad0</color>
+	<color name="lightBrown">#b78e71</color>
+	<color name="veryLightBrown">#e1d4cb</color>
+
 	<!-- dark mint -->
+	<color name="darkMint">#196824</color>
+	<color name="darkMint2">#0f5418</color>
+	<color name="darkerMint">#07360d</color>
+	<color name="darkBrown">#613d21</color>
 
 	<!-- light grey -->
+	<color name="lightGrey1">#c1c1c1</color>
+	<color name="lightGrey2">#a4a4a4</color>
+	<color name="lighterGrey">#ededed</color>
+	<color name="lighterGrey2">#e7e7e7</color>
+
 	<!-- dark grey -->
+	<color name="darkGrey1">#767676</color>
+	<color name="darkGrey2">#3b3b3b</color>
 </resources>

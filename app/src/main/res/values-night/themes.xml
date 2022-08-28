@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-	<style name="AppTheme" parent="Theme.MaterialComponents.NoActionBar" />
-
-	<style name="AppTheme.Beach">
+	<style name="AppTheme" parent="Theme.MaterialComponents.NoActionBar">
 		<item name="cardViewStyle">@style/CardView.Dark</item>
 
 		<!-- for navigation and status bar to also be black -->
@@ -10,31 +8,54 @@
 		<item name="android:windowTranslucentStatus">true</item>
 		<item name="android:fitsSystemWindows">true</item>
 
-		<item name="colorPrimary">@color/darkerBlueGreen</item>
-		<item name="colorPrimaryDark">@color/darkerBlue</item>
 		<item name="colorOnPrimary">@android:color/white</item>
-
-		<item name="colorSecondary">@color/darkSand</item>
-
 		<item name="android:colorBackground">@android:color/black</item>
 		<item name="colorOnBackground">@android:color/white</item>
-		<item name="colorSurface">@color/veryDarkGrey</item>
+
+		<item name="inactiveSwitchColor">@color/midGrey</item>
+	</style>
+
+	<style name="AppTheme.Beach">
+		<item name="colorPrimary">@color/darkerBlueGreen</item>
+		<item name="colorPrimaryDark">@color/darkerBlue</item>
+
+		<item name="colorSecondary">@color/darkSand</item>
+		<item name="colorSurface">@color/darkNavyBlue</item>
 		<item name="colorAccent">@color/darkSand</item>
 
-		<!-- for switches -->
-		<item name="inactiveSwitchColor">@color/lightGrey</item>
 		<item name="switchThumbColor">@color/darkSand</item>
 	</style>
 
-	<style name="AppTheme.Candy" parent="AppTheme.Beach">
-		<item name="colorPrimary">@android:color/holo_purple</item>
+	<style name="AppTheme.Candy">
+		<item name="colorPrimary">@color/darkPurple</item>
+		<item name="colorPrimaryDark">@color/darkPurple2</item>
+
+		<item name="colorSecondary">@color/darkOrange</item>
+		<item name="colorSurface">@color/darkMagenta</item>
+		<item name="colorAccent">@color/darkOrange</item>
+
+		<item name="switchThumbColor">@color/darkOrange</item>
 	</style>
 
-	<style name="AppTheme.Mint" parent="AppTheme.Beach">
-		<item name="colorPrimary">@android:color/holo_green_dark</item>
+	<style name="AppTheme.Mint">
+		<item name="colorPrimary">@color/darkMint</item>
+		<item name="colorPrimaryDark">@color/darkMint2</item>
+
+		<item name="colorSecondary">@color/darkBrown</item>
+		<item name="colorSurface">@color/darkerMint</item>
+		<item name="colorAccent">@color/darkBrown</item>
+
+		<item name="switchThumbColor">@color/darkBrown</item>
 	</style>
 
-	<style name="AppTheme.Grey" parent="AppTheme.Beach">
-		<item name="colorPrimary">@android:color/darker_gray</item>
+	<style name="AppTheme.Grey">
+		<item name="colorPrimary">@color/darkGrey1</item>
+		<item name="colorPrimaryDark">@color/darkGrey2</item>
+
+		<item name="colorSecondary">@color/darkGrey1</item>
+		<item name="colorSurface">@color/darkGrey2</item>
+		<item name="colorAccent">@color/darkGrey1</item>
+
+		<item name="switchThumbColor">@color/darkGrey1</item>
 	</style>
 </resources>
