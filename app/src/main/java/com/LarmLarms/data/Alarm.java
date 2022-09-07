@@ -1166,27 +1166,39 @@ public final class Alarm implements Listable, Cloneable {
 		Resources res = context.getResources();
 
 		StringBuilder days = new StringBuilder();
-		String separator = res.getString(R.string.separator);
+		String separator = res.getString(R.string.separator), finalSeparator = res.getString(R.string.final_separator);
 		String[] dayStrings = (new DateFormatSymbols()).getShortWeekdays();
 
 		boolean everyDayFlag = true, weekdayFlag = true, weekendFlag = true;
+		boolean temp;
+		int prevDay = -1;
 
 		for (int i = 0; i < repeatDays.length; i++) {
 			if (repeatDays[i]) {
-				days.append(dayStrings[i + 1]).append(separator);
+				if (prevDay != -1) days.append(dayStrings[prevDay]).append(separator);
+				prevDay = i + 1;
 			}
+
 			everyDayFlag &= repeatDays[i];
-			if (i + 1 == Calendar.SATURDAY || i + 1 == Calendar.SUNDAY) { weekendFlag &= repeatDays[i]; }
-			else { weekdayFlag &= repeatDays[i]; }
+
+			temp = (i + 1 == Calendar.SATURDAY || i + 1 == Calendar.SUNDAY) ^ repeatDays[i];
+			weekdayFlag &= temp;
+			weekendFlag &= !temp;
 		}
 
 		// special cases
-		if (days.toString().isEmpty()) { return res.getString(R.string.alarm_no_repeats_string); }
+		if (prevDay == -1) { return res.getString(R.string.alarm_no_repeats_string); }
 		else if (everyDayFlag) { return res.getString(R.string.alarm_weekly_everyday); }
 		else if (weekdayFlag) { return res.getString(R.string.alarm_weekly_weekdays); }
 		else if (weekendFlag) { return res.getString(R.string.alarm_weekly_weekends); }
 
-		days.delete(days.length() - separator.length(), days.length());		// delete the last separator
+		// add last day
+		if (days.length() != 0) {
+			// delete the last separator and add the final one
+			days.delete(days.length() - separator.length(), days.length());
+			days.append(finalSeparator);
+		}
+		days.append(dayStrings[prevDay]);
 		return String.format(res.getString(R.string.alarm_weekly), days);
 	}
 
@@ -1311,7 +1323,10 @@ public final class Alarm implements Listable, Cloneable {
 			previous = true;
 		}
 		if (offsetHours != 0) {
-			if (previous) offsetString.append(separator);
+			if (previous) {
+				if (offsetMins != 0) offsetString.append(separator);
+				else offsetString.append(finalSeparator);
+			}
 			offsetString.append(String.format(res.getString(R.string.alarm_offset_hours), offsetHours));
 			previous = true;
 		}
