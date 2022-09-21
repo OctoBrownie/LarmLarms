@@ -1,0 +1,75 @@
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+	<!-- general display strings, no prefixes -->
+	<string name="app_name">Larm Larms</string>
+	<string name="space">" "</string>
+	<string name="separator">、</string>
+	<string name="final_separator">、</string>
+	<string name="root_folder">""</string>
+
+	<!-- notification display strings, prefixed by "notif" -->
+	<string name="notif_channel_name">アラーム</string>
+	<string name="notif_channel_description">Where all of the alarms are sent.</string>
+	<string name="notif_ticker">Ringing alarm</string>
+	<string name="notif_description">Click here to snooze or dismiss the alarm.</string>
+	<string name="notif_dismiss">dismiss</string>
+	<string name="notif_snooze">snooze</string>
+	<string name="notif_service_description">Starts alarms and plays alarm ringtones.</string>
+
+	<!-- RecyclerViewHolder context menu display strings, prefixed by "listable_menu"
+		 If you change the order of these, make sure to change it in RecyclerViewAdapter
+	-->
+	<string name="listable_menu_delete_alarm">Delete alarm</string>
+	<string name="listable_menu_delete_folder">Delete folder</string>
+	<string-array name="listable_menu_alarms">
+		<item>@string/listable_menu_delete_alarm</item>
+	</string-array>
+	<string-array name="listable_menu_folders">
+		<item>@string/listable_menu_delete_folder</item>
+	</string-array>
+
+	<!-- MainActivity display strings, prefixed by "main" -->
+	<string name="main_no_alarms_text">There\'s nothing here!</string>
+	<string name="main_add_alarm_button">+</string>
+	<string name="main_next_alarm">Next alarm:
+		"\""<xliff:g id="name" example="Alarm name">%1$s</xliff:g>"\""
+		<xliff:g id="main_date_string" example="on 3/14/22">%2$s</xliff:g>
+		at <xliff:g id="time" example="12:01">%3$s</xliff:g></string>
+	<string name="main_no_next_alarm">No next alarm to ring</string>
+	<string name="main_date_string">on <xliff:g id="date" example="3/14/22">%s</xliff:g></string>
+	<string name="main_date_string_today">today</string>
+	<string name="main_date_string_tomorrow">tomorrow</string>
+
+	<!-- MainActivity description strings, prefixed by "main," suffixed by "descrip" -->
+	<string name="main_alarm_description">Add alarm</string>
+	<string name="main_folder_description">Add folder</string>
+	<string name="main_settings_description">Settings</string>
+
+	<!-- PrefsActivity strings, prefixed by "prefs" -->
+	<string name="prefs_title">Settings</string>
+	<string name="prefs_theme">Theme: </string>
+	<string name="prefs_theme_description">Theme is separate from light/dark mode. Both light and
+		dark mode have versions of these color palettes.</string>
+	<string name="prefs_system_dark">Use system dark mode</string>
+	<string name="prefs_dark_override">Use dark mode (if not following system settings)</string>
+	<string name="prefs_menu_placement">Put back/save buttons above content (otherwise below)</string>
+
+	<!-- themes, prefixed by "theme" -->
+	<string name="theme_beach">Sandy beach</string>
+	<string name="theme_candy">Candy</string>
+	<string name="theme_mint">Mint</string>
+	<!-- TODO: use grey instead of gray in *not* EN-US -->
+	<string name="theme_grey">Grayscale</string>
+
+	<!-- these have to match the indices in the array themes_list -->
+	<integer name="theme_beach">0</integer>
+	<integer name="theme_candy">1</integer>
+	<integer name="theme_mint">2</integer>
+	<integer name="theme_grey">3</integer>
+
+	<string-array name="themes_list">
+		<item>@string/theme_beach</item>
+		<item>@string/theme_candy</item>
+		<item>@string/theme_mint</item>
+		<item>@string/theme_grey</item>
+	</string-array>
+</resources>
