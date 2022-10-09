@@ -1,4 +1,4 @@
-package com.LarmLarms.main;
+package com.larmlarms.main;
 
 import android.content.Context;
 import android.content.DialogInterface;
@@ -18,14 +18,14 @@ import android.widget.ImageView;
 import android.widget.Switch;
 import android.widget.TextView;
 
-import com.LarmLarms.BuildConfig;
-import com.LarmLarms.R;
-import com.LarmLarms.data.Alarm;
-import com.LarmLarms.data.AlarmDataService;
-import com.LarmLarms.data.AlarmGroup;
-import com.LarmLarms.data.Listable;
-import com.LarmLarms.data.ListableInfo;
-import com.LarmLarms.editor.ListableEditorActivity;
+import com.larmlarms.BuildConfig;
+import com.larmlarms.R;
+import com.larmlarms.data.Alarm;
+import com.larmlarms.data.AlarmDataService;
+import com.larmlarms.data.AlarmGroup;
+import com.larmlarms.data.Listable;
+import com.larmlarms.data.ListableInfo;
+import com.larmlarms.editor.ListableEditorActivity;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

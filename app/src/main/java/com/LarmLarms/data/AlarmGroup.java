@@ -1,9 +1,9 @@
-package com.LarmLarms.data;
+package com.larmlarms.data;
 
 import android.content.Context;
 import android.util.Log;
 
-import com.LarmLarms.BuildConfig;
+import com.larmlarms.BuildConfig;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;

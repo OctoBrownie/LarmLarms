@@ -1,13 +1,15 @@
-package com.LarmLarms.main;
+package com.larmlarms.main;
 
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
 
-import com.LarmLarms.R;
+import com.larmlarms.R;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.DialogFragment;
+
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Dialog fragment for RecyclerView items. Different dialogs open depending on whether the Listable
@@ -17,12 +19,12 @@ public class RecyclerDialogFrag extends DialogFragment {
 	/**
 	 * A listener for the dialog.
 	 */
-	private DialogInterface.OnClickListener listener;
+	private final DialogInterface.OnClickListener listener;
 
 	/**
 	 * Stores whether the dialog is being opened for an alarm or folder.
 	 */
-	private boolean isAlarm;
+	private final boolean isAlarm;
 
 	/**
 	 * Creates a new dialog for a recycler view item.
@@ -39,7 +41,7 @@ public class RecyclerDialogFrag extends DialogFragment {
 	 * @param savedInstanceState the previous instance state
 	 * @return the fully created dialog
 	 */
-	@Override
+	@Override @NotNull
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
 		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 

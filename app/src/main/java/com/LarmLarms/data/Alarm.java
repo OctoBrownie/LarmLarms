@@ -1,4 +1,4 @@
-package com.LarmLarms.data;
+package com.larmlarms.data;
 
 import android.content.Context;
 import android.content.res.Resources;
@@ -9,8 +9,8 @@ import android.provider.Settings;
 import android.text.format.DateFormat;
 import android.util.Log;
 
-import com.LarmLarms.BuildConfig;
-import com.LarmLarms.R;
+import com.larmlarms.BuildConfig;
+import com.larmlarms.R;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;

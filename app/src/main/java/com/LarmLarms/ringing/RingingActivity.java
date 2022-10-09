@@ -1,4 +1,4 @@
-package com.LarmLarms.ringing;
+package com.larmlarms.ringing;
 
 import android.app.KeyguardManager;
 import android.content.Context;
@@ -10,10 +10,10 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.TextView;
 
-import com.LarmLarms.BuildConfig;
-import com.LarmLarms.R;
-import com.LarmLarms.data.Alarm;
-import com.LarmLarms.main.PrefsActivity;
+import com.larmlarms.BuildConfig;
+import com.larmlarms.R;
+import com.larmlarms.data.Alarm;
+import com.larmlarms.main.PrefsActivity;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -44,7 +44,7 @@ public class RingingActivity extends AppCompatActivity {
 		super.onCreate(savedInstanceState);
 
 		PrefsActivity.applyPrefsStyle(this);
-		setContentView(R.layout.activity_alarm_ringing);
+		setContentView(R.layout.activity_ringing);
 		PrefsActivity.applyPrefsUI(this);
 
 		// setting fields

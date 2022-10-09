@@ -1,4 +1,4 @@
-package com.LarmLarms.main;
+package com.larmlarms.main;
 
 import android.app.Application;
 

@@ -1,4 +1,4 @@
-package com.LarmLarms.editor;
+package com.larmlarms.editor;
 
 import android.annotation.SuppressLint;
 import android.content.ComponentName;
@@ -33,14 +33,14 @@ import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
-import com.LarmLarms.BuildConfig;
-import com.LarmLarms.R;
-import com.LarmLarms.data.Alarm;
-import com.LarmLarms.data.AlarmDataService;
-import com.LarmLarms.data.AlarmGroup;
-import com.LarmLarms.data.Listable;
-import com.LarmLarms.data.ListableInfo;
-import com.LarmLarms.main.PrefsActivity;
+import com.larmlarms.BuildConfig;
+import com.larmlarms.R;
+import com.larmlarms.data.Alarm;
+import com.larmlarms.data.AlarmDataService;
+import com.larmlarms.data.AlarmGroup;
+import com.larmlarms.data.Listable;
+import com.larmlarms.data.ListableInfo;
+import com.larmlarms.main.PrefsActivity;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -74,27 +74,27 @@ public class ListableEditorActivity extends AppCompatActivity
 	/**
 	 * An extra used for carrying a ListableInfo.
 	 */
-	public final static String EXTRA_LISTABLE_INFO = "com.apps.LarmLarms.extra.INFO";
+	public final static String EXTRA_LISTABLE_INFO = "com.apps.larmlarms.extra.INFO";
 
 	// for inbound intents
 	/**
 	 * Intent action for creating a new alarm. Requires nothing else.
 	 */
-	public final static String ACTION_CREATE_ALARM = "com.apps.LarmLarms.action.CREATE_ALARM";
+	public final static String ACTION_CREATE_ALARM = "com.apps.larmlarms.action.CREATE_ALARM";
 	/**
 	 * Intent action for editing an existing Alarm. Requires that EXTRA_LISTABLE_INFO contain a
 	 * ListableInfo with absIndex, listable, and path filled out.
 	 */
-	public final static String ACTION_EDIT_ALARM = "com.apps.LarmLarms.action.EDIT_ALARM";
+	public final static String ACTION_EDIT_ALARM = "com.apps.larmlarms.action.EDIT_ALARM";
 	/**
 	 * Request code to create a new folder. Requires nothing else.
 	 */
-	public final static String ACTION_CREATE_FOLDER = "com.apps.LarmLarms.action.CREATE_FOLDER";
+	public final static String ACTION_CREATE_FOLDER = "com.apps.larmlarms.action.CREATE_FOLDER";
 	/**
 	 * Request code to edit an existing AlarmGroup. Requires that EXTRA_LISTABLE_INFO contain a
 	 * ListableInfo with absIndex, listable, and path filled out.
 	 */
-	public final static String ACTION_EDIT_FOLDER = "com.apps.LarmLarms.action.EDIT_FOLDER";
+	public final static String ACTION_EDIT_FOLDER = "com.apps.larmlarms.action.EDIT_FOLDER";
 
 	// for outbound intents
 	/**
@@ -596,6 +596,7 @@ public class ListableEditorActivity extends AppCompatActivity
 	 */
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+		super.onActivityResult(requestCode, resultCode, data);
 		if (requestCode == REQ_GET_RINGTONE && resultCode == RESULT_OK) {
 			Uri uri = null;
 			if (data != null)

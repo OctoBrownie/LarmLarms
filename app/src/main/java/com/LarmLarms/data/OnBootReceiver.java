@@ -1,10 +1,10 @@
-package com.LarmLarms.data;
+package com.larmlarms.data;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
-import com.LarmLarms.R;
+import com.larmlarms.R;
 
 /**
  * Receives messages from the system that the device has just booted. Starts up the data service

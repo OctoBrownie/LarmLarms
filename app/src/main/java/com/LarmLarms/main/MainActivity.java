@@ -1,4 +1,4 @@
-package com.LarmLarms.main;
+package com.larmlarms.main;
 
 import android.content.ComponentName;
 import android.content.Context;
@@ -17,10 +17,10 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.LarmLarms.BuildConfig;
-import com.LarmLarms.R;
-import com.LarmLarms.data.AlarmDataService;
-import com.LarmLarms.editor.ListableEditorActivity;
+import com.larmlarms.BuildConfig;
+import com.larmlarms.R;
+import com.larmlarms.data.AlarmDataService;
+import com.larmlarms.editor.ListableEditorActivity;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

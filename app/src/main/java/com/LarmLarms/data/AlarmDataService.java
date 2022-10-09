@@ -1,4 +1,4 @@
-package com.LarmLarms.data;
+package com.larmlarms.data;
 
 import android.app.AlarmManager;
 import android.app.NotificationChannel;
@@ -20,9 +20,9 @@ import android.os.Messenger;
 import android.os.RemoteException;
 import android.util.Log;
 
-import com.LarmLarms.BuildConfig;
-import com.LarmLarms.R;
-import com.LarmLarms.ringing.RingingService;
+import com.larmlarms.BuildConfig;
+import com.larmlarms.R;
+import com.larmlarms.ringing.RingingService;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -62,25 +62,25 @@ public class AlarmDataService extends Service {
 	/**
 	 * In a bundle, this is the key used to store a ListableInfo.
 	 */
-	public static final String BUNDLE_INFO_KEY = "com.apps.LarmLarms.bundleKey.INFO";
+	public static final String BUNDLE_INFO_KEY = "com.larmlarms.bundleKey.INFO";
 	/**
 	 * In a bundle, this is the key used to store a reduced folder structure (a String ArrayList).
 	 */
-	public static final String BUNDLE_LIST_KEY = "com.apps.LarmLarms.bundleKey.FOLDERS";
+	public static final String BUNDLE_LIST_KEY = "com.apps.larmlarms.bundleKey.FOLDERS";
 	/**
 	 * In a bundle, this is the key used to store the name of a Listable.
 	 */
-	public static final String BUNDLE_NAME_KEY = "com.apps.LarmLarms.bundleKey.NAME";
+	public static final String BUNDLE_NAME_KEY = "com.apps.larmlarms.bundleKey.NAME";
 	/**
 	 * In a bundle, this is the key used to store the time of an Alarm.
 	 */
-	public static final String BUNDLE_TIME_KEY = "com.apps.LarmLarms.bundleKey.TIME";
+	public static final String BUNDLE_TIME_KEY = "com.apps.larmlarms.bundleKey.TIME";
 
 	/**
 	 * Flag to set if the calling intent doesn't want the service to immediately update the alarm
 	 * pending intent when first created. Used with a boolean extra in incoming intents.
 	 */
-	public static final String EXTRA_NO_UPDATE = "com.apps.LarmLarms.extra.NO_UPDATE";
+	public static final String EXTRA_NO_UPDATE = "com.apps.larmlarms.extra.NO_UPDATE";
 
 	/* *****************************  Message what field constants  **************************** */
 

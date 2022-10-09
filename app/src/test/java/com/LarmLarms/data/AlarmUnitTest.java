@@ -1,4 +1,4 @@
-package com.LarmLarms.data;
+package com.larmlarms.data;
 
 import org.junit.Test;
 

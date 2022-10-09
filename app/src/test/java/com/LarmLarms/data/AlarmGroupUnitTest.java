@@ -1,10 +1,12 @@
-package com.LarmLarms.data;
+package com.larmlarms.data;
 
 import org.junit.Test;
 
 import java.util.ArrayList;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Unit tests for the AlarmGroup class. Requires DEBUG flag to be false when run.
@@ -12,7 +14,7 @@ import static org.junit.Assert.assertEquals;
 public class AlarmGroupUnitTest {
 	/* **********************************  Searching Tests  ********************************* */
 	@Test
-	public void findOuterIndexTest() throws Exception {
+	public void findOuterIndexTest() {
 		/*
 		 * FOLDER STRUCTURE:
 		 * test
@@ -50,7 +52,7 @@ public class AlarmGroupUnitTest {
 	}
 
 	@Test
-	public void absIndexTest() throws Exception {
+	public void absIndexTest() {
 		/*
 		 * FOLDER STRUCTURE:
 		 * test
@@ -72,7 +74,6 @@ public class AlarmGroupUnitTest {
 
 		Listable testListable = folder.getListableAbs(-1, false);
 		assert testListable != null;
-		assertEquals(null, testListable);
 
 		testListable = folder.getListableAbs(0, false);
 		assert testListable != null;
@@ -96,7 +97,6 @@ public class AlarmGroupUnitTest {
 
 		testListable = folder.getListableAbs(5, false);
 		assert testListable != null;
-		assertEquals(null, testListable);
 	}
 
 	/* ********************************  Basic Function Tests  ***************************** */
@@ -106,32 +106,32 @@ public class AlarmGroupUnitTest {
 	 * as well as the resulting list of Listables.
 	 */
 	@Test
-	public void addTest() throws Exception {
+	public void addTest() {
 		AlarmGroup folder = new AlarmGroup("test");
 		ArrayList<Integer> lookupAnswer = new ArrayList<>();
-		assertEquals(true, lookupAnswer.equals(folder.getVisibleLookup()));
+		assertEquals(lookupAnswer, folder.getVisibleLookup());
 
 		folder.addListable(new Alarm(null, "alarm 1"));
 		assertEquals(2, folder.visibleSize());
 		lookupAnswer.add(0);
-		assertEquals(true, lookupAnswer.equals(folder.getVisibleLookup()));
+		assertEquals(lookupAnswer, folder.getVisibleLookup());
 
 		folder.addListable(new Alarm(null, "alarm 2"));
 		assertEquals(3, folder.visibleSize());
 		lookupAnswer.add(1);
-		assertEquals(true, lookupAnswer.equals(folder.getVisibleLookup()));
+		assertEquals(lookupAnswer, folder.getVisibleLookup());
 
 		AlarmGroup innerFolder = new AlarmGroup("inner");
 		innerFolder.addListable(new Alarm(null, "alarm 3"));
 		folder.addListable(innerFolder);
 		assertEquals(5, folder.visibleSize());
 		lookupAnswer.add(2);
-		assertEquals(true, lookupAnswer.equals(folder.getVisibleLookup()));
+		assertEquals(lookupAnswer, folder.getVisibleLookup());
 
 		folder.addListable(new Alarm(null, "alarm 4"));
 		assertEquals(6, folder.visibleSize());
 		lookupAnswer.add(4);
-		assertEquals(true, lookupAnswer.equals(folder.getVisibleLookup()));
+		assertEquals(lookupAnswer, folder.getVisibleLookup());
 
 		Listable testListable = folder.getListable(0);
 		assert testListable != null;
@@ -154,7 +154,7 @@ public class AlarmGroupUnitTest {
 	 * Tests whether the lookup tables are correct.
 	 */
 	@Test
-	public void lookupTest() throws Exception {
+	public void lookupTest() {
 		AlarmGroup folder = new AlarmGroup("test");
 		folder.addListable(new Alarm(null, "alarm 1"));
 		folder.addListable(new Alarm(null, "alarm 2"));
@@ -172,7 +172,7 @@ public class AlarmGroupUnitTest {
 		answer.add(4);
 		ArrayList<Integer> tester = folder.getVisibleLookup();
 
-		assertEquals(true, answer.equals(tester));
+		assertEquals(answer, tester);
 	}
 
 	/**
@@ -180,7 +180,7 @@ public class AlarmGroupUnitTest {
 	 * Tests specifically for store strings, and stores Alarms and AlarmGroups.
 	 */
 	@Test
-	public void storeStringTest() throws Exception {
+	public void storeStringTest() {
 		AlarmGroup folder = new AlarmGroup("test");		// index 0
 		folder.addListable(new Alarm(null, "alarm 1"));		// index 1
 		folder.addListable(new Alarm(null, "alarm 2"));		// index 2
@@ -230,7 +230,7 @@ public class AlarmGroupUnitTest {
 	 * Tests specifically for edit strings, so no recursion and no storing of Alarms.
 	 */
 	@Test
-	public void editStringTest() throws Exception {
+	public void editStringTest() {
 		AlarmGroup folder = new AlarmGroup("test");		// index 0
 		folder.addListable(new Alarm(null, "alarm 1"));		// index 1
 		folder.addListable(new Alarm(null, "alarm 2"));		// index 2
@@ -255,7 +255,7 @@ public class AlarmGroupUnitTest {
 	 * Tests the conversion into path lists.
 	 */
 	@Test
-	public void pathListTest() throws Exception {
+	public void pathListTest() {
 		AlarmGroup folder = new AlarmGroup("test");		// index 0
 		folder.addListable(new Alarm(null, "alarm 1"));		// index 1
 		folder.addListable(new Alarm(null, "alarm 2"));		// index 2
@@ -284,7 +284,7 @@ public class AlarmGroupUnitTest {
 	 * method) or not.
 	 */
 	@Test
-	public void equalsTest() throws Exception {
+	public void equalsTest() {
 		AlarmGroup folder1 = new AlarmGroup("Title");
 		folder1.setActive(false);
 
@@ -303,7 +303,7 @@ public class AlarmGroupUnitTest {
 	 * Tests whether clones of an AlarmGroup are considered identical (via the equals method) or not.
 	 */
 	@Test
-	public void cloneIdentityTest() throws Exception {
+	public void cloneIdentityTest() {
 		AlarmGroup folder = new AlarmGroup("Title");
 		folder.setActive(false);
 
@@ -316,7 +316,7 @@ public class AlarmGroupUnitTest {
 	 * test to test for context or ringtone uri.
 	 */
 	@Test
-	public void cloneMutableTest() throws Exception {
+	public void cloneMutableTest() {
 		AlarmGroup folder = new AlarmGroup("Title");
 		folder.setActive(false);
 		folder.addListable(new AlarmGroup("Folder"));
@@ -335,19 +335,19 @@ public class AlarmGroupUnitTest {
 		assert cloneL != null;
 		cloneL.setActive(false);
 
-		assertEquals(false, folder.getListableName().equals(clone.getListableName()));
+		assertNotEquals(folder.getListableName(), clone.getListableName());
 
 		Listable folderL = folder.getListable(0);
 		cloneL = clone.getListable(0);
 		assert folderL != null;
 		assert cloneL != null;
-		assertEquals(false, folderL.getListableName().equals(cloneL.getListableName()));
+		assertNotEquals(folderL.getListableName(), cloneL.getListableName());
 
 		folderL = folder.getListable(1);
 		cloneL = clone.getListable(1);
 		assert folderL != null;
 		assert cloneL != null;
-		assertEquals(false, folderL.isActive() == cloneL.isActive());
+		assertNotEquals(folderL.isActive(), cloneL.isActive());
 	}
 
 	/**
@@ -358,15 +358,15 @@ public class AlarmGroupUnitTest {
 		AlarmGroup a = new AlarmGroup("Test");
 
 		Listable b = a.clone();
-		assertEquals(true, b != null && a.compareTo(b) == 0);
+		assertTrue(b != null && a.compareTo(b) == 0);
 
 		b = new Alarm(null, "AAA");
-		assertEquals(true, a.compareTo(b) < 0);
+		assertTrue(a.compareTo(b) < 0);
 
 		b = new AlarmGroup("Zest");
-		assertEquals(true, a.compareTo(b) < 0);
+		assertTrue(a.compareTo(b) < 0);
 
 		b = new AlarmGroup("Test");
-		assertEquals(true, a.compareTo(b) < 0);
+		assertTrue(a.compareTo(b) < 0);
 	}
 }

@@ -7,7 +7,7 @@
 	android:layout_gravity="center_vertical|center_horizontal"
 	android:orientation="vertical"
 
-	tools:context="com.LarmLarms.ringing.RingingActivity">
+	tools:context="com.larmlarms.ringing.RingingActivity">
 
 	<TextView
 		style="@style/TextStyle"

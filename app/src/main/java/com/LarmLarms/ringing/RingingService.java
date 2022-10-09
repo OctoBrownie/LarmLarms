@@ -1,4 +1,4 @@
-package com.LarmLarms.ringing;
+package com.larmlarms.ringing;
 
 import android.app.Notification;
 import android.app.PendingIntent;
@@ -27,11 +27,11 @@ import android.os.Vibrator;
 import android.util.Log;
 import android.widget.RemoteViews;
 
-import com.LarmLarms.BuildConfig;
-import com.LarmLarms.R;
-import com.LarmLarms.data.Alarm;
-import com.LarmLarms.data.AlarmDataService;
-import com.LarmLarms.main.PrefsActivity;
+import com.larmlarms.BuildConfig;
+import com.larmlarms.R;
+import com.larmlarms.data.Alarm;
+import com.larmlarms.data.AlarmDataService;
+import com.larmlarms.main.PrefsActivity;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -53,11 +53,11 @@ public class RingingService extends Service implements MediaPlayer.OnPreparedLis
 	/**
 	 * An extra used for carrying a Listable in edit string form.
 	 */
-	public final static String EXTRA_LISTABLE = "com.apps.LarmLarms.extra.LISTABLE";
+	public final static String EXTRA_LISTABLE = "com.apps.larmlarms.extra.LISTABLE";
 	/**
 	 * An extra used for carrying a Listable's absolute index within the data.
 	 */
-	public final static String EXTRA_LISTABLE_INDEX = "com.apps.LarmLarms.extra.ABS_INDEX";
+	public final static String EXTRA_LISTABLE_INDEX = "com.apps.larmlarms.extra.ABS_INDEX";
 
 	/* *********************************  Other static fields  ********************************** */
 

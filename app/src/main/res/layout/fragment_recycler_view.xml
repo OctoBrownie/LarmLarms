@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".main.RecyclerViewFrag">
+
+    <!-- TODO: Update blank fragment layout -->
+    <!-- It it unnecessary for this layout to have a theme to it because it doesn't have any
+		 viewable components (also the theme is inherited from the calling activity) -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/recycler_view"/>
+</FrameLayout>

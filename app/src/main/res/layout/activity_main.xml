@@ -7,7 +7,7 @@
 	android:orientation="vertical"
 	android:background="?android:attr/colorBackground"
 
-	tools:context="com.LarmLarms.main.MainActivity">
+	tools:context="com.larmlarms.main.MainActivity">
 
 	<TextClock
 		style="@style/ClockStyle"
@@ -90,7 +90,7 @@
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"
 		android:id="@+id/frag_frame"
-		android:name="com.LarmLarms.main.RecyclerViewFrag"
+		android:name="com.larmlarms.main.RecyclerViewFrag"
 		android:tag="recycler_frag" />
 </LinearLayout>
 

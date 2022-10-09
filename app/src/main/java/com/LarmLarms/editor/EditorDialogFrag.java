@@ -1,4 +1,4 @@
-package com.LarmLarms.editor;
+package com.larmlarms.editor;
 
 import android.app.Dialog;
 import android.content.DialogInterface;

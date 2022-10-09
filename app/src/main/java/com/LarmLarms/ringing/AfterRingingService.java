@@ -1,4 +1,4 @@
-package com.LarmLarms.ringing;
+package com.larmlarms.ringing;
 
 import android.app.Service;
 import android.content.ComponentName;
@@ -11,8 +11,8 @@ import android.os.Messenger;
 import android.os.RemoteException;
 import android.util.Log;
 
-import com.LarmLarms.BuildConfig;
-import com.LarmLarms.data.AlarmDataService;
+import com.larmlarms.BuildConfig;
+import com.larmlarms.data.AlarmDataService;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -30,12 +30,12 @@ public class AfterRingingService extends Service {
 	 * Action used in intents, used for snoozing alarms. Does not assume anything about the contents
 	 * of the intent.
 	 */
-	static final String ACTION_SNOOZE = "com.apps.LarmLarms.action.ACTION_SNOOZE";
+	static final String ACTION_SNOOZE = "com.apps.larmlarms.action.ACTION_SNOOZE";
 	/**
 	 * Action used in intents, used for dismissing alarms. Does not assume anything about the
 	 * contents of the intent.
 	 */
-	static final String ACTION_DISMISS = "com.apps.LarmLarms.action.ACTION_DISMISS";
+	static final String ACTION_DISMISS = "com.apps.larmlarms.action.ACTION_DISMISS";
 
 	/**
 	 * The absolute index of the alarm that finished ringing.

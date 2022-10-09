@@ -1,4 +1,4 @@
-package com.LarmLarms.main;
+package com.larmlarms.main;
 
 import android.content.ComponentName;
 import android.content.Context;
@@ -12,9 +12,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.LarmLarms.BuildConfig;
-import com.LarmLarms.R;
-import com.LarmLarms.data.AlarmDataService;
+import com.larmlarms.BuildConfig;
+import com.larmlarms.R;
+import com.larmlarms.data.AlarmDataService;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -36,7 +36,7 @@ public class RecyclerViewFrag extends Fragment {
 	/**
 	 * Bundle key for the recycler view's layout manager's instance state.
 	 */
-	private static final String BUNDLE_INSTANCE_STATE = "com.LarmLarms.RECYCLER_STATE_KEY";
+	private static final String BUNDLE_INSTANCE_STATE = "com.larmlarms.RECYCLER_STATE_KEY";
 
 	/**
 	 * The adapter for the RecyclerView, recreated every time onCreateView() is called. Can be used
@@ -76,7 +76,7 @@ public class RecyclerViewFrag extends Fragment {
 
 		// doing things for recycler view
 		// rootView is the LinearLayout in recycler_view_frag.xml
-		View rootView = inflater.inflate(R.layout.recycler_view_frag, container, false);
+		View rootView = inflater.inflate(R.layout.fragment_recycler_view, container, false);
 
 		recyclerView = rootView.findViewById(R.id.recycler_view);
 

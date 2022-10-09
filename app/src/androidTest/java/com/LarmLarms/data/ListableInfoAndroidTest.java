@@ -1,13 +1,15 @@
-package com.LarmLarms.data;
+package com.larmlarms.data;
 
 import android.os.Parcel;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import androidx.test.runner.AndroidJUnit4;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Instrumented test for flattening and unflattening ListableInfo objects into parcels. Must execute
@@ -41,7 +43,7 @@ public class ListableInfoAndroidTest {
 
 		assert dest.listable != null;
 		assertEquals("Hello", dest.listable.getListableName());
-		assertEquals(true, dest.listable instanceof Alarm);
+		assertTrue(dest.listable instanceof Alarm);
 
 		assert dest.parent != null;
 		assertEquals("Goodbye", dest.parent.getListableName());
@@ -53,7 +55,7 @@ public class ListableInfoAndroidTest {
 	 * Tests the getListableInfo() method to ensure correctness of all ListableInfo fields.
 	 */
 	@Test
-	public void getListableInfoTest() throws Exception {
+	public void getListableInfoTest() {
 		/*
 		 * FOLDER STRUCTURE:
 		 * test
@@ -89,37 +91,37 @@ public class ListableInfoAndroidTest {
 		folder.addListable(innerFolder);
 		folder.addListable(alarms[7]);
 
-		ListableInfo info = folder.getListableInfo(-1);
-		assertEquals(null, info);
+		ListableInfo info = folder.getListableInfo(-1, false);
+		assertNull(info);
 
-		info = folder.getListableInfo(0);
+		info = folder.getListableInfo(0, false);
 		assertEquals(0, info.absIndex);
 		assertEquals(0, info.relIndex);
 		assertEquals(0, info.numIndents);
 		assertEquals(-1, info.absParentIndex);
 		assertEquals(alarms[0], info.listable);
-		assertEquals(null, info.parent);
+		assertNull(info.parent);
 		assertEquals("test/", info.path);
 
-		info = folder.getListableInfo(1);
+		info = folder.getListableInfo(1, false);
 		assertEquals(1, info.absIndex);
 		assertEquals(1, info.relIndex);
 		assertEquals(0, info.numIndents);
 		assertEquals(-1, info.absParentIndex);
 		assertEquals(alarms[1], info.listable);
-		assertEquals(null, info.parent);
+		assertNull(info.parent);
 		assertEquals("test/", info.path);
 
-		info = folder.getListableInfo(2);
+		info = folder.getListableInfo(2, false);
 		assertEquals(2, info.absIndex);
 		assertEquals(2, info.relIndex);
 		assertEquals(0, info.numIndents);
 		assertEquals(-1, info.absParentIndex);
 		assertEquals(innerFolder, info.listable);
-		assertEquals(null, info.parent);
+		assertNull(info.parent);
 		assertEquals("test/", info.path);
 
-		info = folder.getListableInfo(3);
+		info = folder.getListableInfo(3, false);
 		assertEquals(3, info.absIndex);
 		assertEquals(0, info.relIndex);
 		assertEquals(1, info.numIndents);
@@ -128,7 +130,7 @@ public class ListableInfoAndroidTest {
 		assertEquals(innerFolder, info.parent);
 		assertEquals("test/inner/", info.path);
 
-		info = folder.getListableInfo(4);
+		info = folder.getListableInfo(4, false);
 		assertEquals(4, info.absIndex);
 		assertEquals(1, info.relIndex);
 		assertEquals(1, info.numIndents);
@@ -137,7 +139,7 @@ public class ListableInfoAndroidTest {
 		assertEquals(innerFolder, info.parent);
 		assertEquals("test/inner/", info.path);
 
-		info = folder.getListableInfo(5);
+		info = folder.getListableInfo(5, false);
 		assertEquals(5, info.absIndex);
 		assertEquals(2, info.relIndex);
 		assertEquals(1, info.numIndents);
@@ -146,7 +148,7 @@ public class ListableInfoAndroidTest {
 		assertEquals(innerFolder, info.parent);
 		assertEquals("test/inner/", info.path);
 
-		info = folder.getListableInfo(6);
+		info = folder.getListableInfo(6, false);
 		assertEquals(6, info.absIndex);
 		assertEquals(0, info.relIndex);
 		assertEquals(2, info.numIndents);
@@ -155,7 +157,7 @@ public class ListableInfoAndroidTest {
 		assertEquals(doubleInner, info.parent);
 		assertEquals("test/inner/double double/", info.path);
 
-		info = folder.getListableInfo(7);
+		info = folder.getListableInfo(7, false);
 		assertEquals(7, info.absIndex);
 		assertEquals(1, info.relIndex);
 		assertEquals(2, info.numIndents);
@@ -164,7 +166,7 @@ public class ListableInfoAndroidTest {
 		assertEquals(doubleInner, info.parent);
 		assertEquals("test/inner/double double/", info.path);
 
-		info = folder.getListableInfo(8);
+		info = folder.getListableInfo(8, false);
 		assertEquals(8, info.absIndex);
 		assertEquals(2, info.relIndex);
 		assertEquals(2, info.numIndents);
@@ -173,16 +175,16 @@ public class ListableInfoAndroidTest {
 		assertEquals(doubleInner, info.parent);
 		assertEquals("test/inner/double double/", info.path);
 
-		info = folder.getListableInfo(9);
+		info = folder.getListableInfo(9, false);
 		assertEquals(9, info.absIndex);
 		assertEquals(3, info.relIndex);
 		assertEquals(0, info.numIndents);
 		assertEquals(-1, info.absParentIndex);
 		assertEquals(alarms[7], info.listable);
-		assertEquals(null, info.parent);
+		assertNull(info.parent);
 		assertEquals("test/", info.path);
 
-		info = folder.getListableInfo(10);
-		assertEquals(null, info);
+		info = folder.getListableInfo(10, false);
+		assertNull(info);
 	}
 }

@@ -1,4 +1,4 @@
-package com.LarmLarms.main;
+package com.larmlarms.main;
 
 import android.app.Activity;
 import android.content.Context;
@@ -11,8 +11,8 @@ import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 import android.widget.Switch;
 
-import com.LarmLarms.BuildConfig;
-import com.LarmLarms.R;
+import com.larmlarms.BuildConfig;
+import com.larmlarms.R;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -32,28 +32,28 @@ public class PrefsActivity extends AppCompatActivity implements AdapterView.OnIt
 	/**
 	 * Key for the app's settings when retrieving from Context.getSharedPreferences()
 	 */
-	public final static String PREFS_KEY = "com.LarmLarms.PREFERENCES";
+	public final static String PREFS_KEY = "com.larmlarms.PREFERENCES";
 
 	/**
 	 * Within the shared preferences, this is the key for theme, stored as an integer which is the
 	 * theme id.
 	 */
-	public final static String PREF_THEME_KEY = "com.LarmLarms.PREFERENCE_THEME";
+	public final static String PREF_THEME_KEY = "com.larmlarms.PREFERENCE_THEME";
 	/**
 	 * Within the shared preferences, this is the key for using system settings for dark mode, stored
 	 * as a boolean. True translates to following the system-wide dark/light mode.
 	 */
-	public final static String PREF_SYSTEM_DARK_KEY = "com.LarmLarms.PREFERENCE_USE_SYSTEM_DARK";
+	public final static String PREF_SYSTEM_DARK_KEY = "com.larmlarms.PREFERENCE_USE_SYSTEM_DARK";
 	/**
 	 * Within the shared preferences, this is the key for dark mode (if the app doesn't follow
 	 * system settings), stored as a boolean. True translates to dark mode.
 	 */
-	public final static String PREF_DARK_MODE_KEY = "com.LarmLarms.PREFERENCE_DARK_MODE";
+	public final static String PREF_DARK_MODE_KEY = "com.larmlarms.PREFERENCE_DARK_MODE";
 	/**
 	 * Stores whether to have the button menu on the top or the bottom for the preferences activity
 	 * and listable editor. True translates to menu on the top.
 	 */
-	public final static String PREF_MENU_POS = "com.LarmLarms.PREFERENCE_MENU_POSITION";
+	public final static String PREF_MENU_POS = "com.larmlarms.PREFERENCE_MENU_POSITION";
 
 	/**
 	 * The editor for the preferences.
