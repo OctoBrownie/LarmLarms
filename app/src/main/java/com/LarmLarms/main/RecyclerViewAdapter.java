@@ -1,5 +1,6 @@
 package com.larmlarms.main;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -15,9 +16,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.Switch;
 import android.widget.TextView;
 
+import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.larmlarms.BuildConfig;
 import com.larmlarms.R;
 import com.larmlarms.data.Alarm;
@@ -33,6 +34,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.LinkedList;
 import java.util.Queue;
 
+import androidx.core.content.res.ResourcesCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 /**
@@ -53,13 +55,13 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.Recyc
 	 * Stores all the Listables (Alarms and AlarmGroups) present, using only absolute indices.
 	 */
 	@NotNull
-	private AlarmGroup data;
+	private final AlarmGroup data;
 
 	/**
 	 * Stores the context that this is being run in. Shouldn't be null.
 	 */
 	@NotNull
-	private Context context;
+	private final Context context;
 	/**
 	 * Messenger to send data requests to. Should connect to the AlarmDataService. Can be null, if
 	 * the service isn't connected.
@@ -101,7 +103,7 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.Recyc
 	 * @param viewType the type of view
 	 * @return a new RecyclerViewHolder in the recycler view
 	 */
-	@Override
+	@NotNull @Override
 	public RecyclerViewHolder onCreateViewHolder(@NotNull ViewGroup parent, int viewType) {
 		// v is the cardView that was just inflated
 		View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.recycler_view_item, parent, false);
@@ -264,7 +266,7 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.Recyc
 		/**
 		 * Tag of the class for logging purposes.
 		 */
-		private static String TAG = "RecyclerViewHolder";
+		private final static String TAG = "RecyclerViewHolder";
 
 		/**
 		 * Is the listable it currently represents. Don't modify it, since it's actually a pointer
@@ -276,23 +278,21 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.Recyc
 		 * The context of the holder. Shouldn't be null. Is required in an onClick callback.
 		 */
 		@NotNull
-		private Context context;
+		private final Context context;
 		/**
 		 * The adapter this holder is tied to.
 		 */
 		@NotNull
-		private RecyclerViewAdapter adapter;
+		private final RecyclerViewAdapter adapter;
 
 		/**
 		 * Vector drawable for the open folder animation. Ends in the open state.
 		 */
-		@NotNull
-		private Drawable openAnim;
+		private final Drawable openAnim;
 		/**
 		 * Vector drawable for the close folder animation. Ends in the closed state.
 		 */
-		@NotNull
-		private Drawable closeAnim;
+		private final Drawable closeAnim;
 
 		// handles to views
 		/**
@@ -315,7 +315,7 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.Recyc
 		/**
 		 * The active state switch. Turns the Listable on/off.
 		 */
-		private final Switch switchView;
+		private final SwitchMaterial switchView;
 		/**
 		 * The image view for the folder, showing the open/closing animation.
 		 */
@@ -344,8 +344,10 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.Recyc
 			imageView = cardView.findViewById(R.id.folder_icon);
 
 			// cache vector drawables
-			openAnim = context.getResources().getDrawable(R.drawable.folder_open_animation, context.getTheme());
-			closeAnim = context.getResources().getDrawable(R.drawable.folder_close_animation, context.getTheme());
+			openAnim = ResourcesCompat.getDrawable(
+					context.getResources(), R.drawable.folder_open_animation, context.getTheme());
+			closeAnim = ResourcesCompat.getDrawable(
+					context.getResources(), R.drawable.folder_close_animation, context.getTheme());
 
 			// create onclick callbacks
 			view.setOnClickListener(this);
@@ -376,7 +378,7 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.Recyc
 		/**
 		 * Gets the active state switch of the holder.
 		 */
-		Switch getOnSwitch() { return switchView; }
+		SwitchMaterial getOnSwitch() { return switchView; }
 		/**
 		 * Gets the folder image view of the holder.
 		 */
@@ -393,22 +395,23 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.Recyc
 		@Override
 		public void onClick(@NotNull View v) {
 			Message msg;
-			switch(v.getId()) {
-				case R.id.card_view:
-					adapter.editExistingListable(getLayoutPosition());
-					return;
-				case R.id.on_switch:
-					msg = Message.obtain(null, AlarmDataService.MSG_TOGGLE_ACTIVE,
-							getLayoutPosition(), 0);
-					adapter.sendMessage(msg);
-					return;
-				case R.id.folder_icon:
-					msg = Message.obtain(null, AlarmDataService.MSG_TOGGLE_OPEN_FOLDER,
-							getLayoutPosition(), 0);
-					adapter.sendMessage(msg);
-					return;
-				default:
-					if (BuildConfig.DEBUG) Log.e(TAG, "Unexpected view using the recycler view holder onClick method.");
+			int id = v.getId();
+			if (id == R.id.card_view) {
+				adapter.editExistingListable(getLayoutPosition());
+			}
+			else if (id == R.id.on_switch) {
+				msg = Message.obtain(null, AlarmDataService.MSG_TOGGLE_ACTIVE,
+						getLayoutPosition(), 0);
+				adapter.sendMessage(msg);
+			}
+			else if (id == R.id.folder_icon) {
+				msg = Message.obtain(null, AlarmDataService.MSG_TOGGLE_OPEN_FOLDER,
+						getLayoutPosition(), 0);
+				adapter.sendMessage(msg);
+			}
+			else {
+				if (BuildConfig.DEBUG)
+					Log.e(TAG, "Unexpected view using the recycler view holder onClick method.");
 			}
 		}
 
@@ -419,16 +422,15 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.Recyc
 		 */
 		@Override
 		public void onClick(@NotNull DialogInterface dialog, int which) {
-			switch (which) {
-				case 0:
-					// delete the current listable
-					Message msg = Message.obtain(null, AlarmDataService.MSG_DELETE_LISTABLE);
-					msg.arg1 = getLayoutPosition();
-					adapter.sendMessage(msg);
-					break;
-				default:
-					if (BuildConfig.DEBUG) Log.e(TAG, "There was an invalid choice in the Listable dialog.");
-					break;
+			if (which == 0) {
+				// delete the current listable
+				Message msg = Message.obtain(null, AlarmDataService.MSG_DELETE_LISTABLE);
+				msg.arg1 = getLayoutPosition();
+				adapter.sendMessage(msg);
+			}
+			else {
+				if (BuildConfig.DEBUG)
+					Log.e(TAG, "There was an invalid choice in the Listable dialog.");
 			}
 		}
 
@@ -500,7 +502,7 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.Recyc
 		 * The adapter that owns this handler.
 		 */
 		@NotNull
-		private RecyclerViewAdapter adapter;
+		private final RecyclerViewAdapter adapter;
 
 		/**
 		 * Creates a new handler in the main Looper.
@@ -516,6 +518,7 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.Recyc
 		 * the data service, except empty listener and folder structure messages.
 		 * @param msg the inbound message
 		 */
+		@SuppressLint("NotifyDataSetChanged")
 		@Override
 		public void handleMessage(@Nullable Message msg) {
 			if (msg == null) {
@@ -623,7 +626,7 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.Recyc
 					break;
 				case AlarmDataService.MSG_SNOOZE_ALARM:
 					l = adapter.data.getListableAbs(msg.arg1, false);
-					if (l == null || !(l instanceof Alarm)) {
+					if (!(l instanceof Alarm)) {
 						if (BuildConfig.DEBUG) Log.e(TAG, "Listable in the list was invalid.");
 						return;
 					}
@@ -633,7 +636,7 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.Recyc
 					break;
 				case AlarmDataService.MSG_UNSNOOZE_ALARM:
 					l = adapter.data.getListableAbs(msg.arg1, false);
-					if (l == null || !(l instanceof Alarm)) {
+					if (!(l instanceof Alarm)) {
 						if (BuildConfig.DEBUG) Log.e(TAG, "Listable in the list was invalid.");
 						return;
 					}
@@ -643,7 +646,7 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.Recyc
 					break;
 				case AlarmDataService.MSG_DISMISS_ALARM:
 					l = adapter.data.getListableAbs(msg.arg1, false);
-					if (l == null || !(l instanceof Alarm)) {
+					if (!(l instanceof Alarm)) {
 						if (BuildConfig.DEBUG) Log.e(TAG, "Listable in the list was invalid.");
 						return;
 					}
@@ -654,7 +657,7 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.Recyc
 				case AlarmDataService.MSG_TOGGLE_OPEN_FOLDER: {
 					// gotta insert/delete new listables
 					l = adapter.data.getListableAbs(msg.arg1, true);
-					if (l == null || !(l instanceof AlarmGroup)) {
+					if (!(l instanceof AlarmGroup)) {
 						if (BuildConfig.DEBUG) Log.e(TAG, "Listable in the list was invalid.");
 						return;
 					}

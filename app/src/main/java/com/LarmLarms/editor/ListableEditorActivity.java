@@ -28,11 +28,11 @@ import android.widget.EditText;
 import android.widget.NumberPicker;
 import android.widget.SeekBar;
 import android.widget.Spinner;
-import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
+import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.larmlarms.BuildConfig;
 import com.larmlarms.R;
 import com.larmlarms.data.Alarm;
@@ -197,7 +197,7 @@ public class ListableEditorActivity extends AppCompatActivity
 	 * The service connection to the data service.
 	 */
 	@NotNull
-	private DataServiceConnection dataConn;
+	private final DataServiceConnection dataConn;
 	/**
 	 * The messenger of the data service.
 	 */
@@ -452,45 +452,36 @@ public class ListableEditorActivity extends AppCompatActivity
 	 */
 	@Override
 	public void onItemSelected(@NotNull AdapterView<?> parent, View view, int pos, long id) {
-		switch (parent.getId()) {
-			case R.id.alarmRepeatTypeInput: {
-				String type = (String) parent.getItemAtPosition(pos);
-				if (type.equals(getString(R.string.repeat_once_abs))) {
-					changeRepeatType(Alarm.REPEAT_ONCE_ABS, false);
-				}
-				else if (type.equals(getString(R.string.repeat_once_rel))) {
-					changeRepeatType(Alarm.REPEAT_ONCE_REL, false);
-				}
-				else if (type.equals(getString(R.string.repeat_day_weekly))) {
-					changeRepeatType(Alarm.REPEAT_DAY_WEEKLY, false);
-				}
-				else if (type.equals(getString(R.string.repeat_date_monthly))) {
-					changeRepeatType(Alarm.REPEAT_DATE_MONTHLY, false);
-				}
-				else if (type.equals(getString(R.string.repeat_day_monthly))) {
-					changeRepeatType(Alarm.REPEAT_DAY_MONTHLY, false);
-				}
-				else if (type.equals(getString(R.string.repeat_date_yearly))) {
-					changeRepeatType(Alarm.REPEAT_DATE_YEARLY, false);
-				}
-				else if (type.equals(getString(R.string.repeat_offset))) {
-					changeRepeatType(Alarm.REPEAT_OFFSET, false);
-				}
-				break;
-			}
-			case R.id.alarmWeekOfMonthInput:
-				((Alarm) workingListable).setRepeatWeek(pos);
-				break;
-			case R.id.alarmDayOfWeekInput:
-				((Alarm) workingListable).getAlarmTimeCalendar().set(Calendar.DAY_OF_WEEK, pos + 1);
-				break;
-			case R.id.parentFolderInput:
-				if (paths != null)
-					listablePath = paths.get(pos);
-				break;
-			default:
-				if (BuildConfig.DEBUG) Log.e(TAG, "Unknown AdapterView selected an item.");
-				finish();
+		int parentId = parent.getId();
+		if (parentId == R.id.alarmRepeatTypeInput) {
+			String type = (String) parent.getItemAtPosition(pos);
+			if (type.equals(getString(R.string.repeat_once_abs)))
+				changeRepeatType(Alarm.REPEAT_ONCE_ABS, false);
+			else if (type.equals(getString(R.string.repeat_once_rel)))
+				changeRepeatType(Alarm.REPEAT_ONCE_REL, false);
+			else if (type.equals(getString(R.string.repeat_day_weekly)))
+				changeRepeatType(Alarm.REPEAT_DAY_WEEKLY, false);
+			else if (type.equals(getString(R.string.repeat_date_monthly)))
+				changeRepeatType(Alarm.REPEAT_DATE_MONTHLY, false);
+			else if (type.equals(getString(R.string.repeat_day_monthly)))
+				changeRepeatType(Alarm.REPEAT_DAY_MONTHLY, false);
+			else if (type.equals(getString(R.string.repeat_date_yearly)))
+				changeRepeatType(Alarm.REPEAT_DATE_YEARLY, false);
+			else if (type.equals(getString(R.string.repeat_offset)))
+				changeRepeatType(Alarm.REPEAT_OFFSET, false);
+		}
+		else if (parentId == R.id.alarmWeekOfMonthInput) {
+			((Alarm) workingListable).setRepeatWeek(pos);
+		}
+		else if (parentId == R.id.alarmDayOfWeekInput) {
+			((Alarm) workingListable).getAlarmTimeCalendar().set(Calendar.DAY_OF_WEEK, pos + 1);
+		}
+		else if (parentId == R.id.parentFolderInput) {
+			if (paths != null) listablePath = paths.get(pos);
+		}
+		else {
+			if (BuildConfig.DEBUG) Log.e(TAG, "Unknown AdapterView selected an item.");
+			finish();
 		}
 	}
 
@@ -561,30 +552,27 @@ public class ListableEditorActivity extends AppCompatActivity
 		boolean checked = ((CompoundButton) view).isChecked();
 
 		int id = view.getId();
-		switch(id) {
-			case R.id.alarmOffsetFromNowCheckbox:
-				((Alarm) workingListable).setOffsetFromNow(checked);
+		if (id == R.id.alarmOffsetFromNowCheckbox) {
+			((Alarm) workingListable).setOffsetFromNow(checked);
 
-				if (checked) {
-					// hide the time and date pickers
-					if (alarmTimePicker != null) alarmTimePicker.setVisibility(View.GONE);
-					if (alarmDatePicker != null) alarmDatePicker.setVisibility(View.GONE);
-				}
-				else {
-					// show the time and date pickers
-					if (alarmTimePicker == null) setupTimePicker();
-					alarmTimePicker.setVisibility(View.VISIBLE);
+			if (checked) {
+				// hide the time and date pickers
+				if (alarmTimePicker != null) alarmTimePicker.setVisibility(View.GONE);
+				if (alarmDatePicker != null) alarmDatePicker.setVisibility(View.GONE);
+			} else {
+				// show the time and date pickers
+				if (alarmTimePicker == null) setupTimePicker();
+				alarmTimePicker.setVisibility(View.VISIBLE);
 
-					if (alarmDatePicker == null) {
-						setupDatePicker();
-						alarmDatePicker.setMinDate(0);		// in case the date picker hadn't been set up yet
-					}
-					alarmDatePicker.setVisibility(View.VISIBLE);
+				if (alarmDatePicker == null) {
+					setupDatePicker();
+					alarmDatePicker.setMinDate(0);        // in case the date picker hadn't been set up yet
 				}
-				break;
-			case R.id.alarmVibrateSwitch:
-				((Alarm) workingListable).setVibrateOn(checked);
-				break;
+				alarmDatePicker.setVisibility(View.VISIBLE);
+			}
+		}
+		else if (id == R.id.alarmVibrateSwitch) {
+			((Alarm) workingListable).setVibrateOn(checked);
 		}
 	}
 
@@ -665,7 +653,7 @@ public class ListableEditorActivity extends AppCompatActivity
 		volumeBar.setOnSeekBarChangeListener(this);
 
 		// vibrate switch
-		Switch vibrateSwitch = findViewById(R.id.alarmVibrateSwitch);
+		SwitchMaterial vibrateSwitch = findViewById(R.id.alarmVibrateSwitch);
 		// vibrateSwitch.setOnClickListener(this);
 		vibrateSwitch.setChecked(((Alarm) workingListable).isVibrateOn());
 	}
@@ -955,6 +943,7 @@ public class ListableEditorActivity extends AppCompatActivity
 				}
 
 				if (!((Alarm) workingListable).isOffsetFromNow()) {
+					if (alarmTimePicker == null) setupTimePicker();
 					alarmTimePicker.setVisibility(View.VISIBLE);
 
 					alarmDatePicker.setMinDate(0);
@@ -1052,7 +1041,7 @@ public class ListableEditorActivity extends AppCompatActivity
 			if (listablePath == null) newPath = originalPath;
 			newPath += '/' + newName;
 
-			if (paths == null || paths.indexOf(newPath) != -1) {
+			if (paths == null || paths.contains(newPath)) {
 				Toast.makeText(this, getResources().getString(R.string.folder_editor_toast_duplicate),
 						Toast.LENGTH_SHORT).show();
 				return false;		// don't exit, let the user fix it
@@ -1081,10 +1070,16 @@ public class ListableEditorActivity extends AppCompatActivity
 					int days, hours, mins;
 					NumberFormat format = NumberFormat.getInstance();
 					format.setParseIntegerOnly(true);
+					Number n;
 
 					currEditText = alarmOffsetLayout.findViewById(R.id.alarmOffsetDaysInput);
 					try {
-						days = format.parse(currEditText.getText().toString()).intValue();
+						n = format.parse(currEditText.getText().toString());
+						if (n != null) days = n.intValue();
+						else {
+							if (BuildConfig.DEBUG) Log.e(TAG, "Couldn't parse the days to offset. Defaulting to 0.");
+							days = 0;
+						}
 					} catch (ParseException e) {
 						if (BuildConfig.DEBUG) Log.e(TAG, "Couldn't parse the days to offset. Defaulting to 0.");
 						days = 0;
@@ -1092,7 +1087,12 @@ public class ListableEditorActivity extends AppCompatActivity
 
 					currEditText = alarmOffsetLayout.findViewById(R.id.alarmOffsetHoursInput);
 					try {
-						hours = format.parse(currEditText.getText().toString()).intValue();
+						n = format.parse(currEditText.getText().toString());
+						if (n != null) hours = n.intValue();
+						else {
+							if (BuildConfig.DEBUG) Log.e(TAG, "Couldn't parse the hours to offset. Defaulting to 0.");
+							hours = 0;
+						}
 					} catch (ParseException e) {
 						if (BuildConfig.DEBUG) Log.e(TAG, "Couldn't parse the hours to offset. Defaulting to 0.");
 						hours = 0;
@@ -1100,7 +1100,12 @@ public class ListableEditorActivity extends AppCompatActivity
 
 					currEditText = alarmOffsetLayout.findViewById(R.id.alarmOffsetMinsInput);
 					try {
-						mins = format.parse(currEditText.getText().toString()).intValue();
+						n = format.parse(currEditText.getText().toString());
+						if (n != null) mins = n.intValue();
+						else {
+							if (BuildConfig.DEBUG) Log.e(TAG, "Couldn't parse the minutes to offset. Defaulting to 0.");
+							mins = 0;
+						}
 					} catch (ParseException e) {
 						if (BuildConfig.DEBUG) Log.e(TAG, "Couldn't parse the minutes to offset. Defaulting to 0.");
 						mins = 0;
@@ -1272,7 +1277,7 @@ public class ListableEditorActivity extends AppCompatActivity
 		 * The activity that owns this handler.
 		 */
 		@NotNull
-		private ListableEditorActivity activity;
+		private final ListableEditorActivity activity;
 
 		/**
 		 * Creates a new handler on the main thread.

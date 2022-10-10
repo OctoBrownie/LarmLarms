@@ -9,6 +9,8 @@ import android.provider.Settings;
 import android.text.format.DateFormat;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+
 import com.larmlarms.BuildConfig;
 import com.larmlarms.R;
 
@@ -442,9 +444,9 @@ public final class Alarm implements Listable, Cloneable {
 	 * Clones the Alarm and returns the new alarm.
 	 * @return a new Alarm that is a deep copy of the first 
 	 */
-	@Nullable @Override @Contract(pure = true)
+	@NonNull @Override @Contract(pure = true)
 	public Listable clone() {
-		Alarm that = null;
+		Alarm that = new Alarm(null);
 		try {
 			that = (Alarm) super.clone();
 
@@ -730,7 +732,7 @@ public final class Alarm implements Listable, Cloneable {
 		if (ringtoneUri == null)
 			alarmString.append("null");
 		else
-			alarmString.append(ringtoneUri.toString());
+			alarmString.append(ringtoneUri);
 
 		alarmString.append('\t').append(alarmSnoozed);
 		alarmString.append('\t').append(numSnoozes);
@@ -1250,7 +1252,7 @@ public final class Alarm implements Listable, Cloneable {
 			months.append(monthsToAdd.get(monthsToAdd.size() - 1));
 		}
 
-		return String.format(res.getString(R.string.alarm_monthly), months.toString());
+		return String.format(res.getString(R.string.alarm_monthly), months);
 	}
 
 	/**
@@ -1297,7 +1299,7 @@ public final class Alarm implements Listable, Cloneable {
 			months.append(monthsToAdd.get(monthsToAdd.size() - 1));
 		}
 
-		return String.format(res.getString(R.string.alarm_monthly_exception), months.toString());
+		return String.format(res.getString(R.string.alarm_monthly_exception), months);
 	}
 
 	/**

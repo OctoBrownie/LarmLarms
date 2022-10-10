@@ -61,7 +61,7 @@ public class MainActivity extends AppCompatActivity implements View.OnLongClickL
 	 * The service connection to the data service.
 	 */
 	@NotNull
-	private DataServiceConnection dataConn;
+	private final DataServiceConnection dataConn;
 	/**
 	 * The messenger of the data service. Used for sending empty listener or next alarm listener
 	 * messages.
@@ -156,17 +156,13 @@ public class MainActivity extends AppCompatActivity implements View.OnLongClickL
 	@Override
 	public boolean onLongClick(@NotNull View view) {
 		int id = view.getId();
-		switch (id) {
-			case R.id.addAlarmButton:
-				Toast.makeText(this, R.string.main_alarm_description, Toast.LENGTH_SHORT).show();
-				break;
-			case R.id.addFolderButton:
-				Toast.makeText(this, R.string.main_folder_description, Toast.LENGTH_SHORT).show();
-				break;
-			case R.id.settingsButton:
-				Toast.makeText(this, R.string.main_settings_description, Toast.LENGTH_SHORT).show();
-				break;
-		}
+		if (id == R.id.addAlarmButton)
+			Toast.makeText(this, R.string.main_alarm_description, Toast.LENGTH_SHORT).show();
+		else if (id == R.id.addFolderButton)
+			Toast.makeText(this, R.string.main_folder_description, Toast.LENGTH_SHORT).show();
+		else if (id == R.id.settingsButton)
+			Toast.makeText(this, R.string.main_settings_description, Toast.LENGTH_SHORT).show();
+
 		return true;
 	}
 
@@ -350,7 +346,7 @@ public class MainActivity extends AppCompatActivity implements View.OnLongClickL
 		 * The activity it binds to.
 		 */
 		@NotNull
-		private MainActivity activity;
+		private final MainActivity activity;
 
 		/**
 		 * Creats a new handler on the main thread. Also sets the main activity.

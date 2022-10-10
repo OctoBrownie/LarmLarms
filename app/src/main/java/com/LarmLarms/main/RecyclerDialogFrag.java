@@ -1,9 +1,12 @@
 package com.larmlarms.main;
 
+import android.app.Activity;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.util.Log;
 
+import com.larmlarms.BuildConfig;
 import com.larmlarms.R;
 
 import androidx.appcompat.app.AlertDialog;
@@ -16,6 +19,11 @@ import org.jetbrains.annotations.NotNull;
  * is an alarm or a folder.
  */
 public class RecyclerDialogFrag extends DialogFragment {
+	/**
+	 * Tag of the class for logging purposes.
+	 */
+	private static final String TAG = "RecyclerDialogFrag";
+
 	/**
 	 * A listener for the dialog.
 	 */
@@ -42,7 +50,12 @@ public class RecyclerDialogFrag extends DialogFragment {
 	 * @return the fully created dialog
 	 */
 	@Override @NotNull
-	public Dialog onCreateDialog(Bundle savedInstanceState) {
+	public Dialog onCreateDialog(Bundle savedInstanceState) throws IllegalStateException {
+		Activity a = getActivity();
+		if (a == null) {
+			if (BuildConfig.DEBUG) Log.i(TAG, "There wasn't an activity associated with this.");
+			throw new IllegalStateException("There was no activity to make a dialog for.");
+		}
 		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 
 		if (isAlarm) {

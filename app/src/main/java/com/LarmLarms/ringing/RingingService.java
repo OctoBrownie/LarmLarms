@@ -90,7 +90,7 @@ public class RingingService extends Service implements MediaPlayer.OnPreparedLis
 	 * The service connection to the data service.
 	 */
 	@NotNull
-	private ServiceConnection dataConn;
+	private final ServiceConnection dataConn;
 
 	/**
 	 * The messenger of the data service. Used for sending snooze/dismiss messages to it.
@@ -168,42 +168,47 @@ public class RingingService extends Service implements MediaPlayer.OnPreparedLis
 
 		alarmAbsIndex = inIntent.getIntExtra(EXTRA_LISTABLE_INDEX, -1);
 
+		// flags for the pending intents
+		int PIFlags = PendingIntent.FLAG_UPDATE_CURRENT;
+		if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S)
+			PIFlags = PIFlags | PendingIntent.FLAG_MUTABLE;
+
 		// setting up custom foreground notification
 		Intent fullScreenIntent = new Intent(this, RingingActivity.class);
 		fullScreenIntent.putExtra(EXTRA_LISTABLE_INDEX, alarmAbsIndex);
 		fullScreenIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
 		fullScreenIntent.putExtra(EXTRA_LISTABLE, alarm.toEditString());
-		PendingIntent fullScreenPendingIntent = PendingIntent.getActivity(this, 0, fullScreenIntent,
-				PendingIntent.FLAG_UPDATE_CURRENT);
+		PendingIntent fullscreenPI = PendingIntent.getActivity(this, 0, fullScreenIntent, PIFlags);
 
 		Intent dismissIntent = new Intent(this, AfterRingingService.class);
 		dismissIntent.putExtra(EXTRA_LISTABLE_INDEX, alarmAbsIndex);
 		dismissIntent.setAction(AfterRingingService.ACTION_DISMISS);
-		PendingIntent dismissPendingIntent = PendingIntent.getService(this, 0, dismissIntent,
-				PendingIntent.FLAG_UPDATE_CURRENT);
+		PendingIntent dismissPI = PendingIntent.getService(this, 0, dismissIntent, PIFlags);
 
 		Intent snoozeIntent = new Intent(dismissIntent);
 		snoozeIntent.setAction(AfterRingingService.ACTION_SNOOZE);
-		PendingIntent snoozePendingIntent = PendingIntent.getService(this, 0, snoozeIntent,
-				PendingIntent.FLAG_UPDATE_CURRENT);
+		PendingIntent snoozePendingIntent = PendingIntent.getService(this, 0, snoozeIntent, PIFlags);
 
-		// this is so stupid but we can't change styles of a remote view
-		int notifLayout = R.layout.alarm_notification_beach;
+		// this is so stupid but we can't change styles/themes of a remote view
+		int notifLayout;
 		SharedPreferences prefs = getSharedPreferences(PrefsActivity.PREFS_KEY, MODE_PRIVATE);
 		int themeId = prefs.getInt(PrefsActivity.PREF_THEME_KEY, R.style.AppTheme_Beach);
-		switch (themeId) {
-			case R.style.AppTheme_Beach:
-				notifLayout = R.layout.alarm_notification_beach;
-				break;
-			case R.style.AppTheme_Candy:
-				notifLayout = R.layout.alarm_notification_candy;
-				break;
-			case R.style.AppTheme_Grey:
-				notifLayout = R.layout.alarm_notification_grey;
-				break;
-			case R.style.AppTheme_Mint:
-				notifLayout = R.layout.alarm_notification_mint;
-				break;
+		if (themeId == R.style.AppTheme_Beach) {
+			notifLayout = R.layout.alarm_notification_beach;
+		}
+		else if (themeId == R.style.AppTheme_Candy) {
+			notifLayout = R.layout.alarm_notification_candy;
+		}
+		else if (themeId == R.style.AppTheme_Grey) {
+			notifLayout = R.layout.alarm_notification_grey;
+		}
+		else if (themeId == R.style.AppTheme_Mint) {
+			notifLayout = R.layout.alarm_notification_mint;
+		}
+		else {
+			if (BuildConfig.DEBUG) Log.e(TAG, "Unknown theme specified!");
+			stopSelf();
+			return Service.START_NOT_STICKY;
 		}
 		PrefsActivity.applyPrefsStyle(this);
 
@@ -212,7 +217,7 @@ public class RingingService extends Service implements MediaPlayer.OnPreparedLis
 
 		// we need this line to ensure actions pop up on the heads up notification
 		notifView.setOnClickPendingIntent(R.id.snoozeButton, snoozePendingIntent);
-		notifView.setOnClickPendingIntent(R.id.dismissButton, dismissPendingIntent);
+		notifView.setOnClickPendingIntent(R.id.dismissButton, dismissPI);
 
 		NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
 				.setSmallIcon(R.mipmap.ic_launcher)
@@ -224,11 +229,11 @@ public class RingingService extends Service implements MediaPlayer.OnPreparedLis
 				.setSound(Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE + "://" +
 						getPackageName() + "/raw/silence"))
 				.setVibrate(new long[]{0})
-				.setContentIntent(fullScreenPendingIntent)
+				.setContentIntent(fullscreenPI)
 				.setAutoCancel(true)
 				.setCategory(NotificationCompat.CATEGORY_ALARM)
 				.setOngoing(true)
-				.setFullScreenIntent(fullScreenPendingIntent, true)
+				.setFullScreenIntent(fullscreenPI, true)
 				.setStyle(new NotificationCompat.DecoratedCustomViewStyle())
 				.setCustomHeadsUpContentView(notifView);
 

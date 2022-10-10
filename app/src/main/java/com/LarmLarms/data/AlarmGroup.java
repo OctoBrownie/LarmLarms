@@ -87,7 +87,7 @@ public final class AlarmGroup implements Listable, Cloneable {
 	 * Initializes a new AlarmGroup with all dummy data.
 	 */
 	public AlarmGroup() {
-		this("", new ArrayList<Listable>(),
+		this("", new ArrayList<>(),
 				(int) (Calendar.getInstance().getTimeInMillis() % Integer.MAX_VALUE));
 	}
 
@@ -96,7 +96,7 @@ public final class AlarmGroup implements Listable, Cloneable {
 	 * @param title the new name of the folder
 	 */
 	public AlarmGroup(@NotNull String title) {
-		this(title, new ArrayList<Listable>(),
+		this(title, new ArrayList<>(),
 				(int) (Calendar.getInstance().getTimeInMillis() % Integer.MAX_VALUE));
 	}
 
@@ -230,9 +230,9 @@ public final class AlarmGroup implements Listable, Cloneable {
 	 * Clones the folder and returns the new folder.
 	 * @return the new folder, a deep copy of the first
 	 */
-	@Nullable @Override @Contract(pure = true)
+	@NotNull @Override @Contract(pure = true)
 	public Listable clone() {
-		AlarmGroup that = null;
+		AlarmGroup that = new AlarmGroup();
 		try {
 			that = (AlarmGroup) super.clone();
 
@@ -402,7 +402,7 @@ public final class AlarmGroup implements Listable, Cloneable {
 
 		AlarmGroup dest;
 		try {
-			dest = new AlarmGroup(fields[1], new ArrayList<Listable>(), Integer.parseInt(fields[0]));
+			dest = new AlarmGroup(fields[1], new ArrayList<>(), Integer.parseInt(fields[0]));
 		}
 		catch (NumberFormatException e) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "Edit string has an invalid id.");
@@ -1055,7 +1055,7 @@ public final class AlarmGroup implements Listable, Cloneable {
 
 		// they "cross over" and represent an inverted but correct range that l sits between
 		// this is the usual case (we don't usually find l)
-		return Math.max(left, right);
+		return left;
 	}
 
 	/**

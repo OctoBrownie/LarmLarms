@@ -329,7 +329,7 @@
 					android:layout_height="wrap_content"
 					android:layout_weight="1"
 					android:text="@string/alarm_editor_vibrate" />
-				<Switch
+				<com.google.android.material.switchmaterial.SwitchMaterial
 					style="@style/Switch"
 
 					android:id="@+id/alarmVibrateSwitch"

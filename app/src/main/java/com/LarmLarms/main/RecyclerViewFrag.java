@@ -69,8 +69,13 @@ public class RecyclerViewFrag extends Fragment {
 	 * @return the new root view
 	 */
 	@Override
-	public View onCreateView(@NotNull LayoutInflater inflater, @NotNull ViewGroup container,
-							 @Nullable Bundle savedInstanceState) {
+	public View onCreateView(@NotNull LayoutInflater inflater, @Nullable ViewGroup container,
+							 @Nullable Bundle savedInstanceState) throws IllegalStateException {
+		Context context = getContext();
+		if (context == null) {
+			if (BuildConfig.DEBUG) Log.e(TAG, "This fragment wasn't associated with a context!");
+			return null;
+		}
 		myAdapter = new RecyclerViewAdapter(getContext());
 		dataConn = new DataServiceConnection();
 
@@ -100,8 +105,12 @@ public class RecyclerViewFrag extends Fragment {
 	public void onStart() {
 		super.onStart();
 
-		getContext().bindService(new Intent(getContext(), AlarmDataService.class), dataConn,
-				Context.BIND_AUTO_CREATE);
+		Context c = getContext();
+		if (c == null) {
+			if (BuildConfig.DEBUG) Log.e(TAG, "Context for the fragment was null!");
+			return;
+		}
+		c.bindService(new Intent(getContext(), AlarmDataService.class), dataConn, Context.BIND_AUTO_CREATE);
 	}
 
 	/**
@@ -111,6 +120,7 @@ public class RecyclerViewFrag extends Fragment {
 	 */
 	@Override
 	public void onSaveInstanceState(@NotNull Bundle outState) {
+		if (recyclerView.getLayoutManager() == null) return;
 		outState.putParcelable(BUNDLE_INSTANCE_STATE, recyclerView.getLayoutManager().onSaveInstanceState());
 	}
 
@@ -123,7 +133,14 @@ public class RecyclerViewFrag extends Fragment {
 
 		if (boundToDataService) {
 			myAdapter.setDataService(null);
-			getContext().unbindService(dataConn);
+
+			Context c = getContext();
+			if (c == null) {
+				if (BuildConfig.DEBUG) Log.e(TAG, "Context for the fragment was null!");
+				return;
+			}
+			c.unbindService(dataConn);
+
 			boundToDataService = false;
 		}
 	}

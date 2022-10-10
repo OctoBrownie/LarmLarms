@@ -234,7 +234,7 @@ public class AlarmDataService extends Service {
 	 * The thread that the data handler lives in, cannot be null.
 	 */
 	@NotNull
-	private HandlerThread handlerThread;
+	private final HandlerThread handlerThread;
 
 	/**
 	 * List of registered listeners for data change events. Data change events include adding,
@@ -242,7 +242,7 @@ public class AlarmDataService extends Service {
 	 * listables, such as toggling open/closed a folder or snoozing alarms. Cannot be null.
 	 */
 	@NotNull
-	private List<Messenger> dataChangeListeners;
+	private final List<Messenger> dataChangeListeners;
 
 	/**
 	 * List of registered empty listeners. Listeners are sent MSG_DATA_FILLED and MSG_DATA_EMPTIED
@@ -250,7 +250,7 @@ public class AlarmDataService extends Service {
 	 * Cannot be null.
 	 */
 	@NotNull
-	private List<Messenger> emptyListeners;
+	private final List<Messenger> emptyListeners;
 
 	/**
 	 * List of registered listeners for next alarm events. Next alarm events are sent when adding,
@@ -258,7 +258,7 @@ public class AlarmDataService extends Service {
 	 * listables, such as toggling open/closed a folder or snoozing alarms. Cannot be null.
 	 */
 	@NotNull
-	private List<Messenger> nextAlarmListeners;
+	private final List<Messenger> nextAlarmListeners;
 
 	/**
 	 * The folder holding the entire dataset. Cannot be null but before the service is bound it will
@@ -861,11 +861,16 @@ public class AlarmDataService extends Service {
 		AlarmManager manager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
 		PendingIntent pendingIntent;
 
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-			pendingIntent = PendingIntent.getForegroundService(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+		// flags for the pending intent
+		int PIFlags = PendingIntent.FLAG_UPDATE_CURRENT;
+		if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S)
+			PIFlags = PIFlags | PendingIntent.FLAG_MUTABLE;
+
+		if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+			pendingIntent = PendingIntent.getForegroundService(context, 0, intent, PIFlags);
 		}
 		else {
-			pendingIntent = PendingIntent.getService(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+			pendingIntent = PendingIntent.getService(context, 0, intent, PIFlags);
 		}
 
 		if (manager == null || pendingIntent == null) {

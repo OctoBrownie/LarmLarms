@@ -11,6 +11,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 import android.widget.Switch;
 
+import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.larmlarms.BuildConfig;
 import com.larmlarms.R;
 
@@ -104,27 +105,21 @@ public class PrefsActivity extends AppCompatActivity implements AdapterView.OnIt
 		prefs = getSharedPreferences(PREFS_KEY, MODE_PRIVATE);
 		themeId = prefs.getInt(PREF_THEME_KEY, R.style.AppTheme_Beach);
 		originalThemeId = themeId;
-		switch (themeId) {
-			case R.style.AppTheme_Beach:
-				spinner.setSelection(getResources().getInteger(R.integer.theme_beach));
-				break;
-			case R.style.AppTheme_Candy:
-				spinner.setSelection(getResources().getInteger(R.integer.theme_candy));
-				break;
-			case R.style.AppTheme_Mint:
-				spinner.setSelection(getResources().getInteger(R.integer.theme_mint));
-				break;
-			case R.style.AppTheme_Grey:
-				spinner.setSelection(getResources().getInteger(R.integer.theme_grey));
-				break;
-			default:
-				if (BuildConfig.DEBUG) Log.e(TAG, "Unsupported app theme stored!");
-				break;
+		if (themeId == R.style.AppTheme_Beach)
+			spinner.setSelection(getResources().getInteger(R.integer.theme_beach));
+		else if (themeId == R.style.AppTheme_Candy)
+			spinner.setSelection(getResources().getInteger(R.integer.theme_candy));
+		else if (themeId == R.style.AppTheme_Mint)
+			spinner.setSelection(getResources().getInteger(R.integer.theme_mint));
+		else if (themeId == R.style.AppTheme_Grey)
+			spinner.setSelection(getResources().getInteger(R.integer.theme_grey));
+		else {
+			if (BuildConfig.DEBUG) Log.e(TAG, "Unsupported app theme!");
 		}
 
 		spinner.setOnItemSelectedListener(this);
 
-		Switch s = findViewById(R.id.systemDarkSwitch);
+		SwitchMaterial s = findViewById(R.id.systemDarkSwitch);
 		useSystemDark = prefs.getBoolean(PREF_SYSTEM_DARK_KEY, true);
 		s.setChecked(useSystemDark);
 
@@ -178,21 +173,15 @@ public class PrefsActivity extends AppCompatActivity implements AdapterView.OnIt
 	public void onSwitchFlipped(View view) {
 		int id = view.getId();
 		boolean checked = ((Switch) view).isChecked();
-		switch(id) {
-			case R.id.systemDarkSwitch:
-				useSystemDark = checked;
-				break;
-			case R.id.darkOverrideSwitch:
-				darkModeOverride = checked;
-				break;
-			case R.id.menuPlacementSwitch:
-				menuPosTop = checked;
-				break;
-			default:
-				if (BuildConfig.DEBUG) Log.e(TAG, "Unknown switch flipped!");
-				break;
 
-		}
+		if (id == R.id.systemDarkSwitch)
+			useSystemDark = checked;
+		else if (id == R.id.darkOverrideSwitch)
+			darkModeOverride = checked;
+		else if (id == R.id.menuPlacementSwitch)
+			menuPosTop = checked;
+		else
+			if (BuildConfig.DEBUG) Log.e(TAG, "Unknown switch flipped!");
 	}
 
 	/* ************************************  Spinner Callbacks  ********************************** */

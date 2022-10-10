@@ -82,7 +82,7 @@ public interface Listable extends Comparable<Listable> {
 	 * Clones the Listable. Makes the clone() function required and public.
 	 * @return a Listable, can be null but shouldn't be 
 	 */
-	@Nullable @Contract(pure = true)
+	@NotNull @Contract(pure = true)
 	Listable clone();
 
 	/**

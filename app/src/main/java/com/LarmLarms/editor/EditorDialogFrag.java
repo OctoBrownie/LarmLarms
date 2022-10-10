@@ -1,8 +1,10 @@
 package com.larmlarms.editor;
 
+import android.app.Activity;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.util.Log;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -13,6 +15,8 @@ import java.util.Arrays;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.DialogFragment;
 
+import com.larmlarms.BuildConfig;
+
 /**
  * Dialog fragment for ListableEditor. Creates a dialog either for the days of the week or for the
  * months of the year.
@@ -20,18 +24,23 @@ import androidx.fragment.app.DialogFragment;
 public class EditorDialogFrag extends DialogFragment implements
 		DialogInterface.OnMultiChoiceClickListener, DialogInterface.OnClickListener {
 	/**
+	 * Tag of the class for logging purposes.
+	 */
+	private static final String TAG = "EditorDialogFrag";
+
+	/**
 	 * A listener for the dialog. Only receives the positive button click
 	 */
 	@Nullable
-	private DialogCloseListener listener;
+	private final DialogCloseListener listener;
 
 	/**
 	 * The days of the week that have been selected
 	 */
 	@NotNull
-	private boolean[] selected;
+	private final boolean[] selected;
 
-	private boolean isDays;
+	private final boolean isDays;
 
 	/**
 	 * Creates a new dialog for a recycler view item.
@@ -49,9 +58,14 @@ public class EditorDialogFrag extends DialogFragment implements
 	 * @param savedInstanceState the previous instance state
 	 * @return the fully created dialog
 	 */
-	@Override
-	public Dialog onCreateDialog(Bundle savedInstanceState) {
-		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+	@NotNull @Override
+	public Dialog onCreateDialog(Bundle savedInstanceState) throws IllegalStateException {
+		Activity a = getActivity();
+		if (a == null) {
+			if (BuildConfig.DEBUG) Log.i(TAG, "There wasn't an activity associated with this.");
+			throw new IllegalStateException("There was no activity to make a dialog for.");
+		}
+		AlertDialog.Builder builder = new AlertDialog.Builder(a);
 
 		String[] items;
 
