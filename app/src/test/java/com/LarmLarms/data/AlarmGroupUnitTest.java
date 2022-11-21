@@ -323,7 +323,6 @@ public class AlarmGroupUnitTest {
 		folder.addListable(new Alarm(null, "Alarm"));
 
 		AlarmGroup clone = (AlarmGroup) folder.clone();
-		assert clone != null;
 
 		clone.setListableName("Talk");
 
@@ -358,7 +357,7 @@ public class AlarmGroupUnitTest {
 		AlarmGroup a = new AlarmGroup("Test");
 
 		Listable b = a.clone();
-		assertTrue(b != null && a.compareTo(b) == 0);
+		assertEquals(0, a.compareTo(b));
 
 		b = new Alarm(null, "AAA");
 		assertTrue(a.compareTo(b) < 0);

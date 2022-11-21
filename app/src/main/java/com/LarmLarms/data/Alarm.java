@@ -1344,6 +1344,14 @@ public final class Alarm implements Listable, Cloneable {
 	}
 
 	/**
+	 * Updates the ring time, setting it to the next time it should ring.
+	 * @see Alarm#updateRingTime()
+	 */
+	public void updateRingTime() {
+		updateRingTime(Calendar.getInstance());
+	}
+
+	/**
 	 * Updates the ring time, setting it to the next time it should ring. Will not update if the alarm
 	 * is not active. If the alarm is ONCE_ABS and ringTime has passed, the method will reset it to
 	 * ring on the earliest day with the same time (it will stay 13:00 if it was 13:00 originally).
@@ -1353,14 +1361,14 @@ public final class Alarm implements Listable, Cloneable {
 	 *
 	 * NOTE: if the date doesn't exist (ex. April 31 for DATE_MONTHLY), it will simply skip it (will
 	 * not schedule an alarm for May 1)
+	 * @param currTime the current time (the earliest time that this alarm should ring)
 	 */
-	public void updateRingTime() {
+	public void updateRingTime(Calendar currTime) {
 		if (!alarmIsActive || alarmSnoozed) { return; }
 
-		Calendar workingClock = Calendar.getInstance();
-		final Calendar currTime = Calendar.getInstance();
+		Calendar workingClock = (Calendar) currTime.clone();
 
-		int currMonth = workingClock.get(Calendar.MONTH);
+		int currMonth = currTime.get(Calendar.MONTH);
 		final int thisMonth = currMonth;
 
 		// whether or not workingClock has been set yet
@@ -1382,7 +1390,7 @@ public final class Alarm implements Listable, Cloneable {
 		switch(repeatType) {
 			case REPEAT_ONCE_ABS:
 				// only changes if the alarm is overdue
-				if (ringTime.after(workingClock)) { return; }
+				if (ringTime.after(currTime)) { return; }
 
 				while (workingClock.before(currTime)) {
 					workingClock.add(Calendar.DAY_OF_MONTH, 1);
@@ -1390,7 +1398,7 @@ public final class Alarm implements Listable, Cloneable {
 				break;
 			case REPEAT_ONCE_REL:
 				// only changes if the alarm is overdue
-				if (ringTime.after(workingClock)) { return; }
+				if (ringTime.after(currTime)) { return; }
 
 				workingClock.add(Calendar.DAY_OF_MONTH, offsetDays);
 				workingClock.add(Calendar.HOUR_OF_DAY, offsetHours);
@@ -1401,27 +1409,22 @@ public final class Alarm implements Listable, Cloneable {
 				// trying to avoid any namespace issues
 				{
 					// days of week follow Calendar constants
-					int dayOfWeek = workingClock.get(Calendar.DAY_OF_WEEK);
-					final int todayDayOfWeek = dayOfWeek;
+					// days of week go from 1 (Sunday) to 7 (Saturday)
+					int dayOfWeek = currTime.get(Calendar.DAY_OF_WEEK);
 
-					while (!clockSet || workingClock.before(currTime)) {
-						if (wrap) workingClock.add(Calendar.WEEK_OF_MONTH, 1);
-						if (repeatDays[dayOfWeek - 1]) {
-							workingClock.set(Calendar.DAY_OF_WEEK, dayOfWeek);
-							clockSet = true;
+					for (int i = 0; i < 8; i++) {
+						if (repeatDays[dayOfWeek - 1] && workingClock.after(currTime)) {
+							break;
 						}
 
 						// go to the next day of the week
 						dayOfWeek = dayOfWeek % 7 + 1;
-						wrap = dayOfWeek == Calendar.SUNDAY;
+						workingClock.add(Calendar.DAY_OF_WEEK, 1);
+					}
 
-						// we've wrapped all the way around
-						if (dayOfWeek == todayDayOfWeek) {
-							if (repeatDays[dayOfWeek - 1]) break;
-
-							if (BuildConfig.DEBUG) Log.i(TAG, "There are no repeat days to set the next alarm to.");
-							return;
-						}
+					if (!repeatDays[dayOfWeek - 1]) {
+						if (BuildConfig.DEBUG) Log.i(TAG, "There are no repeat days to set the next alarm to.");
+						return;
 					}
 				}
 				break;
@@ -1513,7 +1516,7 @@ public final class Alarm implements Listable, Cloneable {
 				if (BuildConfig.DEBUG) Log.wtf(TAG, "Somehow the repeat type within the Alarm is wrong.");
 				return;
 		}
-		ringTime.setTimeInMillis(workingClock.getTimeInMillis());
+		ringTime = workingClock;
 	}
 
 	/**
