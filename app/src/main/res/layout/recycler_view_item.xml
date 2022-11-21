@@ -51,7 +51,7 @@
 				android:contentDescription="@string/main_folder_description"
 				android:minWidth="@dimen/minImageSize"
 				android:visibility="gone"/>
-			<Switch
+			<com.google.android.material.switchmaterial.SwitchMaterial
 				style="@style/Switch"
 
 				android:id="@+id/on_switch"
