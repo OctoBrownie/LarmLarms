@@ -1,4 +1,10 @@
 *.iml
+*.aux
+*.log
+*.out
+*.pdf
+*.synctex.gz
+*.toc
 .gradle
 /local.properties
 /.idea/workspace.xml

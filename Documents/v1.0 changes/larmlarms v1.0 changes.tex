@@ -1,0 +1,159 @@
+% !TEX TS-program = xelatex
+% !TEX encoding = UTF-8 Unicode
+
+% This is a simple template for a LaTeX document using the "article" class.
+% See "book", "report", "letter" for other types of document.
+
+\documentclass[11pt]{article} % use larger type; default would be 10pt
+
+\usepackage[utf8]{inputenc} % set input encoding (not needed with XeLaTeX)
+
+%%% PAGE DIMENSIONS
+\usepackage{geometry} % to change the page dimensions
+\geometry{a4paper} % or letterpaper (US) or a5paper or....
+
+\usepackage{graphicx} % support the \includegraphics command and options
+
+% \usepackage[parfill]{parskip} % Activate to begin paragraphs with an empty line rather than an indent
+
+%%% PACKAGES
+\usepackage{paralist} % very flexible & customisable lists (eg. enumerate/compactitem, etc.)
+\usepackage{verbatim} % adds environment for commenting out blocks of text & for better verbatim
+\usepackage{listings} % for code blocks plus highlighting and stuff 
+\usepackage[dvipsnames]{xcolor} % for the colors
+\usepackage{graphicx} % for includegraphics
+\usepackage{ulem} % for strikethrough
+\usepackage[hidelinks]{hyperref} % for links
+
+
+%%% SECTION TITLE APPEARANCE
+\usepackage{sectsty}
+\allsectionsfont{\sffamily\mdseries\upshape} % (See the fntguide.pdf for font help)
+% (This matches ConTeXt defaults)
+
+% Dashes instead of dots for compactitem
+\renewcommand\labelitemi{-}
+
+%%% CODE STYLE
+\lstdefinestyle{codestyle}{
+	commentstyle=\color{Gray},
+	keywordstyle=\color{RoyalBlue},
+	numberstyle=\tiny\color{BrickRed},
+	stringstyle=\color{ForestGreen},
+	basicstyle=\ttfamily\footnotesize\bfseries,
+	breakatwhitespace=false,
+	breaklines=true,
+	keepspaces=true,
+	showspaces=false,
+	showstringspaces=false,
+	showtabs=false,
+	tabsize=4
+}
+\lstset{style=codestyle}
+
+%%% END Article customizations
+
+\title{LarmLarms v1.0 Proposed Changes}
+\author{}
+% \date{} % Activate to display a given date or no date (if empty),
+         % otherwise the current date is printed 
+
+\begin{document}
+\maketitle
+
+\tableofcontents
+\newpage
+
+Since this is version 1.0, then the previous one is version 0.0 I guess. The proposed changes are mostly adding new features to the alarm app, but one change aims to reduce the features present in the app. Pretty much all of the screens would be changed in some way.
+
+\section{Reducing Folder Ambiguity}
+We want to remove the ability for users to look at all folders at once. It's not used extensively, and creates confusion regarding which alarms are in which folders. While it's possible to make them more distinct, with the limited horizontal room of the mobile format, it's difficult to use the usual indenting to signify this. Instead, users will have to navigate to the desired folder to view alarms and folders within, truly integrating the tree structure of the folder system into the way alarms are presented.
+
+\subsection{Code Simplification}
+\label{sec:folderSimple}
+This change would greatly simplify the code for folders and should reduce the number of things we need to store per folder. The lookup tables are completely unnecessary to connect \verb|RecyclerView| indices with actual alarms and folders. Every folder only shows immediate children, so the indices from the recycler view can be used to directly access the items in \verb|listables|.
+
+Open and closed folders no longer matter (and neither do the indents that helped to signify them) because there's only ever one folder being shown at a time. This would also solve the issue with small folder buttons within the larger item button doing different things, but would require some changes to recycler view items.
+
+\subsection{Folder View}
+This change also creates the need for a new activity which displays every item within a folder. Because it displays some different material, this activity would be separate from \verb|MainActivity|, and should always come with a folder attached in the \verb|Intent| (otherwise just exit). It would use the \verb|RecyclerView| that was originally only being used by the main activity. For the moment, there are very few customizable things about folders (name and location in the tree), so keeping all of them within this folder view activity is actually feasible. The main advantage of keeping the dedicated editor, though, is the ability to revert changes and ensuring fewer complications with adding any future folder customizations. 
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[scale=0.5]{possible folder view layout.png}
+	\caption{Two possible layouts for the new folder view activity.}
+\end{figure}
+
+Users would be able to navigate to this new activity by single tapping the folder. This differs from the single tap of an alarm, but should be more intuitive because usually when clicking on a folder, users would expect to open the folder instead of edit it, reducing confusion. 
+
+Each subsequent instance of the activity should also add to the activity stack. This allows users to return to parent folders when they're done viewing or editing the current folder. It shouldn't be possible to navigate to the folder view without starting from the root folder, so there should always be another activity before any folder view activity. 
+
+\section{Default Alarms}
+Default alarms are what alarms are based off of when they're first created, and are bound to specific folders (including the root folder). If fields are left blank, it's assumed that they're inherited from their parent.
+
+\subsection{Visibility in Folder View}
+While the folders are usually sorted first by type (folders first), then alphabetically (then by ring type and time), the default alarm should always be at the top of the list. Since it's at the very top, transforming the \verb|RecyclerView| index into a \verb|listables| index is simply subtracting 1. The fact that it's above all of the folders should also make it more clear to users that this is a special alarm, separate from the other ones. 
+
+\subsection{Default Alarm Storage}
+Since default alarms are a folder-based feature, it should be stored with the folder it's associated with. While it's similar to a normal alarm, it doesn't have certain fields (such as an ID of its own or a ring time) and has the possiblity of blank fields as well to indicate inheritance. For this reason, adding it as part of the folder string structure makes sense. See sec. \ref{sec:folderChanges} to see all changes to the folder edit string.
+
+\subsection{A New Editor}
+We could've use the normal alarm editor to edit default alarms instead, but inheritance of the parent default alarms would've been a problem. How would users denote that they want inheritance from the parent folder? Without significant changes to the editor at startup, which would likely reduce performance, this wouldn't be possible. The user also shouldn't be able to enter things like name or ring time data, since none of that is stored (or makes sense for a template), so those fields would also need to be programmatically deleted. Because of this, a completely separate editor would be a better option.
+
+To ensure it's intuitive for the user, the default alarm editor should look as much like the normal alarm editor as possible. The first thing should be the repeat type data, the next ringtone, then volume and vibrate. However, if the repeat type usually has a date or time picker to indicate ring time, they shouldn't be present here. To make it completely clear this is a special alarm, we could also add also keep the alarm name text box but make it purely for show (to ensure users know this is distinct from a regular alarm). To denote inheritance, every field should have a checkbox next to it to enable or disable the option. When disabled, the default alarm won't change that field's data from its parent. Of course, if the alarm name text box is included, there shouldn't be a checkbox for it.
+
+When attempting to open the activity, this editor could be used in conjunction with an explicit \verb|Intent| to open the activity, with the folder's edit string being added as data. 
+
+Since this editor would be separate from the normal alarm editor, it would also make sense to separate the folder editor, since it really doesn't need to be packaged in a single class with the alarm editor, either. 
+
+\subsection{Using Default Alarms}
+A new method will have to be introduced into the \verb|AlarmGroup| class which creates a default alarm string when the user wants to create a new alarm. We can define a new format that follows the current default alarm format that can be added as data to the intents carrying the \verb|ACTION_CREATE_ALARM| action. To make this as simple as possible, we can simply apply all fields directly to the editor when they're passed in, instead of attempting to box them into an \verb|Alarm| where many junk fields could introduce clutter. The proposed string format is explained in sec. \ref{sec:defAlarmString}. 
+
+\section{Alarm Duplication}
+
+\section{Vacation Mode}
+
+\section{Customizable Snoozing}
+Customizable snoozing.
+
+\section{Automatic Folder Activation}
+
+\subsection{Parent Child Relationships}
+With this change, we should also consider how the folder is stored in relation to the rest of the structure. The parent of the current item should be cached just as its children are. This effectively makes this a generalization of a doubly linked list, where you can go back and forth. This would simplify going back to parent folders to check for activation if necessary.
+
+\section{Changes to String Storage}
+\subsection{AlarmGroup}
+\label{sec:folderChanges}
+New fields are bolded, and fields being removed are struck through.
+\begin{table}[h]
+	\centering
+	\begin{tabular}{c|c}
+		Field & Datatype \\ \hline
+		id (required) & \verb|int| \\
+		name (required) & \verb|string| \\
+		isActive (required) & \verb|bool| \\
+		\sout{isOpen (required)} & \verb|bool| \\
+		\textbf{default alarm} & \verb|string| (see sec. \ref{sec:defAlarmString}) \\
+	\end{tabular}
+	\caption{Revised folder edit string format}
+\end{table}
+
+The open state has been removed from the folder fields because that's no longer necessary, as explained in section \ref{sec:folderSimple}. 
+
+\subsection{Default Alarm (new)}
+\label{sec:defAlarmString}
+\begin{table}[h]
+	\centering
+	\begin{tabular}{c|c}
+		Field & Datatype \\ \hline
+		repeat type & \verb|int string| (type, type-specific data) \\
+		ringtone uri & \verb|string| (stringified URI) \\
+		volume & \verb|int| \\
+		vibrate & \verb|bool| \\
+	\end{tabular}
+	\caption{New default alarm string format}
+\end{table}
+
+Just as the alarm and folder strings are, the default alarm strings should also be separated by tabs. All fields are optional when in use, and the repeat type format follows the repeat type format for normal alarms. In the case that any field is blank, the tabs between the field should still be present to preserve order and show that the field is actually blank.
+
+\end{document}
