@@ -143,21 +143,13 @@ public class AlarmDataService extends Service {
 	 */
 	public static final int MSG_TOGGLE_ACTIVE = 6;
 	/**
-	 * Inbound: The client wants to toggle an AlarmGroup open/closed. The absolute index of the
-	 * AlarmGroup should be in the arg1 field.
-	 * <br/>
-	 * Outbound: Notifies data change listeners that a listable has been opened/closed. Output
-	 * messages are of the same form as input messages.
-	 */
-	public static final int MSG_TOGGLE_OPEN_FOLDER = 7;
-	/**
 	 * Inbound: The client wants to snooze an Alarm. The absolute index of the Alarm should be
 	 * in the arg1 field.
 	 * <br/>
 	 * Outbound: Notifies data change listeners that a listable has been snoozed. Output messages are
 	 * of the same form as input messages.
 	 */
-	public static final int MSG_SNOOZE_ALARM = 8;
+	public static final int MSG_SNOOZE_ALARM = 7;
 	/**
 	 * Inbound: The client wants to unsnooze an Alarm. The absolute index of the Alarm should be
 	 * in the arg1 field.
@@ -165,7 +157,7 @@ public class AlarmDataService extends Service {
 	 * Outbound: Notifies data change listeners that a listable has been unsnoozed. Output messages
 	 * are of the same form as input messages.
 	 */
-	public static final int MSG_UNSNOOZE_ALARM = 9;
+	public static final int MSG_UNSNOOZE_ALARM = 8;
 	/**
 	 * Inbound: The client wants to dismiss an Alarm. The absolute index of the Alarm should be
 	 * in the arg1 field.
@@ -173,7 +165,7 @@ public class AlarmDataService extends Service {
 	 * Outbound: Notifies data change listeners that a listable has been dismissed. Output messages
 	 * are of the same form as input messages.
 	 */
-	public static final int MSG_DISMISS_ALARM = 10;
+	public static final int MSG_DISMISS_ALARM = 9;
 
 	/**
 	 * Inbound: A client wants to change its notification of data changes. In the replyTo field
@@ -185,19 +177,19 @@ public class AlarmDataService extends Service {
 	 * Outbound: Merely a confirmation that the messenger has been registered as a data changed listener.
 	 * The listable count should be in the arg1 field.
 	 */
-	public static final int MSG_DATA_CHANGED = 11;
+	public static final int MSG_DATA_CHANGED = 10;
 
 	/**
 	 * Inbound: A client wants to change its notification of the data being empty or full. In the
 	 * replyTo field there should be a Messenger to either register or unregister as a listener. Data
-	 * listeners are sent MSG_DATA_EMPTIED messages when there are no more listables in the rootFolder,
+	 * listeners are sent MSG_DATA_EMPTIED messages when there are no more items in the rootFolder,
 	 * and MSG_DATA_FILLED when a new listable has been added to an empty rootFolder. If the Messenger
 	 * is already registered, the service will unregister it. Right when registered, will send the
 	 * listener either MSG_DATA_EMPTIED or MSG_DATA_FILLED.
 	 * <br/>
 	 * Outbound: N/A
 	 */
-	public static final int MSG_DATA_EMPTY_LISTENER = 12;
+	public static final int MSG_DATA_EMPTY_LISTENER = 11;
 	/**
 	 * Inbound: N/A
 	 * <br/>
@@ -205,7 +197,7 @@ public class AlarmDataService extends Service {
 	 * anymore. No guarantees can be made about message fields. Only sent to registered empty
 	 * listeners.
 	 */
-	public static final int MSG_DATA_EMPTIED = 13;
+	public static final int MSG_DATA_EMPTIED = 12;
 	/**
 	 * Inbound: N/A
 	 * <br/>
@@ -213,7 +205,7 @@ public class AlarmDataService extends Service {
 	 * it was empty before. No guarantees can be made about message fields. Only sent to registered
 	 * empty listeners.
 	 */
-	public static final int MSG_DATA_FILLED = 14;
+	public static final int MSG_DATA_FILLED = 13;
 
 	/**
 	 * Inbound: A client wants to change its notification of the next alarm. In the replyTo field
@@ -226,7 +218,7 @@ public class AlarmDataService extends Service {
 	 * bundle under BUNDLE_TIME_KEY and its name is as well under BUNDLE_NAME_KEY. If there is no
 	 * alarm to ring, the bundle will be null.
 	 */
-	public static final int MSG_NEXT_ALARM = 15;
+	public static final int MSG_NEXT_ALARM = 14;
 
 	/* *************************************  Instance Fields  ********************************** */
 
@@ -323,8 +315,8 @@ public class AlarmDataService extends Service {
 	 * @return A populated ArrayList of Listables or an empty one in the case of an error
 	 */
 	@NotNull
-	public static ArrayList<Listable> getAlarmsFromDisk(@NotNull Context context) {
-		ArrayList<Listable> data = new ArrayList<>();
+	public static ArrayList<Item> getAlarmsFromDisk(@NotNull Context context) {
+		ArrayList<Item> data = new ArrayList<>();
 
 		try {
 			FileInputStream is = context.openFileInput(ALARM_STORE_FILE_NAME);
@@ -333,20 +325,20 @@ public class AlarmDataService extends Service {
 
 			String currLine = bReader.readLine();
 			StringBuilder currFolder = null;
-			Listable currListable;
+			Item currItem;
 
 			while (currLine != null) {
 				// end of the current folder
 				if (!currLine.startsWith("\t") && currFolder != null) {
-					currListable = AlarmGroup.fromStoreString(context, currFolder.toString());
-					if (currListable != null) { data.add(currListable); }
+					currItem = AlarmGroup.fromStoreString(context, currFolder.toString());
+					if (currItem != null) { data.add(currItem); }
 					currFolder = null;
 				}
 
 				// a top-level alarm
 				if (currLine.startsWith("a")) {
-					currListable = Alarm.fromStoreString(context, currLine);
-					if (currListable != null) { data.add(currListable); }
+					currItem = Alarm.fromStoreString(context, currLine);
+					if (currItem != null) { data.add(currItem); }
 				}
 				// start of a top-level folder
 				else if (currLine.startsWith("f")) {
@@ -364,8 +356,8 @@ public class AlarmDataService extends Service {
 			}
 			// ends the folder in case there wasn't another alarm after it to close within the loop
 			if (currFolder != null) {
-				currListable = AlarmGroup.fromStoreString(context, currFolder.toString());
-				if (currListable != null) { data.add(currListable); }
+				currItem = AlarmGroup.fromStoreString(context, currFolder.toString());
+				if (currItem != null) { data.add(currItem); }
 			}
 
 			is.close();
@@ -394,7 +386,7 @@ public class AlarmDataService extends Service {
 			FileOutputStream os = context.openFileOutput(ALARM_STORE_FILE_NAME, Context.MODE_PRIVATE);
 
 			StringBuilder builder = new StringBuilder();
-			for (Listable l : data.getListables()) {
+			for (Item l : data.getListables()) {
 				builder.append(l.toStoreString()).append('\n');
 			}
 			// delete the last '\n'
@@ -458,26 +450,25 @@ public class AlarmDataService extends Service {
 			if (BuildConfig.DEBUG) Log.e(TAG, "MSG_SET_LISTABLE: ListableInfo was null.");
 			return;
 		}
-		if (info.listable == null) {
+		if (info.item == null) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "MSG_SET_LISTABLE: Listable was null.");
 			return;
 		}
 
-		Listable removed = rootFolder.setListableAbs(info.absIndex, info.listable);
+		Item removed = rootFolder.setListableAbs(info.absIndex, info.item);
 		if (removed == null) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "MSG_SET_LISTABLE: There was no listable to set.");
 			return;
 		}
 
 		// transfer listables if possible/necessary
-		if (removed instanceof AlarmGroup && info.listable instanceof AlarmGroup) {
-			((AlarmGroup) info.listable).setListables(((AlarmGroup) removed).getListables());
+		if (removed instanceof AlarmGroup && info.item instanceof AlarmGroup) {
+			((AlarmGroup) info.item).setListables(((AlarmGroup) removed).getListables());
 		}
 
 		save();
 
 		Message outMsg = Message.obtain(inMsg);
-		info.listable = info.listable.clone();
 
 		Bundle b = new Bundle();
 		b.putParcelable(BUNDLE_INFO_KEY, info);
@@ -497,7 +488,7 @@ public class AlarmDataService extends Service {
 			if (BuildConfig.DEBUG) Log.e(TAG, "MSG_ADD_LISTABLE: ListableInfo was null.");
 			return;
 		}
-		if (info.listable == null) {
+		if (info.item == null) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "MSG_ADD_LISTABLE: Listable was not specified.");
 			return;
 		}
@@ -506,12 +497,11 @@ public class AlarmDataService extends Service {
 			return;
 		}
 
-		rootFolder.addListableAbs(info.listable, info.path);
+		rootFolder.addListableAbs(info.item, info.path);
 		save();
 
 		Message outMsg = Message.obtain(null, MSG_ADD_LISTABLE);
 		Bundle b = new Bundle();
-		info.listable = info.listable.clone();
 
 		b.putParcelable(BUNDLE_INFO_KEY, info);
 		outMsg.setData(b);
@@ -519,7 +509,7 @@ public class AlarmDataService extends Service {
 		sendDataChanged(outMsg);
 
 		// just added the first new Listable
-		if (rootFolder.visibleSize() == 2) {
+		if (rootFolder.size() == 2) {
 			sendDataFilled();
 		}
 	}
@@ -540,10 +530,8 @@ public class AlarmDataService extends Service {
 			return;
 		}
 
-		rootFolder.moveListableAbs(info.listable, info.path, inMsg.arg1);
+		rootFolder.moveListableAbs(info.item, info.path, inMsg.arg1);
 		save();
-
-		if (info.listable != null) info.listable = info.listable.clone();
 		
 		Bundle b = new Bundle();
 		b.putParcelable(BUNDLE_INFO_KEY, info);
@@ -565,7 +553,7 @@ public class AlarmDataService extends Service {
 		sendDataChanged(Message.obtain(inMsg));
 
 		// just deleted the last Listable
-		if (rootFolder.visibleSize() == 1) sendDataEmptied();
+		if (rootFolder.size() == 1) sendDataEmptied();
 	}
 
 	/**
@@ -575,7 +563,7 @@ public class AlarmDataService extends Service {
 	 * @param inMsg the inbound MSG_TOGGLE_ACTIVE message
 	 */
 	private void handleToggleActive(@NotNull Message inMsg) {
-		Listable l = rootFolder.getListableAbs(inMsg.arg1, true);
+		Item l = rootFolder.getListableAbs(inMsg.arg1, true);
 		if (l == null) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "MSG_TOGGLE_ACTIVE: Index of listable was out of bounds.");
 			return;
@@ -587,36 +575,12 @@ public class AlarmDataService extends Service {
 	}
 
 	/**
-	 * Responds to an inbound MSG_TOGGLE_OPEN_FOLDER message. Toggles the open state of the folder at
-	 * the absolute index specified by arg1.
-	 * @see #MSG_TOGGLE_OPEN_FOLDER
-	 * @param inMsg the inbound MSG_TOGGLE_OPEN_FOLDER message
-	 */
-	private void handleToggleOpen(@NotNull Message inMsg) {
-		Listable l = rootFolder.getListableAbs(inMsg.arg1, true);
-		if (l == null) {
-			if (BuildConfig.DEBUG) Log.e(TAG, "MSG_TOGGLE_OPEN_FOLDER: Listable index was out of bounds.");
-			return;
-		}
-		else if (!(l instanceof AlarmGroup)) {
-			if (BuildConfig.DEBUG) Log.e(TAG, "MSG_TOGGLE_OPEN_FOLDER: Listable was an alarm.");
-			return;
-		}
-		((AlarmGroup) l).toggleOpen();
-
-		writeAlarmsToDisk(this, rootFolder);
-		rootFolder.refreshLookups();
-
-		sendDataChanged(Message.obtain(inMsg));
-	}
-
-	/**
 	 * Responds to an inbound MSG_SNOOZE_ALARM message. Snoozes the alarm specified by the absolute
 	 * index specified by arg1.
 	 * @param inMsg the inbound MSG_SNOOZE_ALARM message
 	 */
 	private void handleSnoozeAlarm(@NotNull Message inMsg) {
-		Listable l = rootFolder.getListableAbs(inMsg.arg1, false);
+		Item l = rootFolder.getListableAbs(inMsg.arg1, false);
 		if (l == null) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "MSG_SNOOZE_ALARM: Listable index was out of bounds.");
 			return;
@@ -638,7 +602,7 @@ public class AlarmDataService extends Service {
 	 * @param inMsg the inbound MSG_UNSNOOZE_ALARM message
 	 */
 	private void handleUnsnoozeAlarm(@NotNull Message inMsg) {
-		Listable l = rootFolder.getListableAbs(inMsg.arg1, false);
+		Item l = rootFolder.getListableAbs(inMsg.arg1, false);
 		if (l == null) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "MSG_UNSNOOZE_ALARM: Listable index was out of bounds.");
 			return;
@@ -660,7 +624,7 @@ public class AlarmDataService extends Service {
 	 * @param inMsg the inbound MSG_DISMISS_ALARM message
 	 */
 	private void handleDismissAlarm(@NotNull Message inMsg) {
-		Listable l = rootFolder.getListableAbs(inMsg.arg1, false);
+		Item l = rootFolder.getListableAbs(inMsg.arg1, false);
 		if (l == null) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "MSG_DISMISS_ALARM: Listable index was out of bounds.");
 			return;
@@ -693,7 +657,7 @@ public class AlarmDataService extends Service {
 		if (index == -1) {
 			dataChangeListeners.add(inMsg.replyTo);
 			Message outMsg = Message.obtain(null, MSG_DATA_CHANGED);
-			outMsg.arg1 = rootFolder.visibleSize() - 1;
+			outMsg.arg1 = rootFolder.size() - 1;
 			sendDataChanged(outMsg);
 		}
 		else dataChangeListeners.remove(index);
@@ -718,7 +682,7 @@ public class AlarmDataService extends Service {
 			emptyListeners.add(inMsg.replyTo);
 
 			// send a DATA_EMPTIED or DATA_FILLED to the new listener
-			if (rootFolder.visibleSize() == 1)
+			if (rootFolder.size() == 1)
 				sendDataEmptied(inMsg.replyTo);
 			else
 				sendDataFilled(inMsg.replyTo);
@@ -853,8 +817,8 @@ public class AlarmDataService extends Service {
 		ListableInfo next = getNextRingingAlarm(rootFolder.getListables());
 
 		Intent intent = new Intent(context, RingingService.class);
-		if (next.listable != null) {
-			intent.putExtra(RingingService.EXTRA_LISTABLE, next.listable.toEditString());
+		if (next.item != null) {
+			intent.putExtra(RingingService.EXTRA_LISTABLE, next.item.toEditString());
 			intent.putExtra(RingingService.EXTRA_LISTABLE_INDEX, next.absIndex);
 		}
 
@@ -876,21 +840,21 @@ public class AlarmDataService extends Service {
 		if (manager == null || pendingIntent == null) {
 			if (BuildConfig.DEBUG) Log.i(TAG, "Couldn't reach alarm manager or the service to get" +
 					"the pending intent.");
-			return (Alarm) next.listable;
+			return (Alarm) next.item;
 		}
 
-		if (next.listable == null) {
+		if (next.item == null) {
 			if (BuildConfig.DEBUG) Log.i(TAG, "No next listable to register to ring.");
 			manager.cancel(pendingIntent);
 		}
 		else {
 			if (BuildConfig.DEBUG) Log.i(TAG, "Sent an intent to AlarmManager.");
 			manager.setAlarmClock(
-					new AlarmManager.AlarmClockInfo(((Alarm) next.listable).getAlarmTimeMillis(),
+					new AlarmManager.AlarmClockInfo(((Alarm) next.item).getAlarmTimeMillis(),
 							pendingIntent),
 					pendingIntent);
 		}
-		return (Alarm) next.listable;
+		return (Alarm) next.item;
 	}
 
 	/* *************************************  Other Methods  *********************************** */
@@ -919,9 +883,9 @@ public class AlarmDataService extends Service {
 	 * be null if there is no active alarm within the data given
 	 */
 	@NotNull
-	private static ListableInfo getNextRingingAlarm(@NotNull ArrayList<Listable> data) {
+	private static ListableInfo getNextRingingAlarm(@NotNull ArrayList<Item> data) {
 		ListableInfo nextAlarm = new ListableInfo();
-		Listable l;				// represents the current listable being searched
+		Item l;				// represents the current listable being searched
 		int absIndex = 0;		// represents the absolute index currently being searched (real index)
 
 		for (int i = 0; i < data.size(); i++) {
@@ -936,9 +900,9 @@ public class AlarmDataService extends Service {
 				((Alarm) l).updateRingTime();
 
 				// check whether it could be the next listable
-				if (nextAlarm.listable == null || ((Alarm) l).getAlarmTimeMillis() <
-						((Alarm) nextAlarm.listable).getAlarmTimeMillis()) {
-					nextAlarm.listable = l;
+				if (nextAlarm.item == null || ((Alarm) l).getAlarmTimeMillis() <
+						((Alarm) nextAlarm.item).getAlarmTimeMillis()) {
+					nextAlarm.item = l;
 					nextAlarm.absIndex = absIndex;
 				}
 				absIndex++;
@@ -946,14 +910,14 @@ public class AlarmDataService extends Service {
 			else {
 				ListableInfo possible = getNextRingingAlarm(((AlarmGroup) l).getListables());
 				// there is no candidate in this folder
-				if (possible.listable == null) {
+				if (possible.item == null) {
 					absIndex += l.size();
 					continue;
 				}
 				// we had no candidate before or this candidate is better
-				if (nextAlarm.listable == null || ((Alarm) possible.listable).getAlarmTimeMillis() <
-						((Alarm) nextAlarm.listable).getAlarmTimeMillis()) {
-					nextAlarm.listable = possible.listable;
+				if (nextAlarm.item == null || ((Alarm) possible.item).getAlarmTimeMillis() <
+						((Alarm) nextAlarm.item).getAlarmTimeMillis()) {
+					nextAlarm.item = possible.item;
 					nextAlarm.absIndex = absIndex + possible.absIndex + 1;
 				}
 				absIndex += l.size();
@@ -1061,10 +1025,6 @@ public class AlarmDataService extends Service {
 				case MSG_TOGGLE_ACTIVE:
 					service.handleToggleActive(msg);
 					if (BuildConfig.DEBUG) Log.d(TAG, "Toggled a listable's active state.");
-					break;
-				case MSG_TOGGLE_OPEN_FOLDER:
-					service.handleToggleOpen(msg);
-					if (BuildConfig.DEBUG) Log.d(TAG, "Toggled a folder's open state.");
 					break;
 				case MSG_SNOOZE_ALARM:
 					service.handleSnoozeAlarm(msg);

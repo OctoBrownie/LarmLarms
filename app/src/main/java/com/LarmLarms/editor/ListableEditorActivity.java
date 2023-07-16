@@ -38,7 +38,7 @@ import com.larmlarms.R;
 import com.larmlarms.data.Alarm;
 import com.larmlarms.data.AlarmDataService;
 import com.larmlarms.data.AlarmGroup;
-import com.larmlarms.data.Listable;
+import com.larmlarms.data.Item;
 import com.larmlarms.data.ListableInfo;
 import com.larmlarms.main.PrefsActivity;
 
@@ -110,7 +110,7 @@ public class ListableEditorActivity extends AppCompatActivity
 	 * is created).
 	 */
 	@NotNull
-	private Listable workingListable;
+	private Item workingItem;
 	/**
 	 * The currently selected path of the current working Listable. Will be null unless the path was
 	 * actually changed.
@@ -127,7 +127,7 @@ public class ListableEditorActivity extends AppCompatActivity
 	 * The original listable received from the caller. Can be null if a new listable is being made.
 	 */
 	@Nullable
-	private Listable originalListable;
+	private Item originalItem;
 	/**
 	 * The original path of the current Listable.
 	 */
@@ -215,7 +215,7 @@ public class ListableEditorActivity extends AppCompatActivity
 	 */
 	public ListableEditorActivity() {
 		dataConn = new DataServiceConnection();
-		workingListable = new AlarmGroup();		// used in REQ_NEW_FOLDER, dummy data for all others
+		workingItem = new AlarmGroup();		// used in REQ_NEW_FOLDER, dummy data for all others
 	}
 
 	/**
@@ -241,7 +241,7 @@ public class ListableEditorActivity extends AppCompatActivity
 			case ACTION_CREATE_ALARM:
 				isAlarm = true;
 				isEditing = false;
-				workingListable = new Alarm(this);
+				workingItem = new Alarm(this);
 				break;
 			case ACTION_EDIT_ALARM:
 				isAlarm = true;
@@ -272,18 +272,18 @@ public class ListableEditorActivity extends AppCompatActivity
 
 			ListableInfo info = extras.getParcelable(EXTRA_LISTABLE_INFO);
 
-			if (info == null || info.listable == null || info.path == null) {
+			if (info == null || info.item == null || info.path == null) {
 				if (BuildConfig.DEBUG) Log.e(TAG, "Listable info is invalid.");
 				finish();
 				return;
 			}
 			listableIndex = info.absIndex;
-			workingListable = info.listable;
-			if (isAlarm) ((Alarm)workingListable).setContext(this);
+			workingItem = info.item;
+			if (isAlarm) ((Alarm) workingItem).setContext(this);
 
 			originalPath = info.path;
 
-			originalListable = workingListable.clone();
+			originalItem = workingItem.clone();
 		}
 
 		PrefsActivity.applyPrefsStyle(this);
@@ -297,7 +297,7 @@ public class ListableEditorActivity extends AppCompatActivity
 		switch(action) {
 			case ACTION_EDIT_ALARM:
 			case ACTION_EDIT_FOLDER:
-				((EditText) findViewById(R.id.nameInput)).setText(workingListable.getListableName());
+				((EditText) findViewById(R.id.nameInput)).setText(workingItem.getListableName());
 				break;
 		}
 	}
@@ -372,7 +372,7 @@ public class ListableEditorActivity extends AppCompatActivity
 			}
 
 			// check if the listable itself was changed
-			if (!workingListable.equals(originalListable)) {
+			if (!workingItem.equals(originalItem)) {
 				if (msg == null) {
 					// path didn't change but Listable did, so use MSG_SET_LISTABLE
 					msg = Message.obtain(null, AlarmDataService.MSG_SET_LISTABLE);
@@ -380,14 +380,14 @@ public class ListableEditorActivity extends AppCompatActivity
 				}
 
 				// listable changed, so add to the bundle
-				workingListable.turnOn();
-				data.listable = workingListable;
+				workingItem.turnOn();
+				data.item = workingItem;
 			}
 		}
 		else {
 			// create MSG_ADD_LISTABLE
 			msg = Message.obtain(null, AlarmDataService.MSG_ADD_LISTABLE);
-			data.listable = workingListable;
+			data.item = workingItem;
 			data.path = listablePath;
 		}
 
@@ -412,7 +412,7 @@ public class ListableEditorActivity extends AppCompatActivity
 	 */
 	public void dayOfWeekButtonClicked(@NotNull View view) {
 		EditorDialogFrag dialog = new EditorDialogFrag(this, true,
-				((Alarm) workingListable).getRepeatDays());
+				((Alarm) workingItem).getRepeatDays());
 		dialog.show(getSupportFragmentManager(), null);
 	}
 
@@ -422,7 +422,7 @@ public class ListableEditorActivity extends AppCompatActivity
 	 */
 	public void monthsButtonClicked(@NotNull View view) {
 		EditorDialogFrag dialog = new EditorDialogFrag(this, false,
-				((Alarm) workingListable).getRepeatMonths());
+				((Alarm) workingItem).getRepeatMonths());
 		dialog.show(getSupportFragmentManager(), null);
 	}
 
@@ -434,7 +434,7 @@ public class ListableEditorActivity extends AppCompatActivity
 	public void chooseSound(@NotNull View view) {
 		Intent getSound = new Intent(RingtoneManager.ACTION_RINGTONE_PICKER);
 		getSound.putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI,
-				((Alarm) workingListable).getRingtoneUri());
+				((Alarm) workingItem).getRingtoneUri());
 		getSound.putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, RingtoneManager.TYPE_ALARM);
 		startActivityForResult(getSound, REQ_GET_RINGTONE);
 	}
@@ -471,10 +471,10 @@ public class ListableEditorActivity extends AppCompatActivity
 				changeRepeatType(Alarm.REPEAT_OFFSET, false);
 		}
 		else if (parentId == R.id.alarmWeekOfMonthInput) {
-			((Alarm) workingListable).setRepeatWeek(pos);
+			((Alarm) workingItem).setRepeatWeek(pos);
 		}
 		else if (parentId == R.id.alarmDayOfWeekInput) {
-			((Alarm) workingListable).getAlarmTimeCalendar().set(Calendar.DAY_OF_WEEK, pos + 1);
+			((Alarm) workingItem).getAlarmTimeCalendar().set(Calendar.DAY_OF_WEEK, pos + 1);
 		}
 		else if (parentId == R.id.parentFolderInput) {
 			if (paths != null) listablePath = paths.get(pos);
@@ -513,7 +513,7 @@ public class ListableEditorActivity extends AppCompatActivity
 	 * @param seekBar the SeekBar whose progress changed
 	 */
 	public void onStopTrackingTouch(SeekBar seekBar) {
-		((Alarm) workingListable).setVolume(seekBar.getProgress());
+		((Alarm) workingItem).setVolume(seekBar.getProgress());
 	}
 
 	/* ***********************************  Other Callbacks  *********************************** */
@@ -531,7 +531,7 @@ public class ListableEditorActivity extends AppCompatActivity
 					return;
 				}
 				((TextView) alarmDaysLayout.findViewById(R.id.text))
-						.setText(((Alarm) workingListable).getWeeklyDisplayString());
+						.setText(((Alarm) workingItem).getWeeklyDisplayString());
 			}
 			else {
 				if (alarmMonthsLayout == null) {
@@ -539,7 +539,7 @@ public class ListableEditorActivity extends AppCompatActivity
 					return;
 				}
 				((TextView) alarmMonthsLayout.findViewById(R.id.text))
-						.setText(((Alarm) workingListable).getMonthsString());
+						.setText(((Alarm) workingItem).getMonthsString());
 			}
 		}
 	}
@@ -553,7 +553,7 @@ public class ListableEditorActivity extends AppCompatActivity
 
 		int id = view.getId();
 		if (id == R.id.alarmOffsetFromNowCheckbox) {
-			((Alarm) workingListable).setOffsetFromNow(checked);
+			((Alarm) workingItem).setOffsetFromNow(checked);
 
 			if (checked) {
 				// hide the time and date pickers
@@ -572,7 +572,7 @@ public class ListableEditorActivity extends AppCompatActivity
 			}
 		}
 		else if (id == R.id.alarmVibrateSwitch) {
-			((Alarm) workingListable).setVibrateOn(checked);
+			((Alarm) workingItem).setVibrateOn(checked);
 		}
 	}
 
@@ -590,10 +590,10 @@ public class ListableEditorActivity extends AppCompatActivity
 			if (data != null)
 				uri = data.getParcelableExtra(RingtoneManager.EXTRA_RINGTONE_PICKED_URI);
 
-			((Alarm) workingListable).setRingtoneUri(uri);
+			((Alarm) workingItem).setRingtoneUri(uri);
 
 			TextView t = findViewById(R.id.soundText);
-			t.setText(((Alarm) workingListable).getRingtoneName());
+			t.setText(((Alarm) workingItem).getRingtoneName());
 		}
 	}
 
@@ -604,7 +604,7 @@ public class ListableEditorActivity extends AppCompatActivity
 	 */
 	private void alarmUISetup() {
 		setContentView(R.layout.editor_alarm);
-		changeRepeatType(((Alarm) workingListable).getRepeatType(), true);
+		changeRepeatType(((Alarm) workingItem).getRepeatType(), true);
 
 		Spinner spinner;
 		ArrayAdapter<CharSequence> adapter;
@@ -617,7 +617,7 @@ public class ListableEditorActivity extends AppCompatActivity
 		spinner.setAdapter(adapter);
 
 		int typeIndex = 0;
-		switch (((Alarm) workingListable).getRepeatType()) {
+		switch (((Alarm) workingItem).getRepeatType()) {
 			case Alarm.REPEAT_ONCE_ABS:
 				typeIndex = getResources().getInteger(R.integer.repeat_once_abs);
 				break;
@@ -645,17 +645,17 @@ public class ListableEditorActivity extends AppCompatActivity
 
 		// set name of the current ringtone
 		TextView alarmSoundLabel = findViewById(R.id.soundText);
-		alarmSoundLabel.setText(((Alarm) workingListable).getRingtoneName());
+		alarmSoundLabel.setText(((Alarm) workingItem).getRingtoneName());
 
 		// set the volume bar to the current volume and register listeners
 		SeekBar volumeBar = findViewById(R.id.volumeSeekBar);
-		volumeBar.setProgress(((Alarm) workingListable).getVolume());
+		volumeBar.setProgress(((Alarm) workingItem).getVolume());
 		volumeBar.setOnSeekBarChangeListener(this);
 
 		// vibrate switch
 		SwitchMaterial vibrateSwitch = findViewById(R.id.alarmVibrateSwitch);
 		// vibrateSwitch.setOnClickListener(this);
-		vibrateSwitch.setChecked(((Alarm) workingListable).isVibrateOn());
+		vibrateSwitch.setChecked(((Alarm) workingItem).isVibrateOn());
 	}
 
 	/**
@@ -673,8 +673,8 @@ public class ListableEditorActivity extends AppCompatActivity
 
 		if (isEditing) {
 			// sets it to the current alarm time first
-			timePickerHour = ((Alarm) workingListable).getAlarmTimeCalendar().get(Calendar.HOUR_OF_DAY);
-			timePickerMin = ((Alarm) workingListable).getAlarmTimeCalendar().get(Calendar.MINUTE);
+			timePickerHour = ((Alarm) workingItem).getAlarmTimeCalendar().get(Calendar.HOUR_OF_DAY);
+			timePickerMin = ((Alarm) workingItem).getAlarmTimeCalendar().get(Calendar.MINUTE);
 		}
 		else {
 			// matches the TimePicker time to current system time, should only be once
@@ -703,7 +703,7 @@ public class ListableEditorActivity extends AppCompatActivity
 		DatePicker picker = findViewById(R.id.alarmDateInput);
 		picker.setMinDate(Calendar.getInstance().getTimeInMillis());
 		// picker.updateDate();
-		Calendar c = ((Alarm) workingListable).getAlarmTimeCalendar();
+		Calendar c = ((Alarm) workingItem).getAlarmTimeCalendar();
 		if (isEditing) {
 			// sets it to the current alarm time first
 			picker.updateDate(c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH));
@@ -720,7 +720,7 @@ public class ListableEditorActivity extends AppCompatActivity
 		alarmDaysLayout = findViewById(R.id.alarmDaysInput);
 
 		((TextView) alarmDaysLayout.findViewById(R.id.text))
-				.setText(((Alarm) workingListable).getWeeklyDisplayString());
+				.setText(((Alarm) workingItem).getWeeklyDisplayString());
 	}
 
 	/**
@@ -731,7 +731,7 @@ public class ListableEditorActivity extends AppCompatActivity
 		alarmMonthsLayout = findViewById(R.id.alarmMonthsInput);
 
 		((TextView) alarmMonthsLayout.findViewById(R.id.text))
-				.setText(((Alarm) workingListable).getMonthsString());
+				.setText(((Alarm) workingItem).getMonthsString());
 	}
 
 
@@ -751,7 +751,7 @@ public class ListableEditorActivity extends AppCompatActivity
 				R.array.alarm_week_strings, android.R.layout.simple_spinner_dropdown_item);
 		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		spinner.setAdapter(adapter);
-		spinner.setSelection(((Alarm) workingListable).getRepeatWeek());
+		spinner.setSelection(((Alarm) workingItem).getRepeatWeek());
 		spinner.setOnItemSelectedListener(this);
 
 		// day of week spinner
@@ -760,7 +760,7 @@ public class ListableEditorActivity extends AppCompatActivity
 		adapter.addAll((new DateFormatSymbols()).getWeekdays());
 		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		spinner.setAdapter(adapter);
-		spinner.setSelection(((Alarm) workingListable).getAlarmTimeCalendar().get(Calendar.DAY_OF_WEEK) - 1);
+		spinner.setSelection(((Alarm) workingItem).getAlarmTimeCalendar().get(Calendar.DAY_OF_WEEK) - 1);
 		spinner.setOnItemSelectedListener(this);
 	}
 
@@ -783,11 +783,11 @@ public class ListableEditorActivity extends AppCompatActivity
 		}
 
 		if (isEditing && !isAlarm) {
-			if (originalListable == null) {
+			if (originalItem == null) {
 				if (BuildConfig.DEBUG) Log.e(TAG, "Can't setup folder structure without the original listable being valid.");
 				return;
 			}
-			String folderPath = originalPath + originalListable.getListableName() + '/';
+			String folderPath = originalPath + originalItem.getListableName() + '/';
 			for (int i = paths.size() - 1; i > 0; i--) {
 				if (paths.get(i).startsWith(folderPath)) paths.remove(i);
 			}
@@ -819,7 +819,7 @@ public class ListableEditorActivity extends AppCompatActivity
 	@SuppressLint("DefaultLocale")
 	private void changeRepeatType(int type, boolean first) {
 		if (!first) {
-			switch(((Alarm) workingListable).getRepeatType()) {
+			switch(((Alarm) workingItem).getRepeatType()) {
 				case Alarm.REPEAT_DATE_YEARLY:
 				case Alarm.REPEAT_ONCE_ABS:
 					// requires: time picker, date picker
@@ -909,27 +909,27 @@ public class ListableEditorActivity extends AppCompatActivity
 
 					alarmOffsetLayout = findViewById(R.id.alarmOffsetLayout);
 					curr = alarmOffsetLayout.findViewById(R.id.alarmOffsetDaysInput);
-					temp = ((Alarm) workingListable).getOffsetDays();
+					temp = ((Alarm) workingItem).getOffsetDays();
 					if (temp != 0) curr.setText(String.format("%d", temp));
 
 					curr = alarmOffsetLayout.findViewById(R.id.alarmOffsetHoursInput);
-					temp = ((Alarm) workingListable).getOffsetHours();
+					temp = ((Alarm) workingItem).getOffsetHours();
 					if (temp != 0) curr.setText(String.format("%d", temp));
 
 					curr = alarmOffsetLayout.findViewById(R.id.alarmOffsetMinsInput);
-					temp = ((Alarm) workingListable).getOffsetMins();
+					temp = ((Alarm) workingItem).getOffsetMins();
 					if (temp != 0) curr.setText(String.format("%d", temp));
 
-					if (!((Alarm) workingListable).isOffsetFromNow()) {
+					if (!((Alarm) workingItem).isOffsetFromNow()) {
 						CheckBox checkBox = alarmOffsetLayout.findViewById(R.id.alarmOffsetFromNowCheckbox);
 						checkBox.setChecked(false);
 
 						// date/time picker setup
 						// calculate previous offset from time
-						Calendar c = (Calendar) ((Alarm) workingListable).getAlarmTimeCalendar().clone();
-						c.add(Calendar.DAY_OF_MONTH, -((Alarm) workingListable).getOffsetDays());
-						c.add(Calendar.HOUR_OF_DAY, -((Alarm) workingListable).getOffsetHours());
-						c.add(Calendar.MINUTE, -((Alarm) workingListable).getOffsetMins());
+						Calendar c = (Calendar) ((Alarm) workingItem).getAlarmTimeCalendar().clone();
+						c.add(Calendar.DAY_OF_MONTH, -((Alarm) workingItem).getOffsetDays());
+						c.add(Calendar.HOUR_OF_DAY, -((Alarm) workingItem).getOffsetHours());
+						c.add(Calendar.MINUTE, -((Alarm) workingItem).getOffsetMins());
 
 						if (alarmTimePicker == null) setupTimePicker();
 						alarmTimePicker.setCurrentHour(c.get(Calendar.HOUR_OF_DAY));
@@ -942,7 +942,7 @@ public class ListableEditorActivity extends AppCompatActivity
 					}
 				}
 
-				if (!((Alarm) workingListable).isOffsetFromNow()) {
+				if (!((Alarm) workingItem).isOffsetFromNow()) {
 					if (alarmTimePicker == null) setupTimePicker();
 					alarmTimePicker.setVisibility(View.VISIBLE);
 
@@ -975,7 +975,7 @@ public class ListableEditorActivity extends AppCompatActivity
 					NumberPicker dateOfMonth = alarmDateOfMonthLayout.findViewById(R.id.alarmDateOfMonthInput);
 					dateOfMonth.setMinValue(1);
 					dateOfMonth.setMaxValue(31);
-					dateOfMonth.setValue(((Alarm) workingListable).getAlarmTimeCalendar().get(Calendar.DAY_OF_MONTH));
+					dateOfMonth.setValue(((Alarm) workingItem).getAlarmTimeCalendar().get(Calendar.DAY_OF_MONTH));
 				}
 				alarmDateOfMonthLayout.setVisibility(View.VISIBLE);
 				break;
@@ -994,7 +994,7 @@ public class ListableEditorActivity extends AppCompatActivity
 				if (BuildConfig.DEBUG) Log.e(TAG, "Invalid alarm type selected.");
 				finish();
 		}
-		((Alarm) workingListable).setRepeatType(type);
+		((Alarm) workingItem).setRepeatType(type);
 	}
 
 	/**
@@ -1006,7 +1006,7 @@ public class ListableEditorActivity extends AppCompatActivity
 	public boolean saveToListable() {
 		// common fields
 		String newName = ((EditText) findViewById(R.id.nameInput)).getText().toString();
-		int errorCode = workingListable.setListableName(newName);
+		int errorCode = workingItem.setListableName(newName);
 
 		if (newName.equals("")) errorCode = 1;
 		if (errorCode != 0) {
@@ -1050,10 +1050,10 @@ public class ListableEditorActivity extends AppCompatActivity
 
 		// saving alarm time data
 		if (isAlarm) {
-			((Alarm) workingListable).unsnooze();
-			Calendar alarmCalendar = ((Alarm) workingListable).getAlarmTimeCalendar();
+			((Alarm) workingItem).unsnooze();
+			Calendar alarmCalendar = ((Alarm) workingItem).getAlarmTimeCalendar();
 
-			switch(((Alarm) workingListable).getRepeatType()) {
+			switch(((Alarm) workingItem).getRepeatType()) {
 				case Alarm.REPEAT_ONCE_ABS:
 				case Alarm.REPEAT_DATE_YEARLY:
 					if (!pickerToCalendar(alarmCalendar)) return false;
@@ -1120,9 +1120,9 @@ public class ListableEditorActivity extends AppCompatActivity
 					Calendar newCalendar = Calendar.getInstance();
 
 					// offset from the given date/time
-					if (!((Alarm) workingListable).isOffsetFromNow()) pickerToCalendar(newCalendar);
+					if (!((Alarm) workingItem).isOffsetFromNow()) pickerToCalendar(newCalendar);
 
-					if (((Alarm) workingListable).getRepeatType() == Alarm.REPEAT_ONCE_REL) {
+					if (((Alarm) workingItem).getRepeatType() == Alarm.REPEAT_ONCE_REL) {
 						newCalendar.add(Calendar.DAY_OF_MONTH, days);
 						newCalendar.add(Calendar.HOUR_OF_DAY, hours);
 						newCalendar.add(Calendar.MINUTE, mins);
@@ -1133,11 +1133,11 @@ public class ListableEditorActivity extends AppCompatActivity
 					days = days + hours/24;
 					hours = hours % 24;
 
-					((Alarm) workingListable).setOffsetDays(days);
-					((Alarm) workingListable).setOffsetHours(hours);
-					((Alarm) workingListable).setOffsetMins(mins);
+					((Alarm) workingItem).setOffsetDays(days);
+					((Alarm) workingItem).setOffsetHours(hours);
+					((Alarm) workingItem).setOffsetMins(mins);
 
-					((Alarm) workingListable).setAlarmTimeMillis(newCalendar.getTimeInMillis());
+					((Alarm) workingItem).setAlarmTimeMillis(newCalendar.getTimeInMillis());
 					break;
 				case Alarm.REPEAT_DATE_MONTHLY:
 					if (alarmDateOfMonthLayout == null) {
@@ -1169,7 +1169,7 @@ public class ListableEditorActivity extends AppCompatActivity
 					return false;
 			}
 
-			((Alarm) workingListable).updateRingTime();
+			((Alarm) workingItem).updateRingTime();
 		}
 
 		return true;

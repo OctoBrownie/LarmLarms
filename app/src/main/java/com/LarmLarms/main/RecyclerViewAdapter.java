@@ -24,7 +24,7 @@ import com.larmlarms.R;
 import com.larmlarms.data.Alarm;
 import com.larmlarms.data.AlarmDataService;
 import com.larmlarms.data.AlarmGroup;
-import com.larmlarms.data.Listable;
+import com.larmlarms.data.Item;
 import com.larmlarms.data.ListableInfo;
 import com.larmlarms.editor.ListableEditorActivity;
 
@@ -118,21 +118,12 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.Recyc
 	@Override
 	public void onBindViewHolder (@NotNull RecyclerViewHolder holder, final int position) {
 		ListableInfo i = data.getListableInfo(position, true);
-		if (i == null || i.listable == null) {
+		if (i == null || i.item == null) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "The listable to display doesn't exist as far as the adapter knows.");
 			return;
 		}
 
-		holder.changeListable(i.listable);
-
-		// TODO: max indentation based on screen visibleSize?
-		float dp = i.numIndents * context.getResources().getDimension(R.dimen.marginIncrement);
-		ViewGroup.MarginLayoutParams params =
-				new ViewGroup.MarginLayoutParams(holder.getCardView().getLayoutParams());
-		// context.getResources().getDisplayMetrics().density gets the density scalar
-		params.setMarginStart((int) (context.getResources().getDisplayMetrics().density * dp));
-		holder.getCardView().setLayoutParams(params);
-		holder.getCardView().requestLayout();
+		holder.changeListable(i.item);
 	}
 
 	/**
@@ -140,7 +131,7 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.Recyc
 	 * @return number of items
 	 */
 	@Override
-	public int getItemCount() { return data.visibleSize() - 1; }
+	public int getItemCount() { return data.size() - 1; }
 
 	/**
 	 * Gets the id for the item at the given position.
@@ -148,7 +139,7 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.Recyc
 	 */
 	@Override
 	public long getItemId(int position) {
-		Listable l = data.getListableAbs(position, true);
+		Item l = data.getListable(position);
 
 		if (l == null) return -1;
 		return l.getId();
@@ -219,7 +210,7 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.Recyc
 		// start ListableEditor
 		Intent intent = new Intent(context, ListableEditorActivity.class);
 		ListableInfo info = data.getListableInfo(index, true);
-		if (info == null || info.listable == null) {
+		if (info == null || info.item == null) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "The listable is null so it cannot be edited.");
 			return;
 		}
@@ -227,7 +218,7 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.Recyc
 		intent.putExtra(ListableEditorActivity.EXTRA_LISTABLE_INFO, info);
 
 		String action;
-		if (info.listable instanceof Alarm) { action = ListableEditorActivity.ACTION_EDIT_ALARM; }
+		if (info.item instanceof Alarm) { action = ListableEditorActivity.ACTION_EDIT_ALARM; }
 		else { action = ListableEditorActivity.ACTION_EDIT_FOLDER; }
 
 		intent.setAction(action);
@@ -273,7 +264,7 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.Recyc
 		 * to the listable in the adapter too.
 		 */
 		@Nullable
-		private Listable listable;
+		private Item item;
 		/**
 		 * The context of the holder. Shouldn't be null. Is required in an onClick callback.
 		 */
@@ -443,12 +434,12 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.Recyc
 		 */
 		@Override
 		public boolean onLongClick(@NotNull View v) {
-			if (listable == null) {
+			if (item == null) {
 				if (BuildConfig.DEBUG) Log.v(TAG, "Long clicked Listable is null.");
 				return false;
 			}
 
-			RecyclerDialogFrag dialog = new RecyclerDialogFrag(this, listable instanceof Alarm);
+			RecyclerDialogFrag dialog = new RecyclerDialogFrag(this, item instanceof Alarm);
 			dialog.show(((MainActivity) context).getSupportFragmentManager(), DIALOG_FRAG_TAG);
 			return true;
 		}
@@ -460,7 +451,7 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.Recyc
 		 * change anything.
 		 * @param l the new Listable to bind, can be null
 		 */
-		private void changeListable(@Nullable Listable l) {
+		private void changeListable(@Nullable Item l) {
 			if (l == null) {
 				if (BuildConfig.DEBUG) Log.e(TAG, "The new listable to swap into the view holder was null.");
 				return;
@@ -470,7 +461,7 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.Recyc
 			getTimeText().setText(l.getNextRingTime());
 			getOnSwitch().setChecked(l.isActive());
 
-			listable = l;
+			item = l;
 			if (l instanceof Alarm) {
 				getImageView().setVisibility(View.GONE);
 				getTimeText().setVisibility(View.VISIBLE);
@@ -480,7 +471,7 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.Recyc
 				getImageView().setVisibility(View.VISIBLE);
 				getTimeText().setVisibility(View.GONE);
 
-				if (((AlarmGroup) listable).getIsOpen()) {
+				if (((AlarmGroup) item).getIsOpen()) {
 					// open it
 					imageView.setImageDrawable(openAnim);
 				}
@@ -527,29 +518,29 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.Recyc
 			}
 
 			ListableInfo info;
-			Listable l;
+			Item l;
 			int index;
 			switch (msg.what) {
 				case AlarmDataService.MSG_SET_LISTABLE:
 					// assumes new listable has nothing in it if it's an AlarmGroup
 					info = msg.getData().getParcelable(AlarmDataService.BUNDLE_INFO_KEY);
-					if (info == null || info.listable == null) {
+					if (info == null || info.item == null) {
 						if (BuildConfig.DEBUG) Log.e(TAG, "Info sent back from the data service was null.");
 						return;
 					}
 					l = adapter.data.getListableAbs(info.absIndex, true);	// old listable
-					adapter.data.setListableAbs(info.absIndex, info.listable);
+					adapter.data.setListableAbs(info.absIndex, info.item);
 					if (l != null && l.visibleSize() != 1) adapter.notifyItemRangeRemoved(info.absIndex + 1, l.visibleSize() - 1);
 					adapter.notifyItemChanged(info.absIndex);
 					break;
 				case AlarmDataService.MSG_ADD_LISTABLE:
 					info = msg.getData().getParcelable(AlarmDataService.BUNDLE_INFO_KEY);
-					if (info == null || info.listable == null) {
+					if (info == null || info.item == null) {
 						if (BuildConfig.DEBUG)
 							Log.e(TAG, "Info sent back from the data service was null.");
 						return;
 					}
-					index = adapter.data.addListableAbs(info.listable, info.path);
+					index = adapter.data.addListableAbs(info.item, info.path);
 					if (index == -2) {
 						if (BuildConfig.DEBUG) Log.e(TAG, "Listable couldn't be found.");
 						return;
@@ -575,19 +566,19 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.Recyc
 					}
 
 					// move stuff
-					index = adapter.data.moveListableAbs(info.listable, info.path, msg.arg1);
+					index = adapter.data.moveListableAbs(info.item, info.path, msg.arg1);
 					if (index == -1) {
 						if (BuildConfig.DEBUG) Log.e(TAG, "Listable couldn't be found.");
 						return;
 					}
-					if (info.listable == null) info.listable = l;
+					if (info.item == null) info.item = l;
 
 					// notify adapter that things have moved
 					if (l.visibleSize() == 1) adapter.notifyItemRemoved(msg.arg1);
 					else adapter.notifyItemRangeRemoved(msg.arg1, l.visibleSize());
 
-					if (info.listable.visibleSize() == 1) adapter.notifyItemInserted(index);
-					else adapter.notifyItemRangeInserted(index, info.listable.visibleSize());
+					if (info.item.visibleSize() == 1) adapter.notifyItemInserted(index);
+					else adapter.notifyItemRangeInserted(index, info.item.visibleSize());
 					break;
 				case AlarmDataService.MSG_DELETE_LISTABLE:
 					l = adapter.data.deleteListableAbs(msg.arg1);
@@ -611,7 +602,7 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.Recyc
 					}
 					else {
 						// update all alarms inside
-						Listable a;
+						Item a;
 						for (int i = 0; i < l.size() - 1; i++) {
 							a = ((AlarmGroup) l).getListableAbs(i, false);
 							if (a instanceof Alarm) ((Alarm) a).updateRingTime();

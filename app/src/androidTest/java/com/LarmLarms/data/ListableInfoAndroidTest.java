@@ -27,7 +27,7 @@ public class ListableInfoAndroidTest {
 		src.numIndents = 1;
 		src.absParentIndex = 2;
 		// can use InstrumentationRegistry.getTargetContext() if desired
-		src.listable = new Alarm(null, "Hello");
+		src.item = new Alarm(null, "Hello");
 		src.parent = new AlarmGroup("Goodbye");
 		src.path = "computer/CPU/pin";
 
@@ -41,9 +41,9 @@ public class ListableInfoAndroidTest {
 		assertEquals(src.numIndents, dest.numIndents);
 		assertEquals(src.absParentIndex, dest.absParentIndex);
 
-		assert dest.listable != null;
-		assertEquals("Hello", dest.listable.getListableName());
-		assertTrue(dest.listable instanceof Alarm);
+		assert dest.item != null;
+		assertEquals("Hello", dest.item.getListableName());
+		assertTrue(dest.item instanceof Alarm);
 
 		assert dest.parent != null;
 		assertEquals("Goodbye", dest.parent.getListableName());
@@ -99,7 +99,7 @@ public class ListableInfoAndroidTest {
 		assertEquals(0, info.relIndex);
 		assertEquals(0, info.numIndents);
 		assertEquals(-1, info.absParentIndex);
-		assertEquals(alarms[0], info.listable);
+		assertEquals(alarms[0], info.item);
 		assertNull(info.parent);
 		assertEquals("test/", info.path);
 
@@ -108,7 +108,7 @@ public class ListableInfoAndroidTest {
 		assertEquals(1, info.relIndex);
 		assertEquals(0, info.numIndents);
 		assertEquals(-1, info.absParentIndex);
-		assertEquals(alarms[1], info.listable);
+		assertEquals(alarms[1], info.item);
 		assertNull(info.parent);
 		assertEquals("test/", info.path);
 
@@ -117,7 +117,7 @@ public class ListableInfoAndroidTest {
 		assertEquals(2, info.relIndex);
 		assertEquals(0, info.numIndents);
 		assertEquals(-1, info.absParentIndex);
-		assertEquals(innerFolder, info.listable);
+		assertEquals(innerFolder, info.item);
 		assertNull(info.parent);
 		assertEquals("test/", info.path);
 
@@ -126,7 +126,7 @@ public class ListableInfoAndroidTest {
 		assertEquals(0, info.relIndex);
 		assertEquals(1, info.numIndents);
 		assertEquals(2, info.absParentIndex);
-		assertEquals(alarms[2], info.listable);
+		assertEquals(alarms[2], info.item);
 		assertEquals(innerFolder, info.parent);
 		assertEquals("test/inner/", info.path);
 
@@ -135,7 +135,7 @@ public class ListableInfoAndroidTest {
 		assertEquals(1, info.relIndex);
 		assertEquals(1, info.numIndents);
 		assertEquals(2, info.absParentIndex);
-		assertEquals(alarms[3], info.listable);
+		assertEquals(alarms[3], info.item);
 		assertEquals(innerFolder, info.parent);
 		assertEquals("test/inner/", info.path);
 
@@ -144,7 +144,7 @@ public class ListableInfoAndroidTest {
 		assertEquals(2, info.relIndex);
 		assertEquals(1, info.numIndents);
 		assertEquals(2, info.absParentIndex);
-		assertEquals(doubleInner, info.listable);
+		assertEquals(doubleInner, info.item);
 		assertEquals(innerFolder, info.parent);
 		assertEquals("test/inner/", info.path);
 
@@ -153,7 +153,7 @@ public class ListableInfoAndroidTest {
 		assertEquals(0, info.relIndex);
 		assertEquals(2, info.numIndents);
 		assertEquals(5, info.absParentIndex);
-		assertEquals(alarms[4], info.listable);
+		assertEquals(alarms[4], info.item);
 		assertEquals(doubleInner, info.parent);
 		assertEquals("test/inner/double double/", info.path);
 
@@ -162,7 +162,7 @@ public class ListableInfoAndroidTest {
 		assertEquals(1, info.relIndex);
 		assertEquals(2, info.numIndents);
 		assertEquals(5, info.absParentIndex);
-		assertEquals(alarms[5], info.listable);
+		assertEquals(alarms[5], info.item);
 		assertEquals(doubleInner, info.parent);
 		assertEquals("test/inner/double double/", info.path);
 
@@ -171,7 +171,7 @@ public class ListableInfoAndroidTest {
 		assertEquals(2, info.relIndex);
 		assertEquals(2, info.numIndents);
 		assertEquals(5, info.absParentIndex);
-		assertEquals(alarms[6], info.listable);
+		assertEquals(alarms[6], info.item);
 		assertEquals(doubleInner, info.parent);
 		assertEquals("test/inner/double double/", info.path);
 
@@ -180,7 +180,7 @@ public class ListableInfoAndroidTest {
 		assertEquals(3, info.relIndex);
 		assertEquals(0, info.numIndents);
 		assertEquals(-1, info.absParentIndex);
-		assertEquals(alarms[7], info.listable);
+		assertEquals(alarms[7], info.item);
 		assertNull(info.parent);
 		assertEquals("test/", info.path);
 

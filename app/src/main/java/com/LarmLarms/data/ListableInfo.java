@@ -37,7 +37,7 @@ public class ListableInfo implements Parcelable {
 	 * Parcel).
 	 */
 	@Nullable
-	public Listable listable;
+	public Item item;
 
 	/**
 	 * Represents the parent folder to the field listable. Not guaranteed to be a handle to the
@@ -61,7 +61,7 @@ public class ListableInfo implements Parcelable {
 		absIndex = -1;
 		numIndents = -1;
 		absParentIndex = -1;
-		listable = null;
+		item = null;
 		parent = null;
 		path = null;
 	}
@@ -78,10 +78,10 @@ public class ListableInfo implements Parcelable {
 
 		String l = in.readString();	// listable
 		String isAlarm = in.readString();
-		if (l == null) listable = null;
+		if (l == null) item = null;
 		else {
-			if (Boolean.parseBoolean(isAlarm)) listable = Alarm.fromEditString(null, l);
-			else listable = AlarmGroup.fromEditString(l);
+			if (Boolean.parseBoolean(isAlarm)) item = Alarm.fromEditString(null, l);
+			else item = AlarmGroup.fromEditString(l);
 		}
 
 		l = in.readString();	// parent
@@ -133,13 +133,13 @@ public class ListableInfo implements Parcelable {
 		dest.writeInt(absParentIndex);
 
 		// listable then isAlarm
-		if (listable == null) {
+		if (item == null) {
 			dest.writeString(null);
 			dest.writeString(Boolean.toString(false));
 		}
 		else {
-			dest.writeString(listable.toEditString());
-			dest.writeString(Boolean.toString(listable instanceof Alarm));
+			dest.writeString(item.toEditString());
+			dest.writeString(Boolean.toString(item instanceof Alarm));
 		}
 
 		// parent
