@@ -16,7 +16,7 @@ import java.util.Collections;
 /**
  * Holds a list of Alarms and can mask Alarms.
  */
-public final class AlarmGroup implements Listable, Cloneable {
+public final class AlarmGroup extends Item implements Cloneable {
 	/**
 	 * Tag of the class for logging purposes.
 	 */
@@ -29,57 +29,11 @@ public final class AlarmGroup implements Listable, Cloneable {
 	private static final int NUM_EDIT_FIELDS = 4;
 
 	/**
-	 * The ID of the folder, filled by its created time.
-	 */
-	private final int id;
-	/**
-	 * Stores the name of the folder. Restricted characters: tabs and backslashes. If the user tries
-	 * to set them as part of the name, they will be automatically stripped out.
-	 */
-	@NotNull
-	private String name;
-	/**
-	 * Stores the active state of the folder. Represents whether the alarms within it will ring or
-	 * not, and takes precedence over a child alarm's active state.
-	 */
-	private boolean isActive;
-	/**
-	 * Stores whether the folder looks open or closed right now. Affects what visibleSize() and getVisibleLookup()
-	 * return. Does NOT affect what getListables() returns.
-	 */
-	private boolean isOpen;
-
-	/**
 	 * Contains the child Alarms and AlarmGroups stored within this folder. Should always be nonnull
 	 * and sorted.
 	 */
 	@NotNull
-	private ArrayList<Listable> listables;
-	/**
-	 * Should be the same length as field listables. Each entry represents the absolute index within
-	 * this folder layer of each listable (first listable is always absolute index 0). Does not take
-	 * into account outer layers of folders.
-	 */
-	@NotNull
-	private ArrayList<Integer> lookup;
-	/**
-	 * Should be the same length as field listables. Each entry represents the absolute index within
-	 * this folder layer of each listable (first listable is always absolute index 0). Changes based
-	 * on whether inner folders are opened or closed. In effect, represents the absolute indices of
-	 * only the visible objects. Does not take into account outer layers of folders.
-	 */
-	@NotNull
-	private ArrayList<Integer> visibleLookup;
-
-	/**
-	 * The real size of the folder, regardless of open status.
-	 */
-	private int size;
-
-	/**
-	 * The size of the folder as viewed by open status.
-	 */
-	private int visibleSize;
+	private ArrayList<Item> items;
 
 	/* ***********************************  Constructors  *********************************** */
 
@@ -95,73 +49,29 @@ public final class AlarmGroup implements Listable, Cloneable {
 	 * Initializes a new AlarmGroup with a name.
 	 * @param title the new name of the folder
 	 */
-	public AlarmGroup(@NotNull String title) {
+	public AlarmGroup(@Nullable String title) {
 		this(title, new ArrayList<>(),
 				(int) (Calendar.getInstance().getTimeInMillis() % Integer.MAX_VALUE));
 	}
 
-	public AlarmGroup (@NotNull String title, @NotNull ArrayList<Listable> children) {
+	public AlarmGroup (@Nullable String title, @NotNull ArrayList<Item> children) {
 		this(title, children,
 				(int) (Calendar.getInstance().getTimeInMillis() % Integer.MAX_VALUE));
 	}
 
 	/**
 	 * Initializes a new AlarmGroup with a name and contents.
-	 * @param title the new name of the folder
+	 * @param name the new name of the folder
 	 * @param children the new Listables within the folder
 	 */
-	public AlarmGroup(@NotNull String title, @NotNull ArrayList<Listable> children, int id) {
-		// (mostly) invalid data for now
-		this.id = id;
-		name = "";
-		listables = new ArrayList<>();
-		lookup = new ArrayList<>();
-		visibleLookup = new ArrayList<>();
+	public AlarmGroup(@Nullable String name, @NotNull ArrayList<Item> children, int id) {
+		super(name != null ? name : "new folder", id);
 
-		isActive = true;
-		isOpen = true;
-
-		// validating data passed through constructor
-		setListableName(title);
-		setListables(children);		// also automatically refreshes lookup/size
+		items = new ArrayList<>();
+		setListables(children);		// validating data
 	}
 
 	/* *******************************  Methods from Listable  ****************************** */
-
-	/**
-	 * Gets the ID of the listable.
-	 */
-	@Override @Contract(pure = true)
-	public int getId() { return id; }
-
-	/**
-	 * Gets the name of the listable.
-	 * @return the name, will not be null
-	 */
-	@Override @Contract(pure = true) @NotNull
-	public String getListableName() { return name; }
-
-	/**
-	 * Sets the name of the folder. If an error is encountered, return code will be nonzero, based
-	 * on which error is encountered. See Listable documentation for return codes.
-	 * @param newName the new name, can be null
-	 * @return 0 (no error) or an error code specified in Listable documentation
-	 */
-	@Override
-	public int setListableName(@Nullable String newName) {
-		if (newName == null) {
-			if (BuildConfig.DEBUG) Log.e(TAG, "New name is null.");
-			return 1;
-		}
-
-		if (newName.indexOf('\t') != -1 || newName.indexOf('/') != -1) {
-			if (BuildConfig.DEBUG) Log.e(TAG, "New name has tabs in it.");
-			return 2;
-		}
-
-		name = newName;
-		return 0;
-	}
 
 	/**
 	 * Gets the repeat string of the folder.
@@ -178,75 +88,11 @@ public final class AlarmGroup implements Listable, Cloneable {
 	public String getNextRingTime() { return ""; }
 
 	/**
-	 * Returns whether the folder is active or not. Doesn't take into account parent folders.
-	 */
-	@Override @Contract(pure = true)
-	public boolean isActive() { return isActive; }
-
-	/**
-	 * Sets whether this folder is active or not.
-	 * @param isOn the new active state of the folder
-	 */
-	@Override
-	public void setActive(boolean isOn) { isActive = isOn; }
-
-	/**
-	 * Changes the active state of the folder to on (active).
-	 */
-	@Override
-	public void turnOn() { isActive = true; }
-
-	/**
-	 * Changes the active state of the folder to off (inactive).
-	 */
-	@Override
-	public void turnOff() { isActive = false; }
-
-	/**
-	 * Toggles the active state of the folder (if it's on, turn it off; of it's off, turn it on).
-	 */
-	@Override
-	public void toggleActive() { isActive = !isActive; }
-
-	/**
-	 * Gets the visible size of the folder. If the folder is open, will count its (visible) children
-	 * in the size. If the folder is closed, it will count only itself (returns 1).
-	 * @return the size of the folder, must be at least 1
-	 */
-	@Override @Contract(pure = true)
-	public int visibleSize() {
-		if (isOpen) return visibleSize;
-		return 1;
-	}
-
-	/**
-	 * Gets the size of the folder, regardless of whether it's open or not.
+	 * Gets the total number of items the folder represents (includes itself).
 	 * @return the number of items in the folder, including itself (always at least 1)
 	 */
 	@Override @Contract(pure = true)
-	public int size() { return size; }
-
-	/**
-	 * Clones the folder and returns the new folder.
-	 * @return the new folder, a deep copy of the first
-	 */
-	@NotNull @Override @Contract(pure = true)
-	public Listable clone() {
-		AlarmGroup that = new AlarmGroup();
-		try {
-			that = (AlarmGroup) super.clone();
-
-			that.listables = new ArrayList<>();
-			for (Listable l : this.listables) {
-				that.listables.add(l.clone());
-			}
-			that.lookup = new ArrayList<>();
-			that.lookup.addAll(this.lookup);
-			// TODO: deep copy any object fields (only copies the reference)
-		} catch (CloneNotSupportedException e) { e.printStackTrace(); }
-
-		return that;
-	}
+	public int size() { return items.size() + 1; }
 
 	/**
 	 * Determines whether other is equal to this AlarmGroup or not. Checks only for name and whether
@@ -270,7 +116,7 @@ public final class AlarmGroup implements Listable, Cloneable {
 	 * second, 0 if they're equal).
 	 */
 	@Override
-	public int compareTo(@NotNull Listable other) {
+	public int compareTo(@NotNull Item other) {
 		if (other instanceof Alarm) return -1;
 		
 		AlarmGroup that = (AlarmGroup) other;
@@ -287,7 +133,7 @@ public final class AlarmGroup implements Listable, Cloneable {
 	 * [id] [name] [isActive] [isOpen]
 	 */
 	@NotNull @Override @Contract(pure = true)
-	public String toEditString() { return "" + id + '\t' + name + '\t' + isActive + '\t' + isOpen; }
+	public String toEditString() { return "" + id + '\t' + name + '\t' + isActive; }
 
 	/**
 	 * Creates a string for storing the current folder. Stores folder with type identifier and
@@ -302,7 +148,7 @@ public final class AlarmGroup implements Listable, Cloneable {
 		StringBuilder res = new StringBuilder(getStoreStringSingle());
 		res.append('\n');
 
-		for (Listable l : listables) {
+		for (Item l : items) {
 			// need to add a tab to all lines inside
 			String[] lines = l.toStoreString().split("\n");		// recursive call with extra steps
 			for (String line : lines) { res.append('\t').append(line).append('\n'); }
@@ -315,66 +161,31 @@ public final class AlarmGroup implements Listable, Cloneable {
 	/* ***************************  Getter and Setter Methods  ****************************** */
 
 	/**
-	 * Gets whether the folder is open or closed.
-	 */
-	@Contract(pure = true)
-	public boolean getIsOpen() { return isOpen; }
-
-	/**
-	 * Sets whether the folder is open or not.
-	 * @param open the new state of the folder (open or closed)
-	 */
-	private void setOpen(boolean open) { isOpen = open; }
-
-	/**
-	 * Toggles the folder open state (if it was open, close it; if it was closed, open it).
-	 */
-	public void toggleOpen() { isOpen = !isOpen; }
-
-	/**
-	 * Gets the visible lookup of the folder. If the folder is open, will return the actual lookup,
-	 * but if it's closed, will return an empty lookup (there's nothing visibly inside the folder).
-	 * @return the lookup of the folder, will not be null but can be empty
-	 */
-	@Contract(pure = true) @NotNull
-	ArrayList<Integer> getVisibleLookup() {
-		if (isOpen) return visibleLookup;
-		return new ArrayList<>();
-	}
-
-	/**
-	 * Gets the lookup of the folder, regardless of open status.
-	 * @return the lookup of the folder, will not be null but can be empty
-	 */
-	@Contract(pure = true) @NotNull
-	private ArrayList<Integer> getLookup() { return lookup; }
-
-	/**
 	 * Gets the listables within the folder.
 	 * @return the listables, will not be null
 	 */
 	@Contract(pure = true) @NotNull
-	ArrayList<Listable> getListables() { return listables; }
+	ArrayList<Item> getListables() { return items; }
 
 	/**
 	 * Sets the listables within the folder. If the new list is invalid (the list or any listables
 	 * within it are null), will not do anything.
-	 * @param listables a new list of listables to use, can be null
+	 * @param items a new list of listables to use, can be null
 	 */
-	public void setListables(@Nullable ArrayList<Listable> listables) {
-		if (listables == null) {
+	public void setListables(@Nullable ArrayList<Item> items) {
+		if (items == null) {
 			if (BuildConfig.DEBUG) Log.v(TAG, "New list of Listables is null.");
 			return;
 		}
-		for (Listable l : listables) {
+		for (Item l : items) {
 			if (l == null) {
 				if (BuildConfig.DEBUG) Log.e(TAG, "Listable in new list of Listables is null.");
 				return;
 			}
 		}
 
-		Collections.sort(listables);
-		this.listables = listables;
+		Collections.sort(items);
+		this.items = items;
 		refreshLookups();
 	}
 
@@ -409,7 +220,6 @@ public final class AlarmGroup implements Listable, Cloneable {
 			return null;
 		}
 		dest.setActive(Boolean.parseBoolean(fields[2]));
-		dest.setOpen(Boolean.parseBoolean(fields[3]));
 
 		return dest;
 	}
@@ -502,21 +312,19 @@ public final class AlarmGroup implements Listable, Cloneable {
 
 	/**
 	 * Counts the number of Listables in the list. Does not include the parent object in the count.
-	 * @param listables the list of Listables to count, can be null
-	 * @param visible whether or not to use only the visible listables or not
+	 * @param items the list of Listables to count, can be null
 	 * @return number of Listables in the list, or zero if list is null
 	 */
 	@Contract(pure = true)
-	private static int getSizeOfList(@Nullable ArrayList<Listable> listables, final boolean visible) {
-		if (listables == null) {
+	private static int getSizeOfList(@Nullable ArrayList<Item> items) {
+		if (items == null) {
 			if (BuildConfig.DEBUG) Log.v(TAG, "List of listables to get size of was null.");
 			return 0;
 		}
 
 		int len = 0;
-		for (Listable l : listables) {
-			if (visible) len += l.visibleSize();
-			else len += l.size();
+		for (Item l : items) {
+			len += l.size();
 		}
 		return len;
 	}
@@ -538,7 +346,7 @@ public final class AlarmGroup implements Listable, Cloneable {
 			return null;
 		}
 
-		ArrayList<Listable> data = root.listables;
+		ArrayList<Item> data = root.items;
 
 		// the final ListableInfo to store stuff in
 		ListableInfo info = new ListableInfo();
@@ -584,7 +392,7 @@ public final class AlarmGroup implements Listable, Cloneable {
 				info.relIndex = index;
 				info.numIndents = indents;
 				info.absParentIndex = currFolderIndex;
-				info.listable = data.get(index);
+				info.item = data.get(index);
 				info.parent = currFolder;
 				info.path = pathBuilder.toString();
 
@@ -667,12 +475,12 @@ public final class AlarmGroup implements Listable, Cloneable {
 	 * @return the Listable at the relative index, or null if not found
 	 */
 	@Nullable @Contract(pure = true)
-	Listable getListable(final int relIndex) {
-		if (relIndex < 0 || relIndex >= listables.size()) {
+	public Item getListable(final int relIndex) {
+		if (relIndex < 0 || relIndex >= items.size()) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "Couldn't get Listable. Index is out of bounds.");
 			return null;
 		}
-		return listables.get(relIndex);
+		return items.get(relIndex);
 	}
 
 	/**
@@ -683,7 +491,7 @@ public final class AlarmGroup implements Listable, Cloneable {
 	 */
 	@Nullable @Contract(pure = true)
 	private AlarmGroup getFolder(@NotNull final String name) {
-		for (Listable l : listables) {
+		for (Item l : items) {
 			if (l instanceof AlarmGroup && l.getListableName().equals(name))
 				return (AlarmGroup) l;
 		}
@@ -703,7 +511,7 @@ public final class AlarmGroup implements Listable, Cloneable {
 		}
 
 		int index = 0;
-		for (Listable l : listables) {
+		for (Item l : items) {
 			if (l.getListableName().equals(name)) return index;
 			index++;
 		}
@@ -716,8 +524,8 @@ public final class AlarmGroup implements Listable, Cloneable {
 	 * @param relIndex the old relative index to set with
 	 * @param item the new Listable to set relIndex to
 	 */
-	private void setListable(final int relIndex, @Nullable final Listable item) {
-		if (relIndex < 0 || relIndex >= listables.size()) {
+	private void setListable(final int relIndex, @Nullable final Item item) {
+		if (relIndex < 0 || relIndex >= items.size()) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "Couldn't set Listable. Index is out of bounds.");
 			return;
 		} else if (item == null) {
@@ -725,19 +533,17 @@ public final class AlarmGroup implements Listable, Cloneable {
 			return;
 		}
 
-		Listable old = listables.remove(relIndex);
+		Item old = items.remove(relIndex);
 		int di = 0, dv = 0;
-		int newIndex = AlarmGroup.insertIndex(listables, item);
+		int newIndex = AlarmGroup.insertIndex(items, item);
 
-		listables.add(newIndex, item);
+		items.add(newIndex, item);
 
 		// add index change to all lookup indices and size
-		for (int i = Math.min(newIndex, relIndex) + 1; i < listables.size(); i++) {
+		for (int i = Math.min(newIndex, relIndex) + 1; i < items.size(); i++) {
 			di = (i > newIndex ? item.size() : 0) - (i > relIndex ? old.size() : 0);
-			dv = (i > newIndex ? item.visibleSize() : 0) - (i > relIndex ? old.visibleSize() : 0);
 
 			lookup.set(i, lookup.get(i) + di);
-			visibleLookup.set(i, visibleLookup.get(i) + dv);
 		}
 		size += di;
 		visibleSize += dv;
@@ -747,15 +553,15 @@ public final class AlarmGroup implements Listable, Cloneable {
 	 * Adds a listable to the end of the current folder.
 	 * @param item the Listable to add to the folder
 	 */
-	void addListable(@Nullable final Listable item) {
+	void addListable(@Nullable final Item item) {
 		if (item == null) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "Couldn't set Listable. Item is null.");
 			return;
 		}
 
-		int newIndex = AlarmGroup.insertIndex(listables, item);
+		int newIndex = AlarmGroup.insertIndex(items, item);
 		int ds = item.size(), dv = item.visibleSize();
-		listables.add(newIndex, item);
+		items.add(newIndex, item);
 
 		if (newIndex == lookup.size()) {
 			lookup.add(size - 1);
@@ -764,7 +570,7 @@ public final class AlarmGroup implements Listable, Cloneable {
 		else {
 			lookup.add(newIndex, lookup.get(newIndex));
 			visibleLookup.add(newIndex, visibleLookup.get(newIndex));
-			for (int i = newIndex + 1; i < listables.size(); i++) {
+			for (int i = newIndex + 1; i < items.size(); i++) {
 				lookup.set(i, lookup.get(i) + ds);
 				visibleLookup.set(i, visibleLookup.get(i) + dv);
 			}
@@ -780,16 +586,16 @@ public final class AlarmGroup implements Listable, Cloneable {
 	 * @return the listable deleted, or null
 	 */
 	@Nullable
-	private Listable deleteListable(final int relIndex) {
-		if (relIndex < 0 || relIndex >= listables.size()) {
+	private Item deleteListable(final int relIndex) {
+		if (relIndex < 0 || relIndex >= items.size()) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "Couldn't delete Listable. Index is out of bounds.");
 			return null;
 		}
-		Listable l = listables.remove(relIndex);
+		Item l = items.remove(relIndex);
 		int ds = l.size(), dv = l.visibleSize();
 
 		// add index change to all lookup indices and sizes
-		for (int i = relIndex; i < listables.size()-1; i++) {
+		for (int i = relIndex; i < items.size()-1; i++) {
 			// updating and moving back an entry at the same time
 			lookup.set(i, lookup.get(i+1) - ds);
 			visibleLookup.set(i, visibleLookup.get(i+1) - dv);
@@ -823,14 +629,14 @@ public final class AlarmGroup implements Listable, Cloneable {
 	 * @return the Listable or null if not found
 	 */
 	@Nullable
-	public Listable getListableAbs(final int absIndex, final boolean visible) {
+	public Item getListableAbs(final int absIndex, final boolean visible) {
 		ListableInfo i = getListableInfo(absIndex, visible);
 		if (i == null) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "Listable at absolute index " + absIndex + " was not found.");
 			return null;
 		}
 
-		return i.listable;
+		return i.item;
 	}
 
 	/**
@@ -841,7 +647,7 @@ public final class AlarmGroup implements Listable, Cloneable {
 	 * @return the listable that was deleted, or null if there was none
 	 */
 	@Nullable
-	public Listable setListableAbs(final int absIndex, final Listable item) {
+	public Item setListableAbs(final int absIndex, final Item item) {
 		ListableInfo i = getListableInfo(absIndex, true);
 		if (i == null) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "Listable at absolute index " + absIndex + " was not found.");
@@ -855,7 +661,7 @@ public final class AlarmGroup implements Listable, Cloneable {
 			i.parent.setListable(i.relIndex, item);
 			refreshLookups();
 		}
-		return i.listable;
+		return i.item;
 	}
 
 	/**
@@ -865,14 +671,14 @@ public final class AlarmGroup implements Listable, Cloneable {
 	 * @return the listable that was deleted or null if there was an error
 	 */
 	@Nullable
-	public Listable deleteListableAbs(final int absIndex) {
+	public Item deleteListableAbs(final int absIndex) {
 		ListableInfo i = getListableInfo(absIndex, true);
 		if (i == null) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "Listable at absolute index " + absIndex + " was not found.");
 			return null;
 		}
 
-		Listable l;
+		Item l;
 		if (i.parent == null) {
 			l = deleteListable(i.relIndex);
 		}
@@ -885,13 +691,13 @@ public final class AlarmGroup implements Listable, Cloneable {
 
 	/**
 	 * Adds a listable to this folder at the given path. Assumes visible only.
-	 * @param listable the info given about the listable to add, should include the listable and path
+	 * @param item the info given about the listable to add, should include the listable and path
 	 * @param path the path to add the listable to
 	 * @return the absolute index of the new listable (visible index). Will return -2 if there was
 	 * an error or -1 if it's not visible
 	 */
-	public int addListableAbs(@Nullable Listable listable, @Nullable String path) {
-		if (listable == null) {
+	public int addListableAbs(@Nullable Item item, @Nullable String path) {
+		if (item == null) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "addListableAbs: The listable specified was null.");
 			return -2;
 		}
@@ -920,7 +726,7 @@ public final class AlarmGroup implements Listable, Cloneable {
 		}
 		index += currFolder.visibleSize();
 
-		currFolder.addListable(listable);
+		currFolder.addListable(item);
 		refreshLookups();
 
 		if (!isVisible) return -1;
@@ -929,13 +735,13 @@ public final class AlarmGroup implements Listable, Cloneable {
 
 	/**
 	 * Moves the listable specified by index to the new path. Assumes visible only.
-	 * @param listable the new listable to replace with (will just use the old one if it's null)
+	 * @param item the new listable to replace with (will just use the old one if it's null)
 	 * @param path the path to move the listable to
 	 * @param oldAbsIndex the previous absolute index of the listable (visible index)
 	 * @return the new absolute index of the listable (visible index). Will return -1 if there was
 	 * an error or if it's not visible
 	 */
-	public int moveListableAbs(@Nullable Listable listable, @Nullable String path, final int oldAbsIndex) {
+	public int moveListableAbs(@Nullable Item item, @Nullable String path, final int oldAbsIndex) {
 		if (path == null) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "moveListableAbs: The path specified was null.");
 			return -1;
@@ -958,13 +764,13 @@ public final class AlarmGroup implements Listable, Cloneable {
 				return -1;
 			}
 		}
-		index += currFolder.visibleSize();
+		index += currFolder.size();
 
-		Listable newListable = listable;
-		if (newListable == null) {
+		Item newItem = item;
+		if (newItem == null) {
 			// replace with what's currently at the abs index
-			newListable = deleteListableAbs(oldAbsIndex);
-			if (newListable == null) {
+			newItem = deleteListableAbs(oldAbsIndex);
+			if (newItem == null) {
 				if (BuildConfig.DEBUG) Log.e(TAG, "moveListableAbs: Couldn't find the listable to move.");
 				return -1;
 			}
@@ -974,10 +780,8 @@ public final class AlarmGroup implements Listable, Cloneable {
 			deleteListableAbs(oldAbsIndex);
 		}
 
-		currFolder.addListable(newListable);
-		refreshLookups();
+		currFolder.addListable(newItem);
 
-		if (!isVisible) return -1;
 		return index;
 	}
 
@@ -1026,7 +830,7 @@ public final class AlarmGroup implements Listable, Cloneable {
 		pathList.add(prefix + storeString);
 		prefix += storeString;
 
-		for (Listable child : parent.listables) {
+		for (Item child : parent.items) {
 			if (child instanceof AlarmGroup) {
 				pathList.addAll(toPathList(prefix, (AlarmGroup) child));
 			}
@@ -1036,18 +840,18 @@ public final class AlarmGroup implements Listable, Cloneable {
 
 	/**
 	 * Returns the correct index to insert the given listable into the list at.
-	 * @param listables the list to insert into
+	 * @param items the list to insert into
 	 * @param l the item to insert
 	 * @return which index to insert the item into, or -1 if there was an error
 	 */
 	@Contract(pure = true)
-	private static int insertIndex(@NotNull final ArrayList<Listable> listables, @NotNull final Listable l) {
-		if (listables.size() == 0) return 0;
-		int left = 0, right = listables.size() - 1, mid, comp;
+	private static int insertIndex(@NotNull final ArrayList<Item> items, @NotNull final Item l) {
+		if (items.size() == 0) return 0;
+		int left = 0, right = items.size() - 1, mid, comp;
 
 		while (right >= left) {
 			mid = (left + right) / 2;
-			comp = l.compareTo(listables.get(mid));
+			comp = l.compareTo(items.get(mid));
 			if (comp == 0) return mid;
 			else if (comp < 0) right = mid - 1;
 			else left = mid + 1;
@@ -1056,88 +860,5 @@ public final class AlarmGroup implements Listable, Cloneable {
 		// they "cross over" and represent an inverted but correct range that l sits between
 		// this is the usual case (we don't usually find l)
 		return left;
-	}
-
-	/**
-	 * Given a real index, gets the equivalent visible index (or -1 if it's not visible or some other
-	 * error occurred).
-	 * @param realIndex the real absolute index to convert
-	 */
-	@Contract(pure = true)
-	public int realToVisibleIndex(int realIndex) {
-		ArrayList<Integer> rLookup = this.lookup, vLookup = this.visibleLookup;
-		ArrayList<Listable> data = listables;
-		AlarmGroup currFolder = this;
-		int currIndex = findOuterListableIndex(rLookup, realIndex, currFolder.size() - 1);
-		int visIndex = vLookup.get(currIndex);
-
-		while (realIndex != -1) {
-			// must be the element itself in the current folder
-			if (rLookup.get(currIndex) == realIndex) {
-				// WIN CONDITION
-				return visIndex;
-			}
-
-			// listable is within an AlarmGroup, so must find the new absolute index within that folder
-			// must subtract 1 to take into account the folder itself
-			realIndex = realIndex - 1 - rLookup.get(currIndex);
-
-			// new folder to look inside
-			currFolder = (AlarmGroup) data.get(currIndex);
-			if (!currFolder.getIsOpen()) {
-				if (BuildConfig.DEBUG) Log.i(TAG, "There is no corresponding visible index since " +
-						"the containing folder is closed.");
-				return -1;
-			}
-			data = currFolder.getListables();
-
-			// reset lookups and get new index relative to the new folder
-			rLookup = currFolder.getLookup();
-			vLookup = currFolder.getVisibleLookup();
-			currIndex = findOuterListableIndex(rLookup, realIndex, currFolder.size() - 1);
-			visIndex += vLookup.get(currIndex);
-		}
-		if (BuildConfig.DEBUG) Log.e(TAG, "Couldn't find the index to search for.");
-		return -1;
-	}
-
-	/**
-	 * Updates the lookup list and the total number of items in the AlarmGroup.
-	 */
-	public void refreshLookups() {
-		generateLookups();
-		size = getSizeOfList(listables, false) + 1;
-		visibleSize  = getSizeOfList(listables, true) + 1;
-	}
-
-	/**
-	 * Generates lookups for both lookup and visibleLookup. Lookup list contains the first absolute
-	 * index for each Listable in the list. Also updates all listables within the group.
-	 */
-	private void generateLookups() {
-		lookup = new ArrayList<>();
-		visibleLookup = new ArrayList<>();
-		if (listables.size() == 0) return;
-
-		int index = 0, vIndex = 0;
-		Listable l;
-
-		for (int i = 0; i < listables.size(); i++) {
-			// adds all Listables except the last one (we don't care how many it has)
-			lookup.add(index);
-			visibleLookup.add(vIndex);
-
-			l = listables.get(i);
-			if (l == null) {
-				if (BuildConfig.DEBUG) Log.e(TAG, "Listable within given data was null.");
-				lookup = new ArrayList<>();
-				visibleLookup = new ArrayList<>();
-				return;
-			}
-			if (l instanceof AlarmGroup) ((AlarmGroup) l).refreshLookups();
-
-			index += l.size();
-			vIndex += l.visibleSize();
-		}
 	}
 }

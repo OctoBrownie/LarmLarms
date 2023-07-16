@@ -72,31 +72,31 @@ public class AlarmGroupUnitTest {
 		folder.addListable(innerFolder);
 		folder.addListable(new Alarm(null, "alarm 4"));
 
-		Listable testListable = folder.getListableAbs(-1, false);
-		assert testListable != null;
+		Item testItem = folder.getListableAbs(-1, false);
+		assert testItem != null;
 
-		testListable = folder.getListableAbs(0, false);
-		assert testListable != null;
-		assertEquals("alarm 1", testListable.getListableName());
+		testItem = folder.getListableAbs(0, false);
+		assert testItem != null;
+		assertEquals("alarm 1", testItem.getListableName());
 
-		testListable = folder.getListableAbs(1, false);
-		assert testListable != null;
-		assertEquals("alarm 2", testListable.getListableName());
+		testItem = folder.getListableAbs(1, false);
+		assert testItem != null;
+		assertEquals("alarm 2", testItem.getListableName());
 
-		testListable = folder.getListableAbs(2, false);
-		assert testListable != null;
-		assertEquals("inner", testListable.getListableName());
+		testItem = folder.getListableAbs(2, false);
+		assert testItem != null;
+		assertEquals("inner", testItem.getListableName());
 
-		testListable = folder.getListableAbs(3, false);
-		assert testListable != null;
-		assertEquals("alarm 3", testListable.getListableName());
+		testItem = folder.getListableAbs(3, false);
+		assert testItem != null;
+		assertEquals("alarm 3", testItem.getListableName());
 
-		testListable = folder.getListableAbs(4, false);
-		assert testListable != null;
-		assertEquals("alarm 4", testListable.getListableName());
+		testItem = folder.getListableAbs(4, false);
+		assert testItem != null;
+		assertEquals("alarm 4", testItem.getListableName());
 
-		testListable = folder.getListableAbs(5, false);
-		assert testListable != null;
+		testItem = folder.getListableAbs(5, false);
+		assert testItem != null;
 	}
 
 	/* ********************************  Basic Function Tests  ***************************** */
@@ -133,21 +133,21 @@ public class AlarmGroupUnitTest {
 		lookupAnswer.add(4);
 		assertEquals(lookupAnswer, folder.getVisibleLookup());
 
-		Listable testListable = folder.getListable(0);
-		assert testListable != null;
-		assertEquals("alarm 1", testListable.getListableName());
+		Item testItem = folder.getListable(0);
+		assert testItem != null;
+		assertEquals("alarm 1", testItem.getListableName());
 
-		testListable = folder.getListable(1);
-		assert testListable != null;
-		assertEquals("alarm 2", testListable.getListableName());
+		testItem = folder.getListable(1);
+		assert testItem != null;
+		assertEquals("alarm 2", testItem.getListableName());
 
-		testListable = folder.getListable(2);
-		assert testListable != null;
-		assertEquals("inner", testListable.getListableName());
+		testItem = folder.getListable(2);
+		assert testItem != null;
+		assertEquals("inner", testItem.getListableName());
 
-		testListable = folder.getListable(3);
-		assert testListable != null;
-		assertEquals("alarm 4", testListable.getListableName());
+		testItem = folder.getListable(3);
+		assert testItem != null;
+		assertEquals("alarm 4", testItem.getListableName());
 	}
 
 	/**
@@ -200,29 +200,29 @@ public class AlarmGroupUnitTest {
 
 		assertEquals("test", tester.getListableName());
 
-		Listable testListable = tester.getListable(0);
-		assert testListable != null;
-		assertEquals("alarm 1", testListable.getListableName());
+		Item testItem = tester.getListable(0);
+		assert testItem != null;
+		assertEquals("alarm 1", testItem.getListableName());
 
-		testListable = tester.getListable(1);
-		assert testListable != null;
-		assertEquals("alarm 2", testListable.getListableName());
+		testItem = tester.getListable(1);
+		assert testItem != null;
+		assertEquals("alarm 2", testItem.getListableName());
 
-		testListable = tester.getListable(2);
-		assert testListable != null;
-		assertEquals("inner", testListable.getListableName());
+		testItem = tester.getListable(2);
+		assert testItem != null;
+		assertEquals("inner", testItem.getListableName());
 
-		testListable = ((AlarmGroup) testListable).getListable(0);
-		assert testListable != null;
-		assertEquals("alarm 3", testListable.getListableName());
+		testItem = ((AlarmGroup) testItem).getListable(0);
+		assert testItem != null;
+		assertEquals("alarm 3", testItem.getListableName());
 
-		testListable = tester.getListable(3);
-		assert testListable != null;
-		assertEquals("alarm 4", testListable.getListableName());
+		testItem = tester.getListable(3);
+		assert testItem != null;
+		assertEquals("alarm 4", testItem.getListableName());
 
-		testListable = tester.getListable(4);
-		assert testListable != null;
-		assertEquals("alarm 5", testListable.getListableName());
+		testItem = tester.getListable(4);
+		assert testItem != null;
+		assertEquals("alarm 5", testItem.getListableName());
 	}
 
 	/**
@@ -326,7 +326,7 @@ public class AlarmGroupUnitTest {
 
 		clone.setListableName("Talk");
 
-		Listable cloneL = clone.getListable(0);
+		Item cloneL = clone.getListable(0);
 		assert cloneL != null;
 		cloneL.setListableName("Not a folder");
 
@@ -336,7 +336,7 @@ public class AlarmGroupUnitTest {
 
 		assertNotEquals(folder.getListableName(), clone.getListableName());
 
-		Listable folderL = folder.getListable(0);
+		Item folderL = folder.getListable(0);
 		cloneL = clone.getListable(0);
 		assert folderL != null;
 		assert cloneL != null;
@@ -356,7 +356,7 @@ public class AlarmGroupUnitTest {
 	public void testCompareTo() {
 		AlarmGroup a = new AlarmGroup("Test");
 
-		Listable b = a.clone();
+		Item b = a.clone();
 		assertEquals(0, a.compareTo(b));
 
 		b = new Alarm(null, "AAA");

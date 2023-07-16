@@ -27,7 +27,7 @@ import java.util.List;
  * Class managing alarms and their behavior.
  * TODO: implement Parcelable so edit strings become unnecessary?
  */
-public final class Alarm implements Listable, Cloneable {
+public final class Alarm extends Item implements Cloneable {
 
 	/* ************************************  Constants  *********************************** */
 
@@ -97,17 +97,6 @@ public final class Alarm implements Listable, Cloneable {
 	private Context context;
 
 	/**
-	 * The id of the Alarm, which is filled by the created time.
-	 */
-	private final int id;
-
-	/**
-	 * Stores the name of the alarm, cannot be null. Only restricted character: tabs.
-	 */
-	@NotNull
-	private String name;
-
-	/**
 	 * Stores the repeat type of the current alarm. Should be one of the repeat types in the
 	 * "Constants" section.
 	 */
@@ -166,11 +155,6 @@ public final class Alarm implements Listable, Cloneable {
 	private boolean offsetFromNow;
 
 	/**
-	 * The alarm's personal on/off button (NOT the sum total of folder masks).
-	 */
-	private boolean alarmIsActive;
-
-	/**
 	 * Stores whether the alarm is currently snoozed or not. If so, should have a nonzero number of
 	 * snoozes in numSnoozes. Otherwise, numSnoozes should be 0.
 	 */
@@ -222,14 +206,11 @@ public final class Alarm implements Listable, Cloneable {
 	 * Creates a new alarm with the current context and the given title. Created Alarms should 
 	 * always have valid data, though they have lots of dummy data when first created. 
 	 * @param currContext the context this alarm exists in, can be null
-	 * @param title the name of the alarm, shouldn't be null
+	 * @param name the name of the alarm, shouldn't be null
 	 */
-	private Alarm(@Nullable Context currContext, @Nullable String title, int id) {
+	private Alarm(@Nullable Context currContext, @Nullable String name, int id) {
+		super(name != null ? name : "new alarm", id);
 		context = currContext;
-		this.id = id;
-		if (title == null) name = "default name";
-		else name = title;
-
 		ringTime = Calendar.getInstance();
 
 		repeatType = REPEAT_ONCE_ABS;
@@ -245,7 +226,6 @@ public final class Alarm implements Listable, Cloneable {
 		offsetFromNow = true;
 
 		alarmVibrateIsOn = true;
-		alarmIsActive = true;
 
 		alarmSnoozed = false;
 		numSnoozes = 0;
@@ -255,41 +235,6 @@ public final class Alarm implements Listable, Cloneable {
 	}
 
 	/* ********************************  Methods from Listable  ********************************** */
-
-	/**
-	 * Returns the ID of the alarm.
-	 */
-	@Override @Contract(pure = true)
-	public int getId() { return id; }
-
-	/**
-	 * Returns the name of the alarm. 
-	 * @return the name, will not be null 
-	 */
-	@NotNull @Override @Contract(pure = true)
-	public String getListableName() { return name; }
-
-	/**
-	 * Sets the name of the alarm. If an error is encountered, return code will be nonzero, based
-	 * on which error is encountered. See Listable documentation for return codes.
-	 * @param newName the new name of the alarm
-	 * @return 0 (no error) or an error code specified in Listable documentation
-	 */
-	@Override
-	public int setListableName(String newName) {
-		if (newName == null || newName.equals("")) {
-			if (BuildConfig.DEBUG) Log.e(TAG, "New name is is null or empty.");
-			return 1;
-		}
-
-		if (newName.indexOf('\t') != -1 || newName.indexOf('/') != -1) {
-			if (BuildConfig.DEBUG) Log.e(TAG, "New name has tabs in it.");
-			return 2;
-		}
-
-		name = newName;
-		return 0;
-	}
 
 	/**
 	 * Gets a repeat string that describes the alarm. Uses the current context to get localized 
@@ -375,24 +320,11 @@ public final class Alarm implements Listable, Cloneable {
 	}
 
 	/**
-	 * Returns whether it the alarm is active or not. Doesn't take into account parent folders.
-	 * @return the active state of the alarm 
-	 */
-	@Override @Contract(pure = true)
-	public boolean isActive() { return alarmIsActive; }
-
-	/**
-	 * Changes the active state of the alarm to on (active).
-	 */
-	@Override
-	public void turnOn() { alarmIsActive = true; }
-
-	/**
 	 * Changes the active state of the alarm to off (inactive). Will also unsnooze it if necessary.
 	 */
 	@Override
 	public void turnOff() {
-		alarmIsActive = false;
+		super.turnOff();
 		unsnooze();
 	}
 
@@ -402,16 +334,19 @@ public final class Alarm implements Listable, Cloneable {
 	 */
 	@Override
 	public void toggleActive() {
-		alarmIsActive = !alarmIsActive;
+		super.toggleActive();
 		unsnooze();
 	}
 
 	/**
-	 * Sets the active state of the alarm.
+	 * Sets the active state of the alarm. Also unsnoozes it if necessary.
 	 * @param active the state to set the alarm to
 	 */
 	@Override
-	public void setActive(boolean active) { alarmIsActive = active; }
+	public void setActive(boolean active) {
+		super.setActive(active);
+		unsnooze();
+	}
 
 	/**
 	 * Gets the next time the alarm is going to ring as a string. 
@@ -427,37 +362,11 @@ public final class Alarm implements Listable, Cloneable {
 	}
 
 	/**
-	 * Returns the size of the Listable. Alarms don't contain child listables and never collapses,
-	 * so this always returns 1.
-	 */
-	@Override @Contract(pure = true)
-	public int visibleSize() { return 1; }
-
-	/**
 	 * Returns the size of the Listable. Alarms don't contain child listables, so this always
 	 * returns 1.
 	 */
 	@Override @Contract(pure = true)
 	public int size() { return 1; }
-
-	/**
-	 * Clones the Alarm and returns the new alarm.
-	 * @return a new Alarm that is a deep copy of the first 
-	 */
-	@NonNull @Override @Contract(pure = true)
-	public Listable clone() {
-		Alarm that = new Alarm(null);
-		try {
-			that = (Alarm) super.clone();
-
-			// TODO: deep copies for other object fields
-			that.ringTime = (Calendar) this.ringTime.clone();
-			that.repeatDays = this.repeatDays.clone();
-			that.repeatMonths = this.repeatMonths.clone();
-		} catch (CloneNotSupportedException e) { e.printStackTrace(); }
-
-		return that;
-	}
 
 	/**
 	 * Determines whether other is equal to this Alarm or not. Checks for name, repeat type (+ repeat
@@ -505,7 +414,7 @@ public final class Alarm implements Listable, Cloneable {
 		}
 		else if (!this.ringtoneUri.equals(that.ringtoneUri)) return false;
 
-		return this.volume == that.volume && this.alarmIsActive == that.alarmIsActive &&
+		return this.volume == that.volume && this.isActive == that.isActive &&
 				this.alarmVibrateIsOn == that.alarmVibrateIsOn;
 	}
 	
@@ -535,7 +444,7 @@ public final class Alarm implements Listable, Cloneable {
 	 * second, 0 if they're equal).
 	 */
 	@Override
-	public int compareTo(@NotNull Listable other) {
+	public int compareTo(@NotNull Item other) {
 		if (other instanceof AlarmGroup) return 1;
 		
 		Alarm that = (Alarm) other;
@@ -686,7 +595,7 @@ public final class Alarm implements Listable, Cloneable {
 		StringBuilder alarmString = new StringBuilder();
 		alarmString.append(id).append('\t');
 		alarmString.append(name).append('\t');
-		alarmString.append(alarmIsActive).append('\t');
+		alarmString.append(isActive).append('\t');
 
 		switch (repeatType) {
 			case REPEAT_ONCE_ABS:
@@ -1364,7 +1273,7 @@ public final class Alarm implements Listable, Cloneable {
 	 * @param currTime the current time (the earliest time that this alarm should ring)
 	 */
 	public void updateRingTime(Calendar currTime) {
-		if (!alarmIsActive || alarmSnoozed) { return; }
+		if (!isActive || alarmSnoozed) { return; }
 
 		Calendar workingClock = (Calendar) currTime.clone();
 

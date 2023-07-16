@@ -134,60 +134,6 @@ public class AlarmUnitTest {
 	}
 
 	/**
-	 * Tests whether clones of an Alarm are considered identical (via the equals method) or not.
-	 */
-	@Test
-	public void cloneIdentityTest() {
-		Alarm alarm = new Alarm(null, "Title");
-		alarm.setRepeatType(Alarm.REPEAT_OFFSET);
-		alarm.setOffsetDays(10);
-		alarm.setOffsetHours(5);
-		alarm.setOffsetMins(2);
-		alarm.setActive(false);
-		alarm.setVibrateOn(false);
-
-		Object clone = alarm.clone();
-		assertEquals(alarm, clone);
-	}
-
-	/**
-	 * Tests whether clones of an Alarm change each others' fields or not. Requires an instrumented
-	 * test to test for context or ringtone uri.
-	 */
-	@Test
-	public void cloneMutableTest() {
-		Alarm alarm = new Alarm(null, "Title");
-		alarm.setRepeatType(Alarm.REPEAT_DAY_WEEKLY);
-
-		boolean[] days = alarm.getRepeatDays();
-		days[0] = false;
-		days[2] = false;
-		days[3] = false;
-		days[5] = false;
-
-		alarm.setActive(false);
-		alarm.setVibrateOn(false);
-
-		Alarm clone = (Alarm) alarm.clone();
-
-		clone.setListableName("Hello?");
-
-		days = clone.getRepeatDays();
-		days[0] = true;
-		days[2] = true;
-		days[3] = true;
-		days[5] = true;
-
-		clone.setAlarmTimeMillis(alarm.getAlarmTimeMillis() + 1);
-		clone.setActive(true);
-
-		assertNotEquals(alarm.getListableName(), clone.getListableName());
-		assertNotEquals(alarm.getAlarmTimeCalendar(), clone.getAlarmTimeCalendar());
-		assertFalse(Arrays.equals(alarm.getRepeatDays(), clone.getRepeatDays()));
-		assertFalse(alarm.isActive());
-	}
-
-	/**
 	 * Tests the capabilities of compareTo
 	 */
 	@Test
@@ -195,10 +141,7 @@ public class AlarmUnitTest {
 		Alarm a = new Alarm(null, "Test");
 		a.setRepeatType(Alarm.REPEAT_ONCE_REL);
 
-		Listable b = a.clone();
-		assertEquals(0, a.compareTo(b));
-
-		b = new AlarmGroup("ZZZ");
+		Item b = new AlarmGroup("ZZZ");
 		assertTrue(a.compareTo(b) > 0);
 
 		b = new Alarm(null, "Zest");
