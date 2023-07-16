@@ -1,21 +1,13 @@
 package com.larmlarms.ringing;
 
-import static com.larmlarms.editor.EditorActivity.EXTRA_ITEM_INFO;
-
 import android.app.Service;
-import android.content.ComponentName;
-import android.content.Context;
 import android.content.Intent;
-import android.content.ServiceConnection;
 import android.os.IBinder;
-import android.os.Message;
-import android.os.Messenger;
-import android.os.RemoteException;
 import android.util.Log;
 
 import com.larmlarms.BuildConfig;
+import com.larmlarms.Constants;
 import com.larmlarms.data.Alarm;
-import com.larmlarms.data.AlarmDataService;
 import com.larmlarms.data.ItemInfo;
 import com.larmlarms.main.MainApplication;
 
@@ -32,17 +24,6 @@ public class AfterRingingService extends Service {
 	private static final String TAG = "AfterRingingService";
 
 	/**
-	 * Action used in intents, used for snoozing alarms. Does not assume anything about the contents
-	 * of the intent.
-	 */
-	static final String ACTION_SNOOZE = "com.apps.larmlarms.action.ACTION_SNOOZE";
-	/**
-	 * Action used in intents, used for dismissing alarms. Does not assume anything about the
-	 * contents of the intent.
-	 */
-	static final String ACTION_DISMISS = "com.apps.larmlarms.action.ACTION_DISMISS";
-
-	/**
 	 * Called when the service is started. The intent send to the service should have the intended
 	 * action (snooze or dismiss, actions specified in RingingActivity) and should contain the
 	 * alarm's absolute index in the intent extras (int extra with key RingingService.EXTRA_LISTABLE).
@@ -55,7 +36,7 @@ public class AfterRingingService extends Service {
 	public int onStartCommand(@NotNull Intent inIntent, int flags, int startId) {
 		stopService(new Intent(this, RingingService.class));
 
-		ItemInfo info = inIntent.getParcelableExtra(EXTRA_ITEM_INFO);
+		ItemInfo info = inIntent.getParcelableExtra(Constants.EXTRA_ITEM_INFO);
 		if (info == null || info.item == null) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "The info struct was null.");
 			stopSelf();
@@ -68,7 +49,7 @@ public class AfterRingingService extends Service {
 			if (BuildConfig.DEBUG) Log.e(TAG, "The alarm was null.");
 			return Service.START_NOT_STICKY;
 		}
-		if (ACTION_DISMISS.equals(inIntent.getAction())) a.dismiss();
+		if (Constants.ACTION_DISMISS.equals(inIntent.getAction())) a.dismiss();
 		else a.snooze();
 
 		return Service.START_NOT_STICKY;

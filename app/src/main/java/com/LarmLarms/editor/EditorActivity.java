@@ -26,6 +26,7 @@ import android.widget.Toast;
 
 import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.larmlarms.BuildConfig;
+import com.larmlarms.Constants;
 import com.larmlarms.R;
 import com.larmlarms.data.Alarm;
 import com.larmlarms.data.AlarmDataService;
@@ -67,32 +68,6 @@ public class EditorActivity extends AppCompatActivity
 	 */
 	private final static String TAG = "Editor";
 
-	/**
-	 * An extra used for carrying a ItemInfo.
-	 */
-	public final static String EXTRA_ITEM_INFO = "com.apps.larmlarms.extra.INFO";
-
-	// for inbound intents
-	/**
-	 * Intent action for creating a new alarm. Requires nothing else.
-	 */
-	public final static String ACTION_CREATE_ALARM = "com.apps.larmlarms.action.CREATE_ALARM";
-	/**
-	 * Intent action for editing an existing Alarm. Requires that EXTRA_ITEM_INFO contain a
-	 * ItemInfo with absIndex, item, and path filled out.
-	 */
-	public final static String ACTION_EDIT_ALARM = "com.apps.larmlarms.action.EDIT_ALARM";
-	/**
-	 * Request code to create a new folder. Requires nothing else.
-	 */
-	public final static String ACTION_CREATE_FOLDER = "com.apps.larmlarms.action.CREATE_FOLDER";
-	/**
-	 * Request code to edit an existing AlarmGroup. Requires that EXTRA_ITEM_INFO contain a
-	 * ItemInfo with absIndex, item, and path filled out.
-	 */
-	public final static String ACTION_EDIT_FOLDER = "com.apps.larmlarms.action.EDIT_FOLDER";
-
-	// for outbound intents
 	/**
 	 * Request code to get a ringtone for the app.
 	 */
@@ -209,21 +184,21 @@ public class EditorActivity extends AppCompatActivity
 		// NOTE: this switch statement is only for setting up activity variables, NOT queuing any UI
 		// changes, since the content view hasn't been set up yet.
 		switch(action) {
-			case ACTION_CREATE_ALARM:
+			case Constants.ACTION_CREATE_ALARM:
 				isAlarm = true;
 				isEditing = false;
 				workingItem = new Alarm(this);
 				break;
-			case ACTION_EDIT_ALARM:
+			case Constants.ACTION_EDIT_ALARM:
 				isAlarm = true;
 				isEditing = true;
 				break;
-			case ACTION_CREATE_FOLDER:
+			case Constants.ACTION_CREATE_FOLDER:
 				isAlarm = false;
 				isEditing = false;
 				// new AlarmGroup already created in constructor
 				break;
-			case ACTION_EDIT_FOLDER:
+			case Constants.ACTION_EDIT_FOLDER:
 				isAlarm = false;
 				isEditing = true;
 				break;
@@ -241,7 +216,7 @@ public class EditorActivity extends AppCompatActivity
 				return;
 			}
 
-			ItemInfo info = extras.getParcelable(EXTRA_ITEM_INFO);
+			ItemInfo info = extras.getParcelable(Constants.EXTRA_ITEM_INFO);
 
 			if (info == null || info.item == null || info.path == null) {
 				if (BuildConfig.DEBUG) Log.e(TAG, "item info is invalid.");
@@ -265,8 +240,8 @@ public class EditorActivity extends AppCompatActivity
 
 		// used for any action-specific UI changes
 		switch(action) {
-			case ACTION_EDIT_ALARM:
-			case ACTION_EDIT_FOLDER:
+			case Constants.ACTION_EDIT_ALARM:
+			case Constants.ACTION_EDIT_FOLDER:
 				((EditText) findViewById(R.id.nameInput)).setText(workingItem.getName());
 				break;
 		}
@@ -701,7 +676,7 @@ public class EditorActivity extends AppCompatActivity
 	 * data structure.
 	 * @param msg the inbound MSG_GET_FOLDERS message
 	 */
-	private void setupFolderStructure(@NotNull Message msg) {
+	private void setupFolderStructure() {
 		Bundle data = msg.getData();
 		if (data == null) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "Message from alarm service had a null bundle.");

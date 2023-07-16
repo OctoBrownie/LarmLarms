@@ -9,8 +9,6 @@ import android.provider.Settings;
 import android.text.format.DateFormat;
 import android.util.Log;
 
-import androidx.annotation.NonNull;
-
 import com.larmlarms.BuildConfig;
 import com.larmlarms.R;
 

@@ -13,6 +13,7 @@ import android.widget.TextView;
 
 import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.larmlarms.BuildConfig;
+import com.larmlarms.Constants;
 import com.larmlarms.R;
 import com.larmlarms.data.Alarm;
 import com.larmlarms.data.AlarmGroup;
@@ -130,11 +131,11 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.Recyc
 			return;
 		}
 
-		intent.putExtra(EditorActivity.EXTRA_ITEM_INFO, item.getInfo());
+		intent.putExtra(Constants.EXTRA_ITEM_INFO, item.getInfo());
 
 		String action;
-		if (item instanceof Alarm) { action = EditorActivity.ACTION_EDIT_ALARM; }
-		else { action = EditorActivity.ACTION_EDIT_FOLDER; }
+		if (item instanceof Alarm) { action = Constants.ACTION_EDIT_ALARM; }
+		else { action = Constants.ACTION_EDIT_FOLDER; }
 
 		intent.setAction(action);
 

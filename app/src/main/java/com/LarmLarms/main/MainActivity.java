@@ -7,9 +7,9 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.larmlarms.Constants;
 import com.larmlarms.R;
 import com.larmlarms.data.Alarm;
-import com.larmlarms.data.AlarmDataService;
 import com.larmlarms.editor.EditorActivity;
 
 import org.jetbrains.annotations.NotNull;
@@ -112,7 +112,7 @@ public class MainActivity extends AppCompatActivity implements View.OnLongClickL
 	public void addNewAlarm(@NotNull View view) {
 		// start editor
 		Intent intent = new Intent(this, EditorActivity.class);
-		intent.setAction(EditorActivity.ACTION_CREATE_ALARM);
+		intent.setAction(Constants.ACTION_CREATE_ALARM);
 
 		startActivity(intent);
 	}
@@ -124,7 +124,7 @@ public class MainActivity extends AppCompatActivity implements View.OnLongClickL
 	public void addNewFolder(@NotNull View view) {
 		// start editor
 		Intent intent = new Intent(this, EditorActivity.class);
-		intent.setAction(EditorActivity.ACTION_CREATE_FOLDER);
+		intent.setAction(Constants.ACTION_CREATE_FOLDER);
 
 		startActivity(intent);
 	}

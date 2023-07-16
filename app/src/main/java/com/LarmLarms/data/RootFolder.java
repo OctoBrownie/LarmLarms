@@ -1,7 +1,5 @@
 package com.larmlarms.data;
 
-import static com.larmlarms.editor.EditorActivity.EXTRA_ITEM_INFO;
-
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -9,6 +7,7 @@ import android.content.Intent;
 import android.util.Log;
 
 import com.larmlarms.BuildConfig;
+import com.larmlarms.Constants;
 import com.larmlarms.ringing.RingingService;
 
 import org.jetbrains.annotations.Contract;
@@ -62,13 +61,16 @@ public class RootFolder extends AlarmGroup {
 
     /**
      * Initializes a new root folder with a name and contents.
+     *
      * @param name the new name of the folder
-     * @param children the new items within the folder
      */
-    public RootFolder(@Nullable String name, @NotNull List<Item> children, @NotNull Context c) {
-        super(name, children);
+    public RootFolder(@Nullable String name, @NotNull Context c) {
+        super(name, RootFolder.getAlarmsFromDisk(c));
         execService = Executors.newSingleThreadExecutor();
         context = c;
+
+        ItemInfo info = findNextRingingAlarm();
+        currNextAlarm = registerAlarm(context, info);
     }
 
     // shouldn't need a copy constructor...
@@ -124,7 +126,7 @@ public class RootFolder extends AlarmGroup {
      */
     private synchronized static Alarm registerAlarm(@NotNull Context context, @NotNull ItemInfo alarmInfo) {
         Intent intent = new Intent(context, RingingService.class);
-        if (alarmInfo.item != null) intent.putExtra(EXTRA_ITEM_INFO, alarmInfo);
+        if (alarmInfo.item != null) intent.putExtra(Constants.EXTRA_ITEM_INFO, alarmInfo);
 
         AlarmManager manager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         PendingIntent pendingIntent;

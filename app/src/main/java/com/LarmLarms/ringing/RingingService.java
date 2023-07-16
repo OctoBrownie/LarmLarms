@@ -1,7 +1,5 @@
 package com.larmlarms.ringing;
 
-import static com.larmlarms.editor.EditorActivity.EXTRA_ITEM_INFO;
-
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -25,6 +23,7 @@ import android.util.Log;
 import android.widget.RemoteViews;
 
 import com.larmlarms.BuildConfig;
+import com.larmlarms.Constants;
 import com.larmlarms.R;
 import com.larmlarms.data.Alarm;
 import com.larmlarms.data.ItemInfo;
@@ -52,12 +51,12 @@ public class RingingService extends Service implements MediaPlayer.OnPreparedLis
 	/**
 	 * String ID for the notification channel the foreground notifications are posted in.
 	 */
-	public static final String NOTIFICATION_CHANNEL_ID = "RingingAlarms";
+	private static final String NOTIFICATION_CHANNEL_ID = "RingingAlarms";
 	/**
 	 * The int ID for the foreground notification itself. There should only be one at any given time,
 	 * so using the same ID should be fine.
 	 */
-	public static final int NOTIFICATION_ID = 42;
+	private static final int NOTIFICATION_ID = 42;
 
 	/* ***********************************  Non-static fields ********************************* */
 
@@ -120,7 +119,7 @@ public class RingingService extends Service implements MediaPlayer.OnPreparedLis
 	public int onStartCommand(@NotNull Intent inIntent, int flags, int startId) {
 		createNotificationChannel(this);
 
-		alarmInfo = inIntent.getParcelableExtra(EXTRA_ITEM_INFO);
+		alarmInfo = inIntent.getParcelableExtra(Constants.EXTRA_ITEM_INFO);
 		if (alarmInfo == null || alarmInfo.item == null) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "Alarm was invalid.");
 			stopSelf();
@@ -134,17 +133,17 @@ public class RingingService extends Service implements MediaPlayer.OnPreparedLis
 
 		// setting up custom foreground notification
 		Intent fullScreenIntent = new Intent(this, RingingActivity.class);
-		fullScreenIntent.putExtra(EXTRA_ITEM_INFO, alarmInfo);
+		fullScreenIntent.putExtra(Constants.EXTRA_ITEM_INFO, alarmInfo);
 		fullScreenIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
 		PendingIntent fullscreenPI = PendingIntent.getActivity(this, 0, fullScreenIntent, PIFlags);
 
 		Intent dismissIntent = new Intent(this, AfterRingingService.class);
-		dismissIntent.putExtra(EXTRA_ITEM_INFO, alarmInfo);
-		dismissIntent.setAction(AfterRingingService.ACTION_DISMISS);
+		dismissIntent.putExtra(Constants.EXTRA_ITEM_INFO, alarmInfo);
+		dismissIntent.setAction(Constants.ACTION_DISMISS);
 		PendingIntent dismissPI = PendingIntent.getService(this, 0, dismissIntent, PIFlags);
 
 		Intent snoozeIntent = new Intent(dismissIntent);
-		snoozeIntent.setAction(AfterRingingService.ACTION_SNOOZE);
+		snoozeIntent.setAction(Constants.ACTION_SNOOZE);
 		PendingIntent snoozePI = PendingIntent.getService(this, 0, snoozeIntent, PIFlags);
 
 		// this is so stupid but we can't change styles/themes of a remote view

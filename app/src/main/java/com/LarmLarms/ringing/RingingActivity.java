@@ -1,7 +1,5 @@
 package com.larmlarms.ringing;
 
-import static com.larmlarms.editor.EditorActivity.EXTRA_ITEM_INFO;
-
 import android.app.KeyguardManager;
 import android.content.Context;
 import android.content.Intent;
@@ -13,6 +11,7 @@ import android.view.WindowManager;
 import android.widget.TextView;
 
 import com.larmlarms.BuildConfig;
+import com.larmlarms.Constants;
 import com.larmlarms.R;
 import com.larmlarms.data.ItemInfo;
 import com.larmlarms.main.PrefsActivity;
@@ -50,7 +49,7 @@ public class RingingActivity extends AppCompatActivity {
 		PrefsActivity.applyPrefsUI(this);
 
 		// setting fields
-		currAlarmInfo = getIntent().getParcelableExtra(EXTRA_ITEM_INFO);
+		currAlarmInfo = getIntent().getParcelableExtra(Constants.EXTRA_ITEM_INFO);
 		if (currAlarmInfo == null || currAlarmInfo.item == null) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "The alarm given was invalid.");
 			finish();
@@ -98,8 +97,8 @@ public class RingingActivity extends AppCompatActivity {
 	 */
 	public void snooze(@NotNull View v) {
 		startService(new Intent(this, AfterRingingService.class)
-				.putExtra(EXTRA_ITEM_INFO, currAlarmInfo)
-				.setAction(AfterRingingService.ACTION_SNOOZE));
+				.putExtra(Constants.EXTRA_ITEM_INFO, currAlarmInfo)
+				.setAction(Constants.ACTION_SNOOZE));
 		finish();
 	}
 
@@ -110,8 +109,8 @@ public class RingingActivity extends AppCompatActivity {
 	 */
 	public void dismiss(@NotNull View v) {
 		startService(new Intent(this, AfterRingingService.class)
-				.putExtra(EXTRA_ITEM_INFO, currAlarmInfo)
-				.setAction(AfterRingingService.ACTION_DISMISS));
+				.putExtra(Constants.EXTRA_ITEM_INFO, currAlarmInfo)
+				.setAction(Constants.ACTION_DISMISS));
 		finish();
 	}
 }
