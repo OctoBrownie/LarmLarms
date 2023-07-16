@@ -1,16 +1,9 @@
 package com.larmlarms.main;
 
-import android.annotation.SuppressLint;
+import android.app.Application;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.drawable.Animatable;
-import android.graphics.drawable.Drawable;
-import android.os.Handler;
-import android.os.Looper;
-import android.os.Message;
-import android.os.Messenger;
-import android.os.RemoteException;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -22,19 +15,13 @@ import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.larmlarms.BuildConfig;
 import com.larmlarms.R;
 import com.larmlarms.data.Alarm;
-import com.larmlarms.data.AlarmDataService;
 import com.larmlarms.data.AlarmGroup;
 import com.larmlarms.data.Item;
-import com.larmlarms.data.ListableInfo;
 import com.larmlarms.editor.ListableEditorActivity;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.LinkedList;
-import java.util.Queue;
-
-import androidx.core.content.res.ResourcesCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 /**
@@ -52,7 +39,7 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.Recyc
 	private static final String DIALOG_FRAG_TAG = "RecyclerView dialog";
 
 	/**
-	 * Stores all the Listables (Alarms and AlarmGroups) present, using only absolute indices.
+	 * Handle to the current folder.
 	 */
 	@NotNull
 	private final AlarmGroup data;
@@ -62,35 +49,15 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.Recyc
 	 */
 	@NotNull
 	private final Context context;
-	/**
-	 * Messenger to send data requests to. Should connect to the AlarmDataService. Can be null, if
-	 * the service isn't connected.
-	 */
-	@Nullable
-	private Messenger dataService;
-	/**
-	 * Messenger sent to the data service, registered for data changed events.
-	 */
-	@NotNull
-	private final Messenger dataChangedMessenger;
-	/**
-	 * Any messages that failed to send but need to be sent. Read in the order they were added.
-	 */
-	@NotNull
-	private final Queue<Message> unsentMessages;
 
 	/**
 	 * Creates a new RecyclerViewAdapter with a specific context. Data starts out empty.
-	 * @param currContext the current context, cannot be null
+	 * @param app handle to the application, cannot be null
 	 */
-	RecyclerViewAdapter (@NotNull Context currContext) {
-		context = currContext;
+	RecyclerViewAdapter (@NotNull Application app, @Nullable AlarmGroup folder) {
+		context = app;
 
-		data = new AlarmGroup(context.getResources().getString(R.string.root_folder));
-
-		dataService = null;
-		dataChangedMessenger = new Messenger(new MsgHandler(this));
-		unsentMessages = new LinkedList<>();
+		data = folder != null ? folder : ((MainApplication) app).rootFolder;
 
 		setHasStableIds(true);
 	}
@@ -117,13 +84,13 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.Recyc
 	 */
 	@Override
 	public void onBindViewHolder (@NotNull RecyclerViewHolder holder, final int position) {
-		ListableInfo i = data.getListableInfo(position, true);
-		if (i == null || i.item == null) {
+		Item item = data.getItem(position);
+		if (item == null) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "The listable to display doesn't exist as far as the adapter knows.");
 			return;
 		}
 
-		holder.changeListable(i.item);
+		holder.changeItem(item);
 	}
 
 	/**
@@ -139,62 +106,10 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.Recyc
 	 */
 	@Override
 	public long getItemId(int position) {
-		Item l = data.getListable(position);
+		Item l = data.getItem(position);
 
 		if (l == null) return -1;
 		return l.getId();
-	}
-
-	/* ******************************  Getter and Setter Methods  ***************************** */
-
-	/**
-	 * Sets the data service messenger to the one passed in and registers dataChangedMessenger as a
-	 * data changed listener. If there are any issues with the new messenger (can't send the
-	 * MSG_DATA_CHANGED message), dataService will be set to null.
-	 * @param messenger the new messenger to set dataService to
-	 */
-	void setDataService(@Nullable Messenger messenger) {
-		Message outMsg;
-		if (dataService != null) {
-			// unregister data changed listener
-			outMsg = Message.obtain(null, AlarmDataService.MSG_DATA_CHANGED);
-			outMsg.replyTo = dataChangedMessenger;
-			try {
-				dataService.send(outMsg);
-			}
-			catch (RemoteException e) {
-				e.printStackTrace();
-				dataService = null;
-			}
-		}
-		if (messenger != null) {
-			// register data changed listener
-			outMsg = Message.obtain(null, AlarmDataService.MSG_DATA_CHANGED);
-			outMsg.replyTo = dataChangedMessenger;
-			try {
-				messenger.send(outMsg);
-			}
-			catch (RemoteException e) {
-				e.printStackTrace();
-				dataService = null;
-				return;
-			}
-
-			// send all unsent messages in the order put there (they are lost if they don't get sent)
-			while (!unsentMessages.isEmpty()) {
-				try {
-					messenger.send(unsentMessages.remove());
-				}
-				catch (RemoteException e) {
-					if (BuildConfig.DEBUG) Log.e(TAG, "The new messenger no longer exists.");
-					e.printStackTrace();
-					dataService = null;
-					return;
-				}
-			}
-		}
-
-		dataService = messenger;
 	}
 
 	/* **********************************  Other Methods  ********************************* */
@@ -209,41 +124,21 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.Recyc
 	void editExistingListable(final int index) {
 		// start ListableEditor
 		Intent intent = new Intent(context, ListableEditorActivity.class);
-		ListableInfo info = data.getListableInfo(index, true);
-		if (info == null || info.item == null) {
+		Item item = data.getItem(index);
+		if (item == null) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "The listable is null so it cannot be edited.");
 			return;
 		}
 
-		intent.putExtra(ListableEditorActivity.EXTRA_LISTABLE_INFO, info);
+		intent.putExtra(ListableEditorActivity.EXTRA_LISTABLE_INFO, item.getInfo());
 
 		String action;
-		if (info.item instanceof Alarm) { action = ListableEditorActivity.ACTION_EDIT_ALARM; }
+		if (item instanceof Alarm) { action = ListableEditorActivity.ACTION_EDIT_ALARM; }
 		else { action = ListableEditorActivity.ACTION_EDIT_FOLDER; }
 
 		intent.setAction(action);
 
 		context.startActivity(intent);
-	}
-
-	/**
-	 * Sends a message to the data service using the adapter's messenger.
-	 * @param msg the message to send
-	 */
-	private void sendMessage(@Nullable Message msg) {
-		if (dataService == null) {
-			if (BuildConfig.DEBUG) Log.e(TAG, "Data service is unavailable. Caching the message.");
-			unsentMessages.add(msg);
-			return;
-		}
-
-		try {
-			dataService.send(msg);
-		}
-		catch (RemoteException e) {
-			if (BuildConfig.DEBUG) Log.e(TAG, "Data service is unavailable. Caching the message.");
-			unsentMessages.add(msg);
-		}
 	}
 
 	/* ***********************************  Inner Classes  ************************************* */
@@ -260,8 +155,7 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.Recyc
 		private final static String TAG = "RecyclerViewHolder";
 
 		/**
-		 * Is the listable it currently represents. Don't modify it, since it's actually a pointer
-		 * to the listable in the adapter too.
+		 * The item the holder currently represents.
 		 */
 		@Nullable
 		private Item item;
@@ -276,20 +170,7 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.Recyc
 		@NotNull
 		private final RecyclerViewAdapter adapter;
 
-		/**
-		 * Vector drawable for the open folder animation. Ends in the open state.
-		 */
-		private final Drawable openAnim;
-		/**
-		 * Vector drawable for the close folder animation. Ends in the closed state.
-		 */
-		private final Drawable closeAnim;
-
 		// handles to views
-		/**
-		 * Main CardView view.
-		 */
-		private final View view;
 		/**
 		 * The title view. Shows the name of the listable.
 		 */
@@ -327,32 +208,19 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.Recyc
 			context = currContext;
 
 			// caching views
-			view = cardView;
 			titleView = cardView.findViewById(R.id.title_text);
 			repeatView = cardView.findViewById(R.id.repeat_text);
 			timeView = cardView.findViewById(R.id.time_text);
 			switchView = cardView.findViewById(R.id.on_switch);
 			imageView = cardView.findViewById(R.id.folder_icon);
 
-			// cache vector drawables
-			openAnim = ResourcesCompat.getDrawable(
-					context.getResources(), R.drawable.folder_open_animation, context.getTheme());
-			closeAnim = ResourcesCompat.getDrawable(
-					context.getResources(), R.drawable.folder_close_animation, context.getTheme());
-
 			// create onclick callbacks
-			view.setOnClickListener(this);
-			view.setOnLongClickListener(this);
+			cardView.setOnClickListener(this);
+			cardView.setOnLongClickListener(this);
 			switchView.setOnClickListener(this);
-			imageView.setOnClickListener(this);
 		}
 
 		/* **************************  Getter and Setter Methods  ***************************** */
-
-		/**
-		 * Gets the main card view of the holder.
-		 */
-		View getCardView() { return view; }
 
 		/**
 		 * Gets the title text view of the holder.
@@ -385,20 +253,12 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.Recyc
 		 */
 		@Override
 		public void onClick(@NotNull View v) {
-			Message msg;
 			int id = v.getId();
 			if (id == R.id.card_view) {
 				adapter.editExistingListable(getLayoutPosition());
 			}
 			else if (id == R.id.on_switch) {
-				msg = Message.obtain(null, AlarmDataService.MSG_TOGGLE_ACTIVE,
-						getLayoutPosition(), 0);
-				adapter.sendMessage(msg);
-			}
-			else if (id == R.id.folder_icon) {
-				msg = Message.obtain(null, AlarmDataService.MSG_TOGGLE_OPEN_FOLDER,
-						getLayoutPosition(), 0);
-				adapter.sendMessage(msg);
+				if (item != null) item.toggleActive();
 			}
 			else {
 				if (BuildConfig.DEBUG)
@@ -415,9 +275,7 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.Recyc
 		public void onClick(@NotNull DialogInterface dialog, int which) {
 			if (which == 0) {
 				// delete the current listable
-				Message msg = Message.obtain(null, AlarmDataService.MSG_DELETE_LISTABLE);
-				msg.arg1 = getLayoutPosition();
-				adapter.sendMessage(msg);
+				adapter.data.deleteListable(getLayoutPosition());
 			}
 			else {
 				if (BuildConfig.DEBUG)
@@ -451,12 +309,12 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.Recyc
 		 * change anything.
 		 * @param l the new Listable to bind, can be null
 		 */
-		private void changeListable(@Nullable Item l) {
+		private void changeItem(@Nullable Item l) {
 			if (l == null) {
 				if (BuildConfig.DEBUG) Log.e(TAG, "The new listable to swap into the view holder was null.");
 				return;
 			}
-			getTitleText().setText(l.getListableName());
+			getTitleText().setText(l.getName());
 			getRepeatText().setText(l.getRepeatString());
 			getTimeText().setText(l.getNextRingTime());
 			getOnSwitch().setChecked(l.isActive());
@@ -470,215 +328,6 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.Recyc
 				// is an AlarmGroup
 				getImageView().setVisibility(View.VISIBLE);
 				getTimeText().setVisibility(View.GONE);
-
-				if (((AlarmGroup) item).getIsOpen()) {
-					// open it
-					imageView.setImageDrawable(openAnim);
-				}
-				else {
-					// close it
-					imageView.setImageDrawable(closeAnim);
-				}
-				((Animatable) imageView.getDrawable()).start();
-			}
-		}
-	}
-
-	/**
-	 * A handler passed to messages sent to the data service. Used for handling MSG_DATA_CHANGED and
-	 * MSG_GET_LISTABLE messages.
-	 */
-	private static class MsgHandler extends Handler {
-		/**
-		 * The adapter that owns this handler.
-		 */
-		@NotNull
-		private final RecyclerViewAdapter adapter;
-
-		/**
-		 * Creates a new handler in the main Looper.
-		 * @param a the adapter to modify
-		 */
-		private MsgHandler(@NotNull RecyclerViewAdapter a) {
-			super(Looper.getMainLooper());
-			adapter = a;
-		}
-
-		/**
-		 * Handles message from the data service. Handles almost all of the types of messages from
-		 * the data service, except empty listener and folder structure messages.
-		 * @param msg the inbound message
-		 */
-		@SuppressLint("NotifyDataSetChanged")
-		@Override
-		public void handleMessage(@Nullable Message msg) {
-			if (msg == null) {
-				if (BuildConfig.DEBUG) Log.e(TAG, "Message sent to the recycler view adapter is null. Ignoring...");
-				return;
-			}
-
-			ListableInfo info;
-			Item l;
-			int index;
-			switch (msg.what) {
-				case AlarmDataService.MSG_SET_LISTABLE:
-					// assumes new listable has nothing in it if it's an AlarmGroup
-					info = msg.getData().getParcelable(AlarmDataService.BUNDLE_INFO_KEY);
-					if (info == null || info.item == null) {
-						if (BuildConfig.DEBUG) Log.e(TAG, "Info sent back from the data service was null.");
-						return;
-					}
-					l = adapter.data.getListableAbs(info.absIndex, true);	// old listable
-					adapter.data.setListableAbs(info.absIndex, info.item);
-					if (l != null && l.visibleSize() != 1) adapter.notifyItemRangeRemoved(info.absIndex + 1, l.visibleSize() - 1);
-					adapter.notifyItemChanged(info.absIndex);
-					break;
-				case AlarmDataService.MSG_ADD_LISTABLE:
-					info = msg.getData().getParcelable(AlarmDataService.BUNDLE_INFO_KEY);
-					if (info == null || info.item == null) {
-						if (BuildConfig.DEBUG)
-							Log.e(TAG, "Info sent back from the data service was null.");
-						return;
-					}
-					index = adapter.data.addListableAbs(info.item, info.path);
-					if (index == -2) {
-						if (BuildConfig.DEBUG) Log.e(TAG, "Listable couldn't be found.");
-						return;
-					}
-					else if (index == -1) {
-						if (BuildConfig.DEBUG) Log.i(TAG, "Listable isn't visible.");
-						break;
-					}
-					adapter.notifyItemInserted(index);
-					break;
-				case AlarmDataService.MSG_MOVE_LISTABLE:
-					info = msg.getData().getParcelable(AlarmDataService.BUNDLE_INFO_KEY);
-					if (info == null) {
-						if (BuildConfig.DEBUG)
-							Log.e(TAG, "Info sent back from the data service was null.");
-						return;
-					}
-
-					l = adapter.data.getListableAbs(msg.arg1, true);    // old listable
-					if (l == null) {
-						if (BuildConfig.DEBUG) Log.e(TAG, "Listable in the list was null.");
-						return;
-					}
-
-					// move stuff
-					index = adapter.data.moveListableAbs(info.item, info.path, msg.arg1);
-					if (index == -1) {
-						if (BuildConfig.DEBUG) Log.e(TAG, "Listable couldn't be found.");
-						return;
-					}
-					if (info.item == null) info.item = l;
-
-					// notify adapter that things have moved
-					if (l.visibleSize() == 1) adapter.notifyItemRemoved(msg.arg1);
-					else adapter.notifyItemRangeRemoved(msg.arg1, l.visibleSize());
-
-					if (info.item.visibleSize() == 1) adapter.notifyItemInserted(index);
-					else adapter.notifyItemRangeInserted(index, info.item.visibleSize());
-					break;
-				case AlarmDataService.MSG_DELETE_LISTABLE:
-					l = adapter.data.deleteListableAbs(msg.arg1);
-					if (l == null) {
-						if (BuildConfig.DEBUG) Log.e(TAG, "Listable in the list was null.");
-						return;
-					}
-					if (l instanceof Alarm) adapter.notifyItemRemoved(msg.arg1);
-					else adapter.notifyItemRangeRemoved(msg.arg1, l.visibleSize());
-					break;
-				case AlarmDataService.MSG_TOGGLE_ACTIVE:
-					l = adapter.data.getListableAbs(msg.arg1, true);
-					if (l == null) {
-						if (BuildConfig.DEBUG) Log.e(TAG, "Listable in the list was null.");
-						return;
-					}
-					l.toggleActive();
-					if (l instanceof Alarm) {
-						((Alarm) l).updateRingTime();
-						adapter.notifyItemChanged(msg.arg1);
-					}
-					else {
-						// update all alarms inside
-						Item a;
-						for (int i = 0; i < l.size() - 1; i++) {
-							a = ((AlarmGroup) l).getListableAbs(i, false);
-							if (a instanceof Alarm) ((Alarm) a).updateRingTime();
-						}
-
-						// notify possible item changes
-						if (((AlarmGroup) l).getIsOpen())
-							adapter.notifyItemRangeChanged(msg.arg1, l.size());
-						else
-							adapter.notifyItemChanged(msg.arg1);
-					}
-					break;
-				case AlarmDataService.MSG_SNOOZE_ALARM:
-					l = adapter.data.getListableAbs(msg.arg1, false);
-					if (!(l instanceof Alarm)) {
-						if (BuildConfig.DEBUG) Log.e(TAG, "Listable in the list was invalid.");
-						return;
-					}
-					((Alarm) l).snooze();
-					index = adapter.data.realToVisibleIndex(msg.arg1);
-					adapter.notifyItemChanged(index);
-					break;
-				case AlarmDataService.MSG_UNSNOOZE_ALARM:
-					l = adapter.data.getListableAbs(msg.arg1, false);
-					if (!(l instanceof Alarm)) {
-						if (BuildConfig.DEBUG) Log.e(TAG, "Listable in the list was invalid.");
-						return;
-					}
-					((Alarm) l).unsnooze();
-					index = adapter.data.realToVisibleIndex(msg.arg1);
-					adapter.notifyItemChanged(index);
-					break;
-				case AlarmDataService.MSG_DISMISS_ALARM:
-					l = adapter.data.getListableAbs(msg.arg1, false);
-					if (!(l instanceof Alarm)) {
-						if (BuildConfig.DEBUG) Log.e(TAG, "Listable in the list was invalid.");
-						return;
-					}
-					((Alarm) l).dismiss();
-					index = adapter.data.realToVisibleIndex(msg.arg1);
-					adapter.notifyItemChanged(index);
-					break;
-				case AlarmDataService.MSG_TOGGLE_OPEN_FOLDER: {
-					// gotta insert/delete new listables
-					l = adapter.data.getListableAbs(msg.arg1, true);
-					if (!(l instanceof AlarmGroup)) {
-						if (BuildConfig.DEBUG) Log.e(TAG, "Listable in the list was invalid.");
-						return;
-					}
-
-					int n = l.visibleSize() - 1;
-
-					((AlarmGroup) l).toggleOpen();
-					adapter.data.refreshLookups();
-
-					adapter.notifyItemChanged(msg.arg1);
-					if (n == 0) break;
-					if (((AlarmGroup) l).getIsOpen()) {
-						// was closed before, add new ones
-						if (n == 1) adapter.notifyItemInserted(msg.arg1 + 1);
-						else adapter.notifyItemRangeInserted(msg.arg1 + 1, n);
-					} else {
-						// was open before, delete old ones
-						if (n == 1) adapter.notifyItemRemoved(msg.arg1 + 1);
-						else adapter.notifyItemRangeRemoved(msg.arg1 + 1, n);
-					}
-					break;
-				}
-				case AlarmDataService.MSG_DATA_CHANGED:
-					adapter.data.setListables(AlarmDataService.getAlarmsFromDisk(adapter.context));
-					adapter.notifyDataSetChanged();
-					break;
-				default:
-					if (BuildConfig.DEBUG) Log.e(TAG, "Delivered message was of an unrecognized type. Sending to Handler.");
-					super.handleMessage(msg);
-					break;
 			}
 		}
 	}

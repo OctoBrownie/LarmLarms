@@ -1,16 +1,10 @@
 package com.larmlarms.data;
 
 import android.app.AlarmManager;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
-import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
-import android.media.AudioAttributes;
-import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -445,7 +439,7 @@ public class AlarmDataService extends Service {
 	private void handleSetListable(@NotNull Message inMsg) {
 		if (inMsg.getData() == null) return;
 
-		ListableInfo info = inMsg.getData().getParcelable(BUNDLE_INFO_KEY);
+		ItemInfo info = inMsg.getData().getParcelable(BUNDLE_INFO_KEY);
 		if (info == null) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "MSG_SET_LISTABLE: ListableInfo was null.");
 			return;
@@ -483,7 +477,7 @@ public class AlarmDataService extends Service {
 	 * @param inMsg the inbound MSG_ADD_LISTABLE message
 	 */
 	private void handleAddListable(@NotNull Message inMsg) {
-		ListableInfo info = inMsg.getData().getParcelable(BUNDLE_INFO_KEY);
+		ItemInfo info = inMsg.getData().getParcelable(BUNDLE_INFO_KEY);
 		if (info == null) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "MSG_ADD_LISTABLE: ListableInfo was null.");
 			return;
@@ -497,7 +491,7 @@ public class AlarmDataService extends Service {
 			return;
 		}
 
-		rootFolder.addListableAbs(info.item, info.path);
+		rootFolder.addItem(info.item, info.path);
 		save();
 
 		Message outMsg = Message.obtain(null, MSG_ADD_LISTABLE);
@@ -519,7 +513,7 @@ public class AlarmDataService extends Service {
 	 * @see #MSG_MOVE_LISTABLE
 	 */
 	private void handleMoveListable(@NotNull Message inMsg) {
-		ListableInfo info = inMsg.getData().getParcelable(BUNDLE_INFO_KEY);
+		ItemInfo info = inMsg.getData().getParcelable(BUNDLE_INFO_KEY);
 		if (info == null) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "MSG_MOVE_LISTABLE: Listable was null.");
 			return;
@@ -530,7 +524,7 @@ public class AlarmDataService extends Service {
 			return;
 		}
 
-		rootFolder.moveListableAbs(info.item, info.path, inMsg.arg1);
+		// rootFolder.moveListableAbs(info.item, info.path, inMsg.arg1);
 		save();
 		
 		Bundle b = new Bundle();
@@ -794,7 +788,7 @@ public class AlarmDataService extends Service {
 		if (nextAlarm != null) {
 			b = new Bundle();
 			b.putLong(BUNDLE_TIME_KEY, nextAlarm.getAlarmTimeMillis());
-			b.putString(BUNDLE_NAME_KEY, nextAlarm.getListableName());
+			b.putString(BUNDLE_NAME_KEY, nextAlarm.getName());
 		}
 		outMsg.setData(b);
 
@@ -814,12 +808,12 @@ public class AlarmDataService extends Service {
 	 * @param rootFolder the folder to look in for the alarms
 	 */
 	static Alarm setNextAlarmToRing(@NotNull Context context, @NotNull AlarmGroup rootFolder) {
-		ListableInfo next = getNextRingingAlarm(rootFolder.getListables());
+		ItemInfo next = getNextRingingAlarm(rootFolder.getListables());
 
 		Intent intent = new Intent(context, RingingService.class);
 		if (next.item != null) {
-			intent.putExtra(RingingService.EXTRA_LISTABLE, next.item.toEditString());
-			intent.putExtra(RingingService.EXTRA_LISTABLE_INDEX, next.absIndex);
+			intent.putExtra(RingingService.EXTRA_ITEM, next.item.toEditString());
+			intent.putExtra(RingingService.EXTRA_ITEM_PATH, next.absIndex);
 		}
 
 		AlarmManager manager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
@@ -883,8 +877,8 @@ public class AlarmDataService extends Service {
 	 * be null if there is no active alarm within the data given
 	 */
 	@NotNull
-	private static ListableInfo getNextRingingAlarm(@NotNull ArrayList<Item> data) {
-		ListableInfo nextAlarm = new ListableInfo();
+	private static ItemInfo getNextRingingAlarm(@NotNull ArrayList<Item> data) {
+		ItemInfo nextAlarm = new ItemInfo();
 		Item l;				// represents the current listable being searched
 		int absIndex = 0;		// represents the absolute index currently being searched (real index)
 
@@ -908,7 +902,7 @@ public class AlarmDataService extends Service {
 				absIndex++;
 			}
 			else {
-				ListableInfo possible = getNextRingingAlarm(((AlarmGroup) l).getListables());
+				ItemInfo possible = getNextRingingAlarm(((AlarmGroup) l).getListables());
 				// there is no candidate in this folder
 				if (possible.item == null) {
 					absIndex += l.size();
@@ -924,38 +918,6 @@ public class AlarmDataService extends Service {
 			}
 		}
 		return nextAlarm;
-	}
-
-	/**
-	 * Creates a notification channel if the API level requires it. Otherwise, does nothing.
-	 * @param context the current context
-	 */
-	static void createNotificationChannel(@NotNull Context context) {
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-			CharSequence name = context.getString(R.string.notif_channel_name);
-			String description = context.getString(R.string.notif_channel_description);
-			int importance = NotificationManager.IMPORTANCE_HIGH;
-
-			NotificationChannel channel = new NotificationChannel(RingingService.CHANNEL_ID, name, importance);
-			channel.setDescription(description);
-			channel.setShowBadge(false);
-			channel.setBypassDnd(true);
-			channel.enableLights(true);
-
-			AudioAttributes.Builder attrBuilder = new AudioAttributes.Builder();
-			attrBuilder.setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-					.setUsage(AudioAttributes.USAGE_ALARM);
-			channel.setSound(Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE + "://" +
-					context.getPackageName() + "/raw/silence"), attrBuilder.build());
-
-			// Register the channel with the system; can't change the importance or behaviors after this
-			NotificationManager notificationManager = context.getSystemService(NotificationManager.class);
-			if (notificationManager == null) {
-				if (BuildConfig.DEBUG) Log.e(TAG, "System returned a null notification manager.");
-				return;
-			}
-			notificationManager.createNotificationChannel(channel);
-		}
 	}
 
 	/**

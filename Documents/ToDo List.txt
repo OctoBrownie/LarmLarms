@@ -1,7 +1,12 @@
 To do list for new features or bugs to be fixed
 
-CURRENTLY WORKING ON: Japanese translations
+CURRENTLY WORKING ON: Refactoring folders
 
+STUFF TO CHECK UP ON
+The recycler view items still toggle correctly... right?
+
+
+Japanese translations
 Make the UI look prettier
 	Some repeat strings don't really look nice (ex: offset strings are always plural + sound funky,
 	months are shorthand)

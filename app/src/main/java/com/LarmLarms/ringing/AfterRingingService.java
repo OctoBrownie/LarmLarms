@@ -60,7 +60,7 @@ public class AfterRingingService extends Service {
 	public int onStartCommand(@NotNull Intent inIntent, int flags, int startId) {
 		stopService(new Intent(this, RingingService.class));
 
-		alarmAbsIndex = inIntent.getIntExtra(RingingService.EXTRA_LISTABLE_INDEX, -1);
+		alarmAbsIndex = inIntent.getIntExtra(RingingService.EXTRA_ITEM_PATH, -1);
 		if (alarmAbsIndex == -1) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "The absolute index was not specified.");
 			stopSelf();

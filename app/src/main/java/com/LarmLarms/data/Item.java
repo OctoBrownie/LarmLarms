@@ -8,8 +8,6 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Calendar;
-
 /**
  * Class allowing the RecyclerViewAdapter to access specific parts of either Alarms or AlarmGroups.
  * Using isAlarm(), it can also discriminate between Alarms and AlarmGroups. This is meant mostly
@@ -40,6 +38,12 @@ public abstract class Item implements Comparable<Item> {
 	 */
 	protected boolean isActive;
 
+	/**
+	 * The parent of this item.
+	 */
+	@Nullable
+	protected Item parent;
+
 	/* *************************************  Constructors  ************************************* */
 
 	/**
@@ -51,32 +55,33 @@ public abstract class Item implements Comparable<Item> {
 		this.id = id;
 		this.name = "";
 		isActive = true;
+		parent = null;
 
-		setListableName(name);
+		setName(name);
 	}
 
 	/* *************************************  Concrete Methods  ********************************* */
 
 	/**
-	 * Returns the ID of the listable.
+	 * Returns the ID of the item.
 	 */
 	@Contract(pure = true)
-	public int getId() { return id; }
+	public synchronized int getId() { return id; }
 
 	/**
-	 * Gets the name of the listable.
-	 * @return the name of the listable, cannot be null 
+	 * Gets the name of the item.
+	 * @return the name of the item, cannot be null 
 	 */
 	@Contract(pure = true) @NotNull
-	public String getListableName() { return name; }
+	public synchronized String getName() { return name; }
 
 	/**
-	 * Sets the name of the listable. Nonzero return codes mean an error has occurred. If the new
+	 * Sets the name of the item. Nonzero return codes mean an error has occurred. If the new
 	 * name is null or empty, the method returns 1, if it contains a restricted character, returns 2.
 	 * @param newName the new name to set it to, can be null
 	 * @return 0 (no error) or an error code specified above
 	 */
-	public int setListableName(@Nullable String newName) {
+	public synchronized int setName(@Nullable String newName) {
 		if (newName == null) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "New name is null.");
 			return 1;
@@ -92,36 +97,75 @@ public abstract class Item implements Comparable<Item> {
 	}
 
 	/**
-	 * Returns whether the Listable is active or not.
+	 * Returns whether the item is active or not.
 	 */
 	@Contract(pure = true)
-	public boolean isActive() { return isActive; }
+	public synchronized boolean isActive() { return isActive; }
 
 	/**
-	 * Sets the active state of the Listable.
-	 * @param isOn the new active state to set the LIstable to
+	 * Sets the active state of the item.
+	 * @param isOn the new active state to set the item to
 	 */
-	public void setActive(boolean isOn) { isActive = isOn; }
+	public synchronized void setActive(boolean isOn) { isActive = isOn; }
 
 	/**
-	 * Turns the Listable on.
+	 * Turns the item on.
 	 */
-	public void turnOn() { isActive = true; }
+	public synchronized void turnOn() { isActive = true; }
 
 	/**
-	 * Turns the Listable off.
+	 * Turns the item off.
 	 */
-	public void turnOff() { isActive = false; }
+	public synchronized void turnOff() { isActive = false; }
 
 	/**
-	 * Toggles the active state of the Listable (if it was on, turn it off; if it was off, turn it on).
+	 * Toggles the active state of the item (if it was on, turn it off; if it was off, turn it on).
 	 */
-	public void toggleActive() { isActive = !isActive; }
+	public synchronized void toggleActive() { isActive = !isActive; }
+
+	/**
+	 * Get the parent of the current item.
+	 */
+	@Nullable
+	public synchronized Item getParent() { return parent; }
+
+	/**
+	 * Sets the parent of the item.
+	 * @param parent the new parent
+	 */
+	public synchronized void setParent(@Nullable Item parent) { this.parent = parent; }
+
+	/**
+	 * Gets the path of the current item.
+	 * @return a path string, where each folder is separated by slashes (with a trailing slash)
+	 */
+	public synchronized String getPath() {
+		StringBuilder s = new StringBuilder();
+
+		Item i = parent;
+		while (i != null) {
+			s.insert(0, i.getName() + "/");
+			i = i.parent;
+		}
+
+		return s.toString();
+	}
+
+	/**
+	 * Gets info about the current item. Fills all fields of ItemInfo.
+	 * @return a fully filled ItemInfo object
+	 */
+	public synchronized ItemInfo getInfo() {
+		ItemInfo i = new ItemInfo();
+		i.item = this;
+		i.path = getPath();
+		return i;
+	}
 
 	/* *************************************  Abstract Methods  ********************************* */
 
 	/**
-	 * Returns a string that shows how the Listable (Alarm) repeats (or blank).
+	 * Returns a string that shows how the item (Alarm) repeats (or blank).
 	 * @return returns a repeat string, cannot be null 
 	 */
 	@NotNull @Contract(pure = true)
@@ -135,7 +179,7 @@ public abstract class Item implements Comparable<Item> {
 	public abstract String getNextRingTime();
 
 	/**
-	 * Returns the number of items within the Listable, including the Listable itself.
+	 * Returns the number of things within the current object, including itself.
 	 */
 	@Contract(pure = true)
 	public abstract int size();

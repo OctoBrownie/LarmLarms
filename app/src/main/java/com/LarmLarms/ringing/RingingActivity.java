@@ -49,14 +49,14 @@ public class RingingActivity extends AppCompatActivity {
 
 		// setting fields
 		Alarm currAlarm = Alarm.fromEditString(this,
-				getIntent().getStringExtra(RingingService.EXTRA_LISTABLE));
+				getIntent().getStringExtra(RingingService.EXTRA_ITEM));
 		if (currAlarm == null) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "The alarm given was invalid.");
 			finish();
 			return;
 		}
 		
-		alarmAbsIndex = getIntent().getIntExtra(RingingService.EXTRA_LISTABLE_INDEX, -1);
+		alarmAbsIndex = getIntent().getIntExtra(RingingService.EXTRA_ITEM_PATH, -1);
 		if (alarmAbsIndex == -1) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "The alarm's index was invalid.");
 			finish();
@@ -92,7 +92,7 @@ public class RingingActivity extends AppCompatActivity {
 
 		// setting UI things
 		TextView name = findViewById(R.id.alarmName);
-		name.setText(currAlarm.getListableName());
+		name.setText(currAlarm.getName());
 	}
 
 	/* **************************************  Callbacks  ************************************** */
@@ -104,7 +104,7 @@ public class RingingActivity extends AppCompatActivity {
 	 */
 	public void snooze(@NotNull View v) {
 		startService(new Intent(this, AfterRingingService.class)
-				.putExtra(RingingService.EXTRA_LISTABLE_INDEX, alarmAbsIndex)
+				.putExtra(RingingService.EXTRA_ITEM_PATH, alarmAbsIndex)
 				.setAction(AfterRingingService.ACTION_SNOOZE));
 		finish();
 	}
@@ -116,7 +116,7 @@ public class RingingActivity extends AppCompatActivity {
 	 */
 	public void dismiss(@NotNull View v) {
 		startService(new Intent(this, AfterRingingService.class)
-				.putExtra(RingingService.EXTRA_LISTABLE_INDEX, alarmAbsIndex)
+				.putExtra(RingingService.EXTRA_ITEM_PATH, alarmAbsIndex)
 				.setAction(AfterRingingService.ACTION_DISMISS));
 		finish();
 	}

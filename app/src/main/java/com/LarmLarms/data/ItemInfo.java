@@ -10,27 +10,7 @@ import org.jetbrains.annotations.Nullable;
 /**
  * A struct containing information about a listable within a nested list of Listables
  */
-public class ListableInfo implements Parcelable {
-	/**
-	 * The absolute index of a Listable.
-	 */
-	public int absIndex;
-
-	/**
-	 * The relative index of a Listable.
-	 */
-	int relIndex;
-
-	/**
-	 * The number of indents for a Listable.
-	 */
-	public int numIndents;
-
-	/**
-	 * The absolute index of a Listable's parent. Should be -1 if there is no parent.
-	 */
-	int absParentIndex;
-
+public class ItemInfo implements Parcelable {
 	/**
 	 * Represents a Listable, and implies the other fields are describing this listable. Not
 	 * guaranteed to be a handle to the original Listable (if, for example, it was recreated from a
@@ -38,13 +18,6 @@ public class ListableInfo implements Parcelable {
 	 */
 	@Nullable
 	public Item item;
-
-	/**
-	 * Represents the parent folder to the field listable. Not guaranteed to be a handle to the
-	 * original AlarmGroup (if, for example, it was recreated from a Parcel).
-	 */
-	@Nullable
-	public AlarmGroup parent;
 
 	/**
 	 * Represents the path to this listable but doesn't include the listable itself. It is in the
@@ -56,13 +29,8 @@ public class ListableInfo implements Parcelable {
 	/**
 	 * Initializes dummy data in the struct variables, all invalid data in case it isn't filled out.
 	 */
-	public ListableInfo() {
-		relIndex = -1;
-		absIndex = -1;
-		numIndents = -1;
-		absParentIndex = -1;
+	public ItemInfo() {
 		item = null;
-		parent = null;
 		path = null;
 	}
 
@@ -70,24 +38,13 @@ public class ListableInfo implements Parcelable {
 	 * Creates a new ListableInfo from a parcel.
 	 * @param in the parcel to initialize from, cannot be null
 	 */
-	private ListableInfo(@NotNull Parcel in) {
-		absIndex = in.readInt();
-		relIndex = in.readInt();
-		numIndents = in.readInt();
-		absParentIndex = in.readInt();
-
+	private ItemInfo(@NotNull Parcel in) {
 		String l = in.readString();	// listable
 		String isAlarm = in.readString();
 		if (l == null) item = null;
 		else {
 			if (Boolean.parseBoolean(isAlarm)) item = Alarm.fromEditString(null, l);
 			else item = AlarmGroup.fromEditString(l);
-		}
-
-		l = in.readString();	// parent
-		if (l == null) parent = null;
-		else {
-			parent = AlarmGroup.fromEditString(l);
 		}
 
 		path = in.readString();
@@ -99,15 +56,15 @@ public class ListableInfo implements Parcelable {
 	 * Creator that creates parcels of ListableInfo objects.
 	 */
 	@SuppressWarnings("WeakerAccess")
-	public static final Parcelable.Creator<ListableInfo> CREATOR =
-		new Parcelable.Creator<ListableInfo>() {
+	public static final Parcelable.Creator<ItemInfo> CREATOR =
+		new Parcelable.Creator<ItemInfo>() {
 			@NotNull @Contract(pure = true)
-			public ListableInfo createFromParcel(@NotNull Parcel in) {
-				return new ListableInfo(in);
+			public ItemInfo createFromParcel(@NotNull Parcel in) {
+				return new ItemInfo(in);
 			}
 			@NotNull @Contract(pure = true)
-			public ListableInfo[] newArray(int size) {
-				return new ListableInfo[size];
+			public ItemInfo[] newArray(int size) {
+				return new ItemInfo[size];
 			}
 		};
 
@@ -127,11 +84,6 @@ public class ListableInfo implements Parcelable {
 	 */
 	@Override
 	public void writeToParcel(@NotNull Parcel dest, int flags) {
-		dest.writeInt(absIndex);
-		dest.writeInt(relIndex);
-		dest.writeInt(numIndents);
-		dest.writeInt(absParentIndex);
-
 		// listable then isAlarm
 		if (item == null) {
 			dest.writeString(null);
@@ -141,12 +93,6 @@ public class ListableInfo implements Parcelable {
 			dest.writeString(item.toEditString());
 			dest.writeString(Boolean.toString(item instanceof Alarm));
 		}
-
-		// parent
-		if (parent == null)
-			dest.writeString(null);
-		else
-			dest.writeString(parent.toEditString());
 
 		dest.writeString(path);
 	}

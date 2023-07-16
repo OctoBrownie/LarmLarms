@@ -2,7 +2,6 @@ package com.larmlarms.editor;
 
 import android.annotation.SuppressLint;
 import android.content.ComponentName;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
@@ -39,7 +38,7 @@ import com.larmlarms.data.Alarm;
 import com.larmlarms.data.AlarmDataService;
 import com.larmlarms.data.AlarmGroup;
 import com.larmlarms.data.Item;
-import com.larmlarms.data.ListableInfo;
+import com.larmlarms.data.ItemInfo;
 import com.larmlarms.main.PrefsActivity;
 
 import org.jetbrains.annotations.NotNull;
@@ -54,7 +53,7 @@ import java.util.Calendar;
 import androidx.appcompat.app.AppCompatActivity;
 
 /**
- * Activity used for creating new Listables or editing existing ones.
+ * Activity used for creating new items or editing existing ones.
  *
  * Requirements for calling intents:
  * Must have an action defined in this class
@@ -116,11 +115,7 @@ public class ListableEditorActivity extends AppCompatActivity
 	 * actually changed.
 	 */
 	@Nullable
-	private String listablePath;
-	/**
-	 * The absolute index of the Listable being edited.
-	 */
-	private int listableIndex;
+	private String itemPath;
 
 	// information about the original received Listable
 	/**
@@ -135,7 +130,7 @@ public class ListableEditorActivity extends AppCompatActivity
 	private String originalPath;
 
 	/**
-	 * The list of all paths as retrieved from the data service.
+	 * List of all possible paths.
 	 */
 	@Nullable
 	private ArrayList<String> paths;
@@ -188,33 +183,12 @@ public class ListableEditorActivity extends AppCompatActivity
 	@Nullable
 	private ViewGroup alarmDateOfMonthLayout;
 
-	// data service fields
-	/**
-	 * Shows whether it is bound to the data service or not.
-	 */
-	private boolean boundToDataService = false;
-	/**
-	 * The service connection to the data service.
-	 */
-	@NotNull
-	private final DataServiceConnection dataConn;
-	/**
-	 * The messenger of the data service.
-	 */
-	@Nullable
-	private Messenger dataService;
-	/**
-	 * A message that couldn't be sent before.
-	 */
-	private Message unsentMessage;
-
 	/* *********************************  Lifecycle Methods  ******************************* */
 
 	/**
 	 * Creates a new ListableEditor and initializes some fields.
 	 */
 	public ListableEditorActivity() {
-		dataConn = new DataServiceConnection();
 		workingItem = new AlarmGroup();		// used in REQ_NEW_FOLDER, dummy data for all others
 	}
 
@@ -270,20 +244,18 @@ public class ListableEditorActivity extends AppCompatActivity
 				return;
 			}
 
-			ListableInfo info = extras.getParcelable(EXTRA_LISTABLE_INFO);
+			ItemInfo info = extras.getParcelable(EXTRA_LISTABLE_INFO);
 
 			if (info == null || info.item == null || info.path == null) {
 				if (BuildConfig.DEBUG) Log.e(TAG, "Listable info is invalid.");
 				finish();
 				return;
 			}
-			listableIndex = info.absIndex;
 			workingItem = info.item;
 			if (isAlarm) ((Alarm) workingItem).setContext(this);
 
 			originalPath = info.path;
-
-			originalItem = workingItem.clone();
+			originalItem = workingItem;
 		}
 
 		PrefsActivity.applyPrefsStyle(this);
@@ -297,18 +269,9 @@ public class ListableEditorActivity extends AppCompatActivity
 		switch(action) {
 			case ACTION_EDIT_ALARM:
 			case ACTION_EDIT_FOLDER:
-				((EditText) findViewById(R.id.nameInput)).setText(workingItem.getListableName());
+				((EditText) findViewById(R.id.nameInput)).setText(workingItem.getName());
 				break;
 		}
-	}
-
-	/**
-	 * Called when the fragment is being started. Binds to the data service.
-	 */
-	@Override
-	protected void onStart() {
-		super.onStart();
-		bindService(new Intent(this, AlarmDataService.class), dataConn, Context.BIND_AUTO_CREATE);
 	}
 
 	/**
@@ -322,20 +285,6 @@ public class ListableEditorActivity extends AppCompatActivity
 		if (isAlarm && alarmTimePicker != null) {
 			// matches the TimePicker's display mode to current system config (12 hr or 24 hr)
 			alarmTimePicker.setIs24HourView(DateFormat.is24HourFormat(this));
-		}
-	}
-
-
-	/**
-	 * Called when the app is stopping. Unbinds from the data service if it hasn't already.
-	 */
-	@Override
-	protected void onStop() {
-		super.onStop();
-
-		if (boundToDataService) {
-			unbindService(dataConn);
-			boundToDataService = false;
 		}
 	}
 
@@ -360,15 +309,15 @@ public class ListableEditorActivity extends AppCompatActivity
 		if (!saveToListable()) return;
 
 		Message msg = null;
-		ListableInfo data = new ListableInfo();
+		ItemInfo data = new ItemInfo();
 
 		if (isEditing) {
 			// check if the path was changed (make it a MSG_MOVE_LISTABLE)
 			// would be a MSG_MOVE_LISTABLE whether or not the listable itself changes
-			if (listablePath != null && !listablePath.equals(originalPath)) {
+			if (itemPath != null && !itemPath.equals(originalPath)) {
 				msg = Message.obtain(null, AlarmDataService.MSG_MOVE_LISTABLE);
 				msg.arg1 = listableIndex;
-				data.path = listablePath;
+				data.path = itemPath;
 			}
 
 			// check if the listable itself was changed
@@ -388,7 +337,7 @@ public class ListableEditorActivity extends AppCompatActivity
 			// create MSG_ADD_LISTABLE
 			msg = Message.obtain(null, AlarmDataService.MSG_ADD_LISTABLE);
 			data.item = workingItem;
-			data.path = listablePath;
+			data.path = itemPath;
 		}
 
 		// if there is no message to send, then just exit the activity
@@ -477,7 +426,7 @@ public class ListableEditorActivity extends AppCompatActivity
 			((Alarm) workingItem).getAlarmTimeCalendar().set(Calendar.DAY_OF_WEEK, pos + 1);
 		}
 		else if (parentId == R.id.parentFolderInput) {
-			if (paths != null) listablePath = paths.get(pos);
+			if (paths != null) itemPath = paths.get(pos);
 		}
 		else {
 			if (BuildConfig.DEBUG) Log.e(TAG, "Unknown AdapterView selected an item.");
@@ -787,7 +736,7 @@ public class ListableEditorActivity extends AppCompatActivity
 				if (BuildConfig.DEBUG) Log.e(TAG, "Can't setup folder structure without the original listable being valid.");
 				return;
 			}
-			String folderPath = originalPath + originalItem.getListableName() + '/';
+			String folderPath = originalPath + originalItem.getName() + '/';
 			for (int i = paths.size() - 1; i > 0; i--) {
 				if (paths.get(i).startsWith(folderPath)) paths.remove(i);
 			}
@@ -800,8 +749,8 @@ public class ListableEditorActivity extends AppCompatActivity
 		spinner.setAdapter(adapter);
 
 		int index;
-		if (listablePath == null) index = paths.indexOf(originalPath);
-		else index = paths.indexOf(listablePath);
+		if (itemPath == null) index = paths.indexOf(originalPath);
+		else index = paths.indexOf(itemPath);
 		if (index == -1) index = 0;
 
 		spinner.setSelection(index);
@@ -1006,7 +955,7 @@ public class ListableEditorActivity extends AppCompatActivity
 	public boolean saveToListable() {
 		// common fields
 		String newName = ((EditText) findViewById(R.id.nameInput)).getText().toString();
-		int errorCode = workingItem.setListableName(newName);
+		int errorCode = workingItem.setName(newName);
 
 		if (newName.equals("")) errorCode = 1;
 		if (errorCode != 0) {
@@ -1037,8 +986,8 @@ public class ListableEditorActivity extends AppCompatActivity
 		// checking for folders of the same name
 		if (!isAlarm) {
 			// building future folder path
-			String newPath = listablePath;
-			if (listablePath == null) newPath = originalPath;
+			String newPath = itemPath;
+			if (itemPath == null) newPath = originalPath;
 			newPath += '/' + newName;
 
 			if (paths == null || paths.contains(newPath)) {

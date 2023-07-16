@@ -53,30 +53,6 @@ public class MainActivity extends AppCompatActivity implements View.OnLongClickL
 	 */
 	private TextView nextAlarmText;
 
-	/**
-	 * Shows whether it is bound to the data service or not.
-	 */
-	private boolean boundToDataService = false;
-	/**
-	 * The service connection to the data service.
-	 */
-	@NotNull
-	private final DataServiceConnection dataConn;
-	/**
-	 * The messenger of the data service. Used for sending empty listener or next alarm listener
-	 * messages.
-	 */
-	@Nullable
-	private Messenger serviceMessenger;
-
-	/**
-	 * Creates a new MainActivity and initializes the data connection. Does not bind to the data
-	 * service.
-	 */
-	public MainActivity() {
-		dataConn = new DataServiceConnection();
-	}
-
 	/* ********************************* Lifecycle Methods ********************************* */
 
 	/**
@@ -106,15 +82,6 @@ public class MainActivity extends AppCompatActivity implements View.OnLongClickL
 	}
 
 	/**
-	 * Called when the activity is started. Binds to the data service.
-	 */
-	@Override
-	protected void onStart() {
-		super.onStart();
-		bindService(new Intent(this, AlarmDataService.class), dataConn, Context.BIND_AUTO_CREATE);
-	}
-
-	/**
 	 * Called when the activity is resuming. Checks if we need to restart to apply a new theme.
 	 */
 	@Override
@@ -126,24 +93,9 @@ public class MainActivity extends AppCompatActivity implements View.OnLongClickL
 			app.needsRestart = false;
 			recreate();
 		}
-	}
 
-	/**
-	 * Called when the activity is stopped. Unbinds from the data service.
-	 */
-	@Override
-	protected void onStop() {
-		super.onStop();
-
-		// unbind from service
-		if (boundToDataService) {
-			dataConn.removeEmptyListener();
-			dataConn.removeNextAlarmListener();
-
-			unbindService(dataConn);
-			boundToDataService = false;
-			serviceMessenger = null;
-		}
+		if (app.rootFolder.size() != 1) showFrag();
+		else hideFrag();
 	}
 
 	/* ************************************  Callbacks  ************************************** */
@@ -251,138 +203,5 @@ public class MainActivity extends AppCompatActivity implements View.OnLongClickL
 					b.getString(AlarmDataService.BUNDLE_NAME_KEY), dateString, timeString);
 		}
 		nextAlarmText.setText(text);
-	}
-
-	/* ***********************************  Inner Classes  ************************************** */
-
-	/**
-	 * The ServiceConnection to connect with the data service. Makes the activity an empty listener
-	 * and a next alarm listener.
-	 */
-	private class DataServiceConnection implements ServiceConnection {
-		/**
-		 * The messenger that the data service replies to with empty or next alarm messages.
-		 */
-		@Nullable
-		private Messenger replyMessenger;
-
-		/**
-		 * Called when the data service connects to the activity. Sets some fields in the outer class
-		 * and registers it as an empty listener and next alarm listener.
-		 * @param className the name of the class that was bound to (unused)
-		 * @param service the binder that the service returned
-		 */
-		@Override
-		public void onServiceConnected(@NotNull ComponentName className, @NotNull IBinder service) {
-			boundToDataService = true;
-			serviceMessenger = new Messenger(service);
-			replyMessenger = new Messenger(new DataServiceHandler(MainActivity.this));
-
-			Message emptyMsg = Message.obtain(null, AlarmDataService.MSG_DATA_EMPTY_LISTENER, 0, 0);
-			emptyMsg.replyTo = replyMessenger;
-			Message nextAlarmMsg = Message.obtain(null, AlarmDataService.MSG_NEXT_ALARM, 0, 0);
-			nextAlarmMsg.replyTo = replyMessenger;
-			try {
-				serviceMessenger.send(emptyMsg);
-				serviceMessenger.send(nextAlarmMsg);
-			}
-			catch (RemoteException e) {
-				// handler doesn't exist, messenger is unusable
-				e.printStackTrace();
-				boundToDataService = false;
-			}
-		}
-
-		/**
-		 * Called when the data service crashes. Hides the RecyclerView so that the screen isn't blank.
-		 * @param className the name of the class that was bound to (unused)
-		 */
-		@Override
-		public void onServiceDisconnected(@NotNull ComponentName className) {
-			// sad, it crashed...
-			boundToDataService = false;
-			hideFrag();
-		}
-
-		/**
-		 * Removes the activity from the data service as an empty listener.
-		 */
-		private void removeEmptyListener() {
-			if (!boundToDataService || MainActivity.this.serviceMessenger == null) return;
-
-			Message msg = Message.obtain(null, AlarmDataService.MSG_DATA_EMPTY_LISTENER);
-			msg.replyTo = replyMessenger;
-			try {
-				MainActivity.this.serviceMessenger.send(msg);
-			}
-			catch (RemoteException e) {
-				e.printStackTrace();
-			}
-		}
-
-		/**
-		 * Removes the activity from the data service as an next alarm listener.
-		 */
-		private void removeNextAlarmListener() {
-			if (!boundToDataService || MainActivity.this.serviceMessenger == null) return;
-
-			Message msg = Message.obtain(null, AlarmDataService.MSG_NEXT_ALARM);
-			msg.replyTo = replyMessenger;
-			try {
-				MainActivity.this.serviceMessenger.send(msg);
-			}
-			catch (RemoteException e) {
-				e.printStackTrace();
-			}
-		}
-	}
-
-	/**
-	 * Inner handler class for handling empty/full messages and next alarm messages from the data
-	 * service.
-	 */
-	private static class DataServiceHandler extends Handler {
-		/**
-		 * The activity it binds to.
-		 */
-		@NotNull
-		private final MainActivity activity;
-
-		/**
-		 * Creats a new handler on the main thread. Also sets the main activity.
-		 * @param activity the activity that uses this handler
-		 */
-		private DataServiceHandler(@NotNull MainActivity activity) {
-			super(Looper.getMainLooper());
-			this.activity = activity;
-		}
-
-		/**
-		 * Handles messages from the data service.
-		 * @param msg the inbound message
-		 */
-		@Override
-		public void handleMessage(@Nullable Message msg) {
-			if (msg == null) {
-				if (BuildConfig.DEBUG) Log.e(TAG, "Message sent to the main activity was null. Ignoring...");
-				return;
-			}
-
-			switch(msg.what) {
-				case AlarmDataService.MSG_DATA_EMPTIED:
-					activity.hideFrag();
-					break;
-				case AlarmDataService.MSG_DATA_FILLED:
-					activity.showFrag();
-					break;
-				case AlarmDataService.MSG_NEXT_ALARM:
-					activity.changeNextAlarm(msg.getData());
-					break;
-				default:
-					if (BuildConfig.DEBUG) Log.e(TAG, "Unknown message type. Sending to Handler's handleMessage().");
-					super.handleMessage(msg);
-					break;
-			}
-		}
 	}
 }

@@ -18,10 +18,10 @@ import static org.junit.Assert.assertTrue;
  * @see <a href="http://d.android.com/tools/testing">Testing documentation</a>
  */
 @RunWith(AndroidJUnit4.class)
-public class ListableInfoAndroidTest {
+public class ItemInfoAndroidTest {
 	@Test
 	public void parcelTest() {
-		ListableInfo src = new ListableInfo();
+		ItemInfo src = new ItemInfo();
 		src.absIndex = -1;
 		src.relIndex = -2;
 		src.numIndents = 1;
@@ -35,18 +35,18 @@ public class ListableInfoAndroidTest {
 		src.writeToParcel(p, 0);
 		p.setDataPosition(0);		// start reading from the beginning of parcel
 
-		ListableInfo dest = ListableInfo.CREATOR.createFromParcel(p);
+		ItemInfo dest = ItemInfo.CREATOR.createFromParcel(p);
 		assertEquals(src.absIndex, dest.absIndex);
 		assertEquals(src.relIndex, dest.relIndex);
 		assertEquals(src.numIndents, dest.numIndents);
 		assertEquals(src.absParentIndex, dest.absParentIndex);
 
 		assert dest.item != null;
-		assertEquals("Hello", dest.item.getListableName());
+		assertEquals("Hello", dest.item.getName());
 		assertTrue(dest.item instanceof Alarm);
 
 		assert dest.parent != null;
-		assertEquals("Goodbye", dest.parent.getListableName());
+		assertEquals("Goodbye", dest.parent.getName());
 
 		assertEquals(src.path, dest.path);
 	}
@@ -75,23 +75,23 @@ public class ListableInfoAndroidTest {
 		Alarm[] alarms = new Alarm[8];
 		for (int i = 0; i < alarms.length; i++) alarms[i] = new Alarm(null, "alarm " + i);
 
-		folder.addListable(alarms[0]);
-		folder.addListable(alarms[1]);
+		folder.addItem(alarms[0]);
+		folder.addItem(alarms[1]);
 
 		AlarmGroup innerFolder = new AlarmGroup("inner");
-		innerFolder.addListable(alarms[2]);
-		innerFolder.addListable(alarms[3]);
+		innerFolder.addItem(alarms[2]);
+		innerFolder.addItem(alarms[3]);
 
 		AlarmGroup doubleInner = new AlarmGroup("double double");
-		doubleInner.addListable(alarms[4]);
-		doubleInner.addListable(alarms[5]);
-		doubleInner.addListable(alarms[6]);
+		doubleInner.addItem(alarms[4]);
+		doubleInner.addItem(alarms[5]);
+		doubleInner.addItem(alarms[6]);
 
-		innerFolder.addListable(doubleInner);
-		folder.addListable(innerFolder);
-		folder.addListable(alarms[7]);
+		innerFolder.addItem(doubleInner);
+		folder.addItem(innerFolder);
+		folder.addItem(alarms[7]);
 
-		ListableInfo info = folder.getListableInfo(-1, false);
+		ItemInfo info = folder.getListableInfo(-1, false);
 		assertNull(info);
 
 		info = folder.getListableInfo(0, false);

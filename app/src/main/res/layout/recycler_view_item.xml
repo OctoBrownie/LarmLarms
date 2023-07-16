@@ -47,7 +47,7 @@
 				android:layout_width="match_parent"
 				android:layout_height="wrap_content"
 				android:layout_gravity="center"
-				android:src="@drawable/folder_icon_opened"
+				android:src="@drawable/folder_icon"
 				android:contentDescription="@string/main_folder_description"
 				android:minWidth="@dimen/minImageSize"
 				android:visibility="gone"/>

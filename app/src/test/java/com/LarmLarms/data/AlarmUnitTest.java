@@ -2,7 +2,6 @@ package com.larmlarms.data;
 
 import org.junit.Test;
 
-import java.util.Arrays;
 import java.util.Calendar;
 
 import static org.junit.Assert.assertEquals;
@@ -35,16 +34,16 @@ public class AlarmUnitTest {
 		Alarm test1 = Alarm.fromEditString(null, s1), test2 = Alarm.fromEditString(null, s2),
 				test3 = Alarm.fromEditString(null, s3), test4 = Alarm.fromEditString(null, s4);
 		assert test1 != null;
-		assertEquals("dum dum", test1.getListableName());
+		assertEquals("dum dum", test1.getName());
 
 		assert test2 != null;
-		assertEquals("a", test2.getListableName());
+		assertEquals("a", test2.getName());
 
 		assert test3 != null;
-		assertEquals(" ", test3.getListableName());
+		assertEquals(" ", test3.getName());
 
 		assert test4 != null;
-		assertEquals("alarm 4", test4.getListableName());
+		assertEquals("alarm 4", test4.getName());
 	}
 
 	/**
@@ -63,7 +62,7 @@ public class AlarmUnitTest {
 
 		Alarm testAlarm = Alarm.fromStoreString(null, storeString);
 		assert testAlarm != null;
-		assertEquals(initAlarm.getListableName(), testAlarm.getListableName());
+		assertEquals(initAlarm.getName(), testAlarm.getName());
 
 
 		initAlarm = new Alarm(null, "a");
@@ -74,7 +73,7 @@ public class AlarmUnitTest {
 
 		testAlarm = Alarm.fromStoreString(null, storeString);
 		assert testAlarm != null;
-		assertEquals(initAlarm.getListableName(), testAlarm.getListableName());
+		assertEquals(initAlarm.getName(), testAlarm.getName());
 
 
 		initAlarm = new Alarm(null, " ");
@@ -85,7 +84,7 @@ public class AlarmUnitTest {
 
 		testAlarm = Alarm.fromStoreString(null, storeString);
 		assert testAlarm != null;
-		assertEquals(initAlarm.getListableName(), testAlarm.getListableName());
+		assertEquals(initAlarm.getName(), testAlarm.getName());
 
 
 		initAlarm = new Alarm(null, "alarm 4");
@@ -96,7 +95,7 @@ public class AlarmUnitTest {
 
 		testAlarm = Alarm.fromStoreString(null, storeString);
 		assert testAlarm != null;
-		assertEquals(initAlarm.getListableName(), testAlarm.getListableName());
+		assertEquals(initAlarm.getName(), testAlarm.getName());
 	}
 
 	/**

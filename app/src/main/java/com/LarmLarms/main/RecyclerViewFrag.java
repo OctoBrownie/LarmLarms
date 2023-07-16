@@ -1,12 +1,8 @@
 package com.larmlarms.main;
 
-import android.content.ComponentName;
+import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.Intent;
-import android.content.ServiceConnection;
 import android.os.Bundle;
-import android.os.IBinder;
-import android.os.Messenger;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,7 +10,6 @@ import android.view.ViewGroup;
 
 import com.larmlarms.BuildConfig;
 import com.larmlarms.R;
-import com.larmlarms.data.AlarmDataService;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -49,15 +44,6 @@ public class RecyclerViewFrag extends Fragment {
 	 */
 	private RecyclerView recyclerView;
 
-	/**
-	 * Shows whether it is bound to the data service or not.
-	 */
-	private boolean boundToDataService = false;
-	/**
-	 * The service connection to the data service.
-	 */
-	private DataServiceConnection dataConn;
-
 	/* **********************************  Lifecycle Methods  ******************************** */
 
 	/**
@@ -72,12 +58,11 @@ public class RecyclerViewFrag extends Fragment {
 	public View onCreateView(@NotNull LayoutInflater inflater, @Nullable ViewGroup container,
 							 @Nullable Bundle savedInstanceState) throws IllegalStateException {
 		Context context = getContext();
-		if (context == null) {
+		if (context == null || getActivity() == null) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "This fragment wasn't associated with a context!");
 			return null;
 		}
-		myAdapter = new RecyclerViewAdapter(getContext());
-		dataConn = new DataServiceConnection();
+		myAdapter = new RecyclerViewAdapter(getActivity().getApplication(), null);
 
 		// doing things for recycler view
 		// rootView is the LinearLayout in recycler_view_frag.xml
@@ -108,9 +93,15 @@ public class RecyclerViewFrag extends Fragment {
 		Context c = getContext();
 		if (c == null) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "Context for the fragment was null!");
-			return;
 		}
-		c.bindService(new Intent(getContext(), AlarmDataService.class), dataConn, Context.BIND_AUTO_CREATE);
+	}
+
+	@SuppressLint("NotifyDataSetChanged")
+	@Override
+	public void onResume() {
+		super.onResume();
+
+		myAdapter.notifyDataSetChanged();
 	}
 
 	/**
@@ -122,59 +113,5 @@ public class RecyclerViewFrag extends Fragment {
 	public void onSaveInstanceState(@NotNull Bundle outState) {
 		if (recyclerView.getLayoutManager() == null) return;
 		outState.putParcelable(BUNDLE_INSTANCE_STATE, recyclerView.getLayoutManager().onSaveInstanceState());
-	}
-
-	/**
-	 * Called when the fragment is stopping. Unbinds from the data service.
-	 */
-	@Override
-	public void onStop() {
-		super.onStop();
-
-		if (boundToDataService) {
-			myAdapter.setDataService(null);
-
-			Context c = getContext();
-			if (c == null) {
-				if (BuildConfig.DEBUG) Log.e(TAG, "Context for the fragment was null!");
-				return;
-			}
-			c.unbindService(dataConn);
-
-			boundToDataService = false;
-		}
-	}
-
-	/* ************************************  Inner Classes  ********************************** */
-
-	/**
-	 * The service connection used for connecting to the data service. Used for passing the messenger
-	 * on to the recycler adapter.
-	 */
-	private class DataServiceConnection implements ServiceConnection {
-		/**
-		 * Called when the service is connected. Sends the messenger to the adapter and gives the
-		 * adapter to the recycler view.
-		 * @param className the name of the class that was bound to (unused)
-		 * @param service the binder that the service returned
-		 */
-		@Override
-		public void onServiceConnected(@NotNull ComponentName className, @NotNull IBinder service) {
-			boundToDataService = true;
-
-			Messenger messenger = new Messenger(service);
-			myAdapter.setDataService(messenger);
-		}
-
-		/**
-		 * Called when the data service crashes.
-		 * @param className the name of the class that was bound to (unused)
-		 */
-		@Override
-		public void onServiceDisconnected(@NotNull ComponentName className) {
-			if (BuildConfig.DEBUG) Log.e(TAG, "The data service crashed.");
-			boundToDataService = false;
-			myAdapter.setDataService(null);
-		}
 	}
 }

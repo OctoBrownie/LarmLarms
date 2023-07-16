@@ -27,7 +27,7 @@ import java.util.List;
  * Class managing alarms and their behavior.
  * TODO: implement Parcelable so edit strings become unnecessary?
  */
-public final class Alarm extends Item implements Cloneable {
+public final class Alarm extends Item {
 
 	/* ************************************  Constants  *********************************** */
 
@@ -234,7 +234,7 @@ public final class Alarm extends Item implements Cloneable {
 		ringtoneUri = Settings.System.DEFAULT_RINGTONE_URI;
 	}
 
-	/* ********************************  Methods from Listable  ********************************** */
+	/* ********************************  Methods from Item  ********************************** */
 
 	/**
 	 * Gets a repeat string that describes the alarm. Uses the current context to get localized 
@@ -243,7 +243,7 @@ public final class Alarm extends Item implements Cloneable {
 	 * @return the repeat string, or empty string if the context is null 
 	 */
 	@NotNull @Override
-	public String getRepeatString() {
+	public synchronized String getRepeatString() {
 		if (context == null) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "Context was null when trying to get a repeat string.");
 			return "";
@@ -323,7 +323,7 @@ public final class Alarm extends Item implements Cloneable {
 	 * Changes the active state of the alarm to off (inactive). Will also unsnooze it if necessary.
 	 */
 	@Override
-	public void turnOff() {
+	public synchronized void turnOff() {
 		super.turnOff();
 		unsnooze();
 	}
@@ -333,7 +333,7 @@ public final class Alarm extends Item implements Cloneable {
 	 * also unsnooze it if necessary.
 	 */
 	@Override
-	public void toggleActive() {
+	public synchronized void toggleActive() {
 		super.toggleActive();
 		unsnooze();
 	}
@@ -343,7 +343,7 @@ public final class Alarm extends Item implements Cloneable {
 	 * @param active the state to set the alarm to
 	 */
 	@Override
-	public void setActive(boolean active) {
+	public synchronized void setActive(boolean active) {
 		super.setActive(active);
 		unsnooze();
 	}
@@ -353,7 +353,7 @@ public final class Alarm extends Item implements Cloneable {
 	 * @return the ring time, will not be null 
 	 */ 
 	@NotNull @Override
-	public String getNextRingTime() {
+	public synchronized String getNextRingTime() {
 		if (context == null) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "Context was null when trying to get the next ring time.");
 			return "";
@@ -366,7 +366,7 @@ public final class Alarm extends Item implements Cloneable {
 	 * returns 1.
 	 */
 	@Override @Contract(pure = true)
-	public int size() { return 1; }
+	public synchronized int size() { return 1; }
 
 	/**
 	 * Determines whether other is equal to this Alarm or not. Checks for name, repeat type (+ repeat
@@ -375,7 +375,7 @@ public final class Alarm extends Item implements Cloneable {
 	 * @return whether the two objects are equal or not
 	 */
 	@Contract("null -> false")
-	public boolean equals(Object other) {
+	public synchronized boolean equals(Object other) {
 		if (!(other instanceof Alarm)) return false;
 
 		Alarm that = (Alarm) other;
@@ -444,7 +444,7 @@ public final class Alarm extends Item implements Cloneable {
 	 * second, 0 if they're equal).
 	 */
 	@Override
-	public int compareTo(@NotNull Item other) {
+	public synchronized int compareTo(@NotNull Item other) {
 		if (other instanceof AlarmGroup) return 1;
 		
 		Alarm that = (Alarm) other;
@@ -591,7 +591,7 @@ public final class Alarm extends Item implements Cloneable {
 	 * Note: for ringtone URI, if it is null (silent), it will be stored as "null"
 	 */
 	@NotNull @Override @Contract(pure = true)
-	public String toEditString() {
+	public synchronized String toEditString() {
 		StringBuilder alarmString = new StringBuilder();
 		alarmString.append(id).append('\t');
 		alarmString.append(name).append('\t');
@@ -658,7 +658,7 @@ public final class Alarm extends Item implements Cloneable {
 	 * a	[edit string]
 	 */
 	@NotNull @Override @Contract(pure = true)
-	public String toStoreString() { return "a\t" + toEditString(); }
+	public synchronized String toStoreString() { return "a\t" + toEditString(); }
 
 	/* ******************************  Getter and Setter Methods  ******************************* */
 
@@ -666,25 +666,25 @@ public final class Alarm extends Item implements Cloneable {
 	 * Sets the context.
 	 * @param context the new context to set it to, can be null
 	 */
-	public void setContext(@Nullable Context context) { this.context = context; }
+	public synchronized void setContext(@Nullable Context context) { this.context = context; }
 
 	/**
 	 * Returns the ring time of the alarm.
 	 */
 	@NotNull @Contract(pure = true)
-	public Calendar getAlarmTimeCalendar() { return ringTime; }
+	public synchronized Calendar getAlarmTimeCalendar() { return ringTime; }
 
 	/**
 	 * Returns the next ring time of the alarm in a long.
 	 */
-	long getAlarmTimeMillis() { return ringTime.getTimeInMillis(); }
+	synchronized long getAlarmTimeMillis() { return ringTime.getTimeInMillis(); }
 
 	/**
 	 * Returns the next ring time of the alarm in a long and deletes any snooze periods that affect
 	 * the time.
 	 */
 	@Contract(pure = true)
-	private long getUnsnoozedAlarmTimeMillis() {
+	private synchronized long getUnsnoozedAlarmTimeMillis() {
 		Calendar cal = (Calendar) ringTime.clone();
 		if (alarmSnoozed) cal.add(Calendar.MINUTE, -5*numSnoozes);
 
@@ -695,7 +695,7 @@ public final class Alarm extends Item implements Cloneable {
 	 * Sets the next ring time of the alarm.
 	 * @param time the new time to set the alarm to
 	 */
-	public void setAlarmTimeMillis(long time) {
+	public synchronized void setAlarmTimeMillis(long time) {
 		if (time < 0) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "New calendar time was negative.");
 			return;
@@ -708,13 +708,13 @@ public final class Alarm extends Item implements Cloneable {
 	 * @return the repeat type, which is always a valid repeat type
 	 */
 	@Contract(pure = true)
-	public int getRepeatType() { return repeatType; }
+	public synchronized int getRepeatType() { return repeatType; }
 
 	/**
 	 * Sets the repeat type of the alarm. If the repeat type is invalid, does nothing.
 	 * @param type the new type to set the alarm to
 	 */
-	public void setRepeatType(int type) {
+	public synchronized void setRepeatType(int type) {
 		if (type < 0 || type >= NUM_REPEAT_TYPES) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "Repeat type is invalid.");
 			return;
@@ -728,27 +728,27 @@ public final class Alarm extends Item implements Cloneable {
 	 * @return an array of size 7, whose indices correspond to Calendar day constants - 1
 	 */
 	@NotNull @Contract(pure = true)
-	public boolean[] getRepeatDays() { return repeatDays; }
+	public synchronized boolean[] getRepeatDays() { return repeatDays; }
 
 	/**
 	 * Returns the repeat months of the alarm, even if the current repeat type doesn't use it.
 	 * @return an array of size 12, whose indices correspond to the Calendar month constants
 	 */
 	@NotNull @Contract(pure = true)
-	public boolean[] getRepeatMonths() { return repeatMonths; }
+	public synchronized boolean[] getRepeatMonths() { return repeatMonths; }
 
 	/**
 	 * Gets the repeat week of the alarm.
 	 * @return the repeat week, an index of the string array alarm_week_strings
 	 */
 	@Contract(pure = true)
-	public int getRepeatWeek() { return repeatWeek; }
+	public synchronized int getRepeatWeek() { return repeatWeek; }
 
 	/**
 	 * Sets the repeat week of the alarm. If the new week is invalid, will not do anything.
 	 * @param newWeek the new repeat week, an index of the string array alarm_week_strings
 	 */
-	public void setRepeatWeek(int newWeek) {
+	public synchronized void setRepeatWeek(int newWeek) {
 		if (newWeek < 0 || newWeek >= 5) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "New week to repeat on is invalid.");
 			return;
@@ -762,13 +762,13 @@ public final class Alarm extends Item implements Cloneable {
 	 * @return a number greater than or equal to 0
 	 */
 	@Contract(pure = true)
-	public int getOffsetDays() { return offsetDays; }
+	public synchronized int getOffsetDays() { return offsetDays; }
 
 	/**
 	 * Sets the number of days to offset by. If invalid (under 0), will not do anything.
 	 * @param days the number of days to offset by
 	 */
-	public void setOffsetDays(int days) {
+	public synchronized void setOffsetDays(int days) {
 		if (days < 0) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "New number of days is invalid.");
 			return;
@@ -782,14 +782,14 @@ public final class Alarm extends Item implements Cloneable {
 	 * @return a number between 0 and 23
 	 */
 	@Contract(pure = true)
-	public int getOffsetHours() { return offsetHours; }
+	public synchronized int getOffsetHours() { return offsetHours; }
 
 	/**
 	 * Sets the number of hours to offset the alarm with. If out of bounds (under 0 or over 23), will
 	 * not do anything.
 	 * @param hours the number of hours to offset, between 0 and 23 inclusive
 	 */
-	public void setOffsetHours(int hours) {
+	public synchronized void setOffsetHours(int hours) {
 		if (hours < 0 || hours >= 24) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "New number of hours is invalid.");
 			return;
@@ -803,13 +803,13 @@ public final class Alarm extends Item implements Cloneable {
 	 * @return a number between 0 and 59 inclusive
 	 */
 	@Contract(pure = true)
-	public int getOffsetMins() { return offsetMins; }
+	public synchronized int getOffsetMins() { return offsetMins; }
 
 	/**
 	 * Sets the number of minutes to offset by
 	 * @param min a number between 0 and 59 inclusive
 	 */
-	public void setOffsetMins(int min) {
+	public synchronized void setOffsetMins(int min) {
 		if (min < 0 || min >= 60) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "New number of minutes is invalid.");
 			return;
@@ -821,36 +821,36 @@ public final class Alarm extends Item implements Cloneable {
 	 * Gets whether the offset is from the current time or not.
 	 */
 	@Contract(pure = true)
-	public boolean isOffsetFromNow() { return offsetFromNow; }
+	public synchronized boolean isOffsetFromNow() { return offsetFromNow; }
 
 	/**
 	 * Sets whether the offset is from the current time or not.
 	 */
-	public void setOffsetFromNow(boolean offsetFromNow) { this.offsetFromNow = offsetFromNow; }
+	public synchronized void setOffsetFromNow(boolean offsetFromNow) { this.offsetFromNow = offsetFromNow; }
 
 	/**
 	 * Gets whether the alarm has vibrate on or not.
 	 */
 	@Contract(pure = true)
-	public boolean isVibrateOn() { return alarmVibrateIsOn; }
+	public synchronized boolean isVibrateOn() { return alarmVibrateIsOn; }
 
 	/**
 	 * Sets whether the alarm has vibrate on or not.
 	 * @param on the new state to set it to
 	 */
-	public void setVibrateOn(boolean on) { alarmVibrateIsOn = on; }
+	public synchronized void setVibrateOn(boolean on) { alarmVibrateIsOn = on; }
 
 	/**
 	 * Gets the volume of the alarm.
 	 */
 	@Contract(pure = true)
-	public int getVolume() { return volume; }
+	public synchronized int getVolume() { return volume; }
 
 	/**
 	 * Sets the volume of the alarm.
 	 * @param vol the new volume, should be between 0 and 100
 	 */
-	public void setVolume(int vol) {
+	public synchronized void setVolume(int vol) {
 		if (vol < 0) vol = 0;
 		if (vol > 100) vol = 100;
 
@@ -861,13 +861,13 @@ public final class Alarm extends Item implements Cloneable {
 	 * Returns the URI of the ringtone this alarm has. Can be null if the alarm is set to silent.
 	 */
 	@Nullable @Contract(pure = true)
-	public Uri getRingtoneUri() { return ringtoneUri; }
+	public synchronized Uri getRingtoneUri() { return ringtoneUri; }
 
 	/**
 	 * Sets the new ringtone URI.
 	 * @param newRingtone the new ringtone to set it to, can be null if the ringtone is silent
 	 */
-	public void setRingtoneUri(@Nullable Uri newRingtone) {
+	public synchronized void setRingtoneUri(@Nullable Uri newRingtone) {
 		if (BuildConfig.DEBUG && newRingtone == null) {
 			Log.i(TAG, "The new ringtone is silent.");
 		}
@@ -879,7 +879,7 @@ public final class Alarm extends Item implements Cloneable {
 	 * @return the name of the ringtone, or empty string if context is null
 	 */
 	@NotNull @Contract(pure = true)
-	public String getRingtoneName() {
+	public synchronized String getRingtoneName() {
 		if (context == null) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "Context is null, cannot query the name of the ringtone.");
 			return "";
@@ -1059,7 +1059,7 @@ public final class Alarm extends Item implements Cloneable {
 	 * representation is necessary. Returns simply tne name of the alarm.
 	 */
 	@NotNull @Override @Contract(pure = true)
-	public String toString() { return name; }
+	public synchronized String toString() { return name; }
 
 	/**
 	 * Gets the display string for REPEAT_DAY_WEEKLY, specifically representing which days the 
@@ -1068,7 +1068,7 @@ public final class Alarm extends Item implements Cloneable {
 	 * @return formatted string resource alarm_weekly, special cases, or empty
 	 */
 	@NotNull @Contract(pure = true)
-	public String getWeeklyDisplayString() {
+	public synchronized String getWeeklyDisplayString() {
 		if (context == null) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "Context is null, cannot get the weekly display string.");
 			return "";
@@ -1118,7 +1118,7 @@ public final class Alarm extends Item implements Cloneable {
 	 * @return formatted string resource alarm_monthly, special cases, or empty
 	 */
 	@NotNull @Contract(pure = true)
-	public String getMonthsString() {
+	public synchronized String getMonthsString() {
 		if (context == null) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "Context is null, cannot get the months display string.");
 			return "";
@@ -1169,7 +1169,7 @@ public final class Alarm extends Item implements Cloneable {
 	 * @return formatted string resource alarm_monthly_exception or empty
 	 */
 	@NotNull @Contract(pure = true)
-	private String getExceptionMonthsString() {
+	private synchronized String getExceptionMonthsString() {
 		if (context == null) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "Context is null, cannot get the exception months display string.");
 			return "";
@@ -1215,7 +1215,7 @@ public final class Alarm extends Item implements Cloneable {
 	 * Builds a string for offsets. Returns a new string with days, hours, and minutes.
 	 */
 	@NotNull @Contract(pure = true)
-	private String getOffsetString() {
+	private synchronized String getOffsetString() {
 		if (context == null) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "Context is null, cannot get the offset display string.");
 			return "";
@@ -1256,7 +1256,7 @@ public final class Alarm extends Item implements Cloneable {
 	 * Updates the ring time, setting it to the next time it should ring.
 	 * @see Alarm#updateRingTime()
 	 */
-	public void updateRingTime() {
+	public synchronized void updateRingTime() {
 		updateRingTime(Calendar.getInstance());
 	}
 
@@ -1272,7 +1272,7 @@ public final class Alarm extends Item implements Cloneable {
 	 * not schedule an alarm for May 1)
 	 * @param currTime the current time (the earliest time that this alarm should ring)
 	 */
-	public void updateRingTime(Calendar currTime) {
+	public synchronized void updateRingTime(Calendar currTime) {
 		if (!isActive || alarmSnoozed) { return; }
 
 		Calendar workingClock = (Calendar) currTime.clone();
@@ -1431,7 +1431,7 @@ public final class Alarm extends Item implements Cloneable {
 	/**
 	 * Snoozes the alarm for 5 minutes. Sets ringTime to five minutes away from original ringTime.
 	 */
-	public void snooze() {
+	public synchronized void snooze() {
 		alarmSnoozed = true;
 		numSnoozes++;
 		// TODO: change number of minutes to snooze?
@@ -1442,7 +1442,7 @@ public final class Alarm extends Item implements Cloneable {
 	/**
 	 * Unsnoozes the alarm if it was snoozed previously. Won't do anything if it wasn't snoozed.
 	 */
-	public void unsnooze() {
+	public synchronized void unsnooze() {
 		alarmSnoozed = false;
 
 		ringTime.add(Calendar.MINUTE, -5*numSnoozes);
@@ -1452,7 +1452,7 @@ public final class Alarm extends Item implements Cloneable {
 	/**
 	 * Dismisses the current alarm.
 	 */
-	public void dismiss() {
+	public synchronized void dismiss() {
 		unsnooze();
 
 		switch (repeatType) {
