@@ -20,6 +20,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.text.DateFormatSymbols;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 
@@ -232,6 +233,33 @@ public final class Alarm extends Item {
 
 		volume = 60;
 		ringtoneUri = Settings.System.DEFAULT_RINGTONE_URI;
+	}
+
+	/**
+	 * Copy constructor for alarms.
+	 * @param alarm the alarm to copy
+	 */
+	public Alarm(@NotNull Alarm alarm) {
+		super(alarm);
+
+		this.context = alarm.context;
+
+		this.repeatType = alarm.repeatType;
+		this.ringTime = (Calendar) alarm.ringTime.clone();
+		this.repeatDays = Arrays.copyOf(alarm.repeatDays, alarm.repeatDays.length);
+		this.repeatMonths = Arrays.copyOf(alarm.repeatMonths, alarm.repeatMonths.length);
+		this.repeatWeek = alarm.repeatWeek;
+		this.offsetDays = alarm.offsetDays;
+		this.offsetHours = alarm.offsetHours;
+		this.offsetMins = alarm.offsetMins;
+		this.offsetFromNow = alarm.offsetFromNow;
+
+		this.alarmSnoozed = alarm.alarmSnoozed;
+		this.numSnoozes = alarm.numSnoozes;
+
+		this.alarmVibrateIsOn = alarm.alarmVibrateIsOn;
+		this.volume = alarm.volume;
+		this.ringtoneUri = alarm.ringtoneUri;
 	}
 
 	/* ********************************  Methods from Item  ********************************** */
@@ -677,7 +705,7 @@ public final class Alarm extends Item {
 	/**
 	 * Returns the next ring time of the alarm in a long.
 	 */
-	synchronized long getAlarmTimeMillis() { return ringTime.getTimeInMillis(); }
+	public synchronized long getAlarmTimeMillis() { return ringTime.getTimeInMillis(); }
 
 	/**
 	 * Returns the next ring time of the alarm in a long and deletes any snooze periods that affect

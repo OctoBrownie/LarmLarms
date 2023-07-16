@@ -78,6 +78,19 @@ public class AlarmGroup extends Item {
 		setItems(children);		// validating data
 	}
 
+	/**
+	 * Copy constructor for folders
+	 * @param folder the folder to copy
+	 */
+	public AlarmGroup(@NotNull AlarmGroup folder) {
+		super(folder);
+		this.items = new ArrayList<>(folder.items.size());
+		for (int i = 0; i < folder.items.size(); i++) {
+			Item item = folder.items.get(i);
+			this.items.set(i, item instanceof Alarm ? new Alarm((Alarm)item) : new AlarmGroup((AlarmGroup)item));
+		}
+	}
+
 	/* *******************************  Methods from item  ****************************** */
 
 	/**
@@ -99,7 +112,7 @@ public class AlarmGroup extends Item {
 	 * @return the number of items in the folder, including itself (always at least 1)
 	 */
 	@Override @Contract(pure = true)
-	public synchronized int size() { return items.size() + 1; }
+	public int size() { return items.size() + 1; }
 
 	/**
 	 * Determines whether other is equal to this AlarmGroup or not. Checks only for name and whether
@@ -108,7 +121,7 @@ public class AlarmGroup extends Item {
 	 * @return whether the two objects are equal or not
 	 */
 	@Contract("null -> false")
-	public synchronized boolean equals(Object other) {
+	public boolean equals(Object other) {
 		if (!(other instanceof AlarmGroup)) return false;
 
 		AlarmGroup that = (AlarmGroup) other;
@@ -122,8 +135,8 @@ public class AlarmGroup extends Item {
 	 * @return this folder compared to the item (negative if this is first, positive if this is 
 	 * second, 0 if they're equal).
 	 */
-	@Override
-	public synchronized int compareTo(@NotNull Item other) {
+	@Override @Contract(pure = true)
+	public int compareTo(@NotNull Item other) {
 		if (other instanceof Alarm) return -1;
 		
 		AlarmGroup that = (AlarmGroup) other;
@@ -140,7 +153,7 @@ public class AlarmGroup extends Item {
 	 * [id] [name] [isActive] [isOpen]
 	 */
 	@NotNull @Override @Contract(pure = true)
-	public synchronized String toEditString() { return "" + id + '\t' + name + '\t' + isActive; }
+	public String toEditString() { return "" + id + '\t' + name + '\t' + isActive; }
 
 	/**
 	 * Creates a string for storing the current folder. Stores folder with type identifier and
@@ -151,7 +164,7 @@ public class AlarmGroup extends Item {
 	 * 		[children store strings, separated by new lines]
 	 */
 	@NotNull @Override @Contract(pure = true)
-	public synchronized String toStoreString() {
+	public String toStoreString() {
 		StringBuilder res = new StringBuilder(getStoreStringSingle());
 		res.append('\n');
 
@@ -172,7 +185,7 @@ public class AlarmGroup extends Item {
 	 * @return the items, will not be null
 	 */
 	@Contract(pure = true) @NotNull
-	synchronized List<Item> getItems() { return items; }
+	List<Item> getItems() { return items; }
 
 	/**
 	 * Sets the items within the folder. If the new list is invalid (the list or any items
@@ -334,6 +347,42 @@ public class AlarmGroup extends Item {
 	}
 
 	/**
+	 * Gets the item with the given id (with path specified to speed up most searches).
+	 * @param path the last path the item was seen at (shouldn't include the item itself, can be
+	 *             null if no path)
+	 * @param id the id of the item to look for
+	 * @return the item with the specified id, or null if not found
+	 */
+	@Nullable @Contract(pure = true)
+	public synchronized Item getItemById(@Nullable final String path, final int id) {
+		if (path != null) {
+			AlarmGroup folder = getFolder(path);
+			if (folder != null)
+				for (Item i : folder.items) if (i.getId() == id) return i;
+		}
+		return getItemById(id);
+	}
+
+	/**
+	 * Gets the item with the given id in the current folder.
+	 *
+	 * @param id the id of the item to look for
+	 * @return the item with the specified id, or null if not found
+	 */
+	@Nullable @Contract(pure = true)
+	private synchronized Item getItemById(final int id) {
+		for (Item i : items) {
+			if (i.getId() == id) return i;
+
+			if (i instanceof AlarmGroup) {
+				Item temp = ((AlarmGroup) i).getItemById(id);
+				if (temp != null) return temp;
+			}
+		}
+		return null;
+	}
+
+	/**
 	 * Gets the AlarmGroup with the given relative path (should be the only one) in the current
 	 * folder. Assumes the path includes the current folder.
 	 * @param path the path to search for (includes the name of the folder), shouldn't be null
@@ -351,13 +400,9 @@ public class AlarmGroup extends Item {
 				else if (i1 instanceof AlarmGroup && i2 instanceof Alarm) return -1;
 				return i1.name.compareTo(i2.name);
 			});
-			if (index == -1) {
-				if (BuildConfig.DEBUG) Log.e(TAG, "getFolder: Couldn't find the specified path.");
-				return null;
-			}
 			currFolder = (AlarmGroup) currFolder.getItem(index);
 			if (currFolder == null) {
-				if (BuildConfig.DEBUG) Log.e(TAG, "getFolder: Binary search lied.");
+				if (BuildConfig.DEBUG) Log.e(TAG, "getFolder: Couldn't find the specified path.");
 				return null;
 			}
 		}
@@ -385,6 +430,53 @@ public class AlarmGroup extends Item {
 	}
 
 	/**
+	 * Sets item as the new item in the dataset.
+	 * @param oldInfo the info of the old item (item should at least have the right id, path isn't
+	 *                necessary, but helps search)
+	 * @param item the new item to set it to
+	 */
+	public synchronized void setItemById(@Nullable final ItemInfo oldInfo, final Item item) {
+		if (oldInfo == null || oldInfo.item == null) {
+			if (BuildConfig.DEBUG) Log.e(TAG, "setItem: Item was null.");
+			return;
+		}
+
+		if (oldInfo.item.getParent() != null) {
+			// no search necessary
+			AlarmGroup folder = oldInfo.item.getParent();
+			deleteItemByRef(oldInfo.item);
+			folder.addItem(item);
+		}
+		else if (oldInfo.path != null) {
+			AlarmGroup folder = getFolder(oldInfo.path);
+			if (folder == null) {
+				if (BuildConfig.DEBUG) Log.e(TAG, "setItem: Couldn't find item path.");
+				return;
+			}
+			folder.deleteItemById("/", oldInfo.item.getId());
+			folder.addItem(item);
+		}
+	}
+
+	/**
+	 * Adds a item to this folder at the given path.
+	 * @param info the info given about the item to add (should be completely filled)
+	 */
+	public synchronized void addItem(@Nullable ItemInfo info) {
+		if (info == null || info.path == null || info.item == null) {
+			if (BuildConfig.DEBUG) Log.e(TAG, "addItem: The item specified was null.");
+			return;
+		}
+
+		AlarmGroup currFolder = getFolder(info.path);
+		if (currFolder == null) {
+			if (BuildConfig.DEBUG) Log.e(TAG, "addItem: Couldn't find the specified path.");
+			return;
+		}
+		currFolder.addItem(info.item);
+	}
+
+	/**
 	 * Adds a item to the current folder.
 	 * @param item the item to add to the folder
 	 */
@@ -401,131 +493,57 @@ public class AlarmGroup extends Item {
 	/**
 	 * Deletes a item at the specified index.
 	 * @param index the index of the item to delete
-	 * @return the item deleted, or null
 	 */
-	@Nullable
-	public synchronized Item deleteItem(final int index) {
+	public synchronized void deleteItem(final int index) {
 		if (index < 0 || index >= items.size()) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "Couldn't delete item. Index is out of bounds.");
-			return null;
+			return;
 		}
 
-		return items.remove(index);
-	}
-
-	/* **************************  Manipulating Contents (by path)  *************************** */
-
-	/**
-	 * Sets item as the new item in the dataset at the absolute index. If the index doesn't exist,
-	 * doesn't do anything.
-	 * @param info the info of the new item (assumes path represents the old path, and the item's id
-	 *             remained unchanged)
-	 * @param item the new item to set it to
-	 * @return the item that was deleted, or null if there was none
-	 */
-	@Nullable
-	public synchronized Item setItem(@Nullable final ItemInfo info, final Item item) {
-		if (info == null) {
-			if (BuildConfig.DEBUG) Log.e(TAG, "setItem: Item was null.");
-			return null;
-		}
-
-
-
-		if (i.parent == null) {
-			setitem(i.relIndex, item);
-		}
-		else {
-			i.parent.setitem(i.relIndex, item);
-			refreshLookups();
-		}
-		return i.item;
+		items.remove(index);
 	}
 
 	/**
-	 * Deletes the item at the specified absolute index. Always assumes it's for the visible
-	 * items only.
-	 * @param absIndex the absolute index of the item to delete
-	 * @return the item that was deleted or null if there was an error
+	 * Deletes the specified item via its parent reference.
+	 * @param i the item to delete
 	 */
-	@Nullable
-	public synchronized Item deleteItemAbs(final int absIndex) {
-		ItemInfo i = getitemInfo(absIndex, true);
-		if (i == null) {
-			if (BuildConfig.DEBUG) Log.e(TAG, "Item at absolute index " + absIndex + " was not found.");
-			return null;
-		}
-
-		Item l;
-		if (i.parent == null) {
-			l = deleteItem(i.relIndex);
-		}
-		else {
-			l = i.parent.deleteitem(i.relIndex);
-			refreshLookups();
-		}
-		return l;
+	private static synchronized void deleteItemByRef(@Nullable final Item i) {
+		if (i != null && i.parent != null) i.parent.items.remove(i);
+		else if (BuildConfig.DEBUG) Log.e(TAG, "deleteItemByRef: The item or parent was null.");
 	}
 
 	/**
-	 * Adds a item to this folder at the given path.
-	 * @param item the info given about the item to add, should include the item and path
-	 * @param path the path to add the item to
+	 * Deletes the specified item by id.
+	 * @param path the last path the item was seen on (optional, just useful for searching)
+	 * @param id the id of the item to delete
 	 */
-	public synchronized void addItem(@Nullable Item item, @Nullable String path) {
-		if (item == null) {
-			if (BuildConfig.DEBUG) Log.e(TAG, "addItem: The item specified was null.");
-			return;
-		}
-		if (path == null) {
-			if (BuildConfig.DEBUG) Log.e(TAG, "addItem: The path specified was null.");
-			return;
-		}
-
-		AlarmGroup currFolder = getFolder(path);
-		if (currFolder == null) {
-			if (BuildConfig.DEBUG) Log.e(TAG, "addItem: Couldn't find the specified path.");
-			return;
-		}
-		currFolder.additem(item);
+	private synchronized void deleteItemById(@Nullable String path, final int id) {
+		Item i = getItemById(path, id);
+		deleteItemByRef(i);
 	}
 
 	/**
-	 * Moves the item specified by index to the new path. Assumes that the id of the item
-	 * remained the same.
-	 * @param item the new item to replace with (will just use the old one if it's null)
-	 * @param path the path to move the item to
-	 * @param oldPath the old path the item was originally in
-	 * @return the new absolute index of the item (visible index). Will return -1 if there was
-	 * an error or if it's not visible
+	 * Moves the item specified by index to the new path. The item itself can change, but the id
+	 * must remain the same.
+	 * @param itemInfo info about the new item to replace with (must always be completely filled)
+	 * @param newPath the path to move the item to
 	 */
-	public synchronized void moveItem(@Nullable Item item, @Nullable String path, @Nullable String oldPath) {
-		if (path == null) {
-			if (BuildConfig.DEBUG) Log.e(TAG, "moveItem: The path specified was null.");
+	public synchronized void moveItem(@Nullable ItemInfo itemInfo, @Nullable String newPath) {
+		if (itemInfo == null || itemInfo.item == null || itemInfo.path == null) {
+			if (BuildConfig.DEBUG) Log.e(TAG, "moveItem: The item info was null.");
 			return;
 		}
-		String[] folders = path.split("/");	// ignore the first one (root folder name)
-		AlarmGroup currFolder = getFolder(path);
-		if (currFolder == null) {
-			if (BuildConfig.DEBUG) Log.e(TAG, "moveItemAbs: Couldn't find the specified path.");
+		if (newPath == null) {
+			if (BuildConfig.DEBUG) Log.e(TAG, "moveItem: The new path specified was null.");
 			return;
 		}
 
-		Item newItem = item;
-		if (newItem == null) {
-			// replace with what's currently at the abs index
-			newItem = deleteitemAbs(oldAbsIndex);
-			if (newItem == null) {
-				if (BuildConfig.DEBUG) Log.e(TAG, "moveItemAbs: Couldn't find the item to move.");
-				return;
-			}
-		}
-		else {
-			// replace with the new item
-			deleteitemAbs(oldAbsIndex);
-		}
+		// if it happens to be a ref to the actual folder, then we don't need to search for it
+		if (itemInfo.item.getParent() != null) deleteItemByRef(itemInfo.item);
+		else deleteItemById(itemInfo.path, itemInfo.item.getId());
 
-		currFolder.addItem(newItem);
+		itemInfo.path = newPath;	// for input to addItem()
+		addItem(itemInfo);
 	}
 
 	/* ***********************************  Other Methods  ************************************** */

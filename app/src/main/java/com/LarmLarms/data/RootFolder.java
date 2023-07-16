@@ -1,5 +1,7 @@
 package com.larmlarms.data;
 
+import static com.larmlarms.editor.EditorActivity.EXTRA_ITEM_INFO;
+
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -9,6 +11,7 @@ import android.util.Log;
 import com.larmlarms.BuildConfig;
 import com.larmlarms.ringing.RingingService;
 
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -49,43 +52,68 @@ public class RootFolder extends AlarmGroup {
     /**
      * The current alarm to ring next.
      */
+    @Nullable
     private Alarm currNextAlarm;
+
+    /**
+     * Current context (required to save to disk).
+     */
+    private final Context context;
 
     /**
      * Initializes a new root folder with a name and contents.
      * @param name the new name of the folder
      * @param children the new items within the folder
      */
-    public RootFolder(@Nullable String name, @NotNull List<Item> children) {
+    public RootFolder(@Nullable String name, @NotNull List<Item> children, @NotNull Context c) {
         super(name, children);
         execService = Executors.newSingleThreadExecutor();
+        context = c;
     }
+
+    // shouldn't need a copy constructor...
 
     /* *************************************  Folder Overrides  ********************************* */
 
+    /**
+     * Sets the items within the folder. If the new list is invalid (the list or any items
+     * within it are null), will not do anything.
+     * @param items a new list of items to use, can be null
+     */
+    @Override
+    public synchronized void setItems(@Nullable List<Item> items) {
+        super.setItems(items);
+        save();
+    }
+
     /* *********************************  Root-Specific Methods  ******************************** */
+
+    @Nullable @Contract(pure = true)
+    public final Alarm getCurrNextAlarm() {
+        if (currNextAlarm == null) return null;
+        return new Alarm(currNextAlarm);
+    }
 
     /**
      * Saves everything to disk and sets the alarms to ring.
-     * @param context the current context
      */
-    private void save(@NotNull Context context) {
+    private void save() {
         execService.execute(() -> {
             writeAlarmsToDisk(context, this);
-            ItemInfo info = getNextRingingAlarm();
+            ItemInfo info = findNextRingingAlarm();
             if (info.item != currNextAlarm) currNextAlarm = registerAlarm(context, info);
         });
     }
 
     /**
-     * Convenience method for getNextRingingAlarm(). Searches for the next alarm that will ring
+     * Convenience method for findNextRingingAlarm(). Searches for the next alarm that will ring
      * within the folder. Returns the listable and absolute index of the listable (within the
      * current dataset) within a ListableInfo struct.
      * @return a ListableInfo with alarm and absolute index (real index) filled correctly, alarm can
      * be null if there is no active alarm within the data given
      */
     @NotNull
-    private ItemInfo getNextRingingAlarm() { return getNextRingingAlarm(items); }
+    private ItemInfo findNextRingingAlarm() { return findNextRingingAlarm(items); }
 
     /**
      * Sets the next alarm to ring. Does not create a new pending intent, rather updates the current
@@ -94,12 +122,9 @@ public class RootFolder extends AlarmGroup {
      * @param context the current context
      * @param alarmInfo the alarm to register as the next alarm
      */
-    private static Alarm registerAlarm(@NotNull Context context, @NotNull ItemInfo alarmInfo) {
+    private synchronized static Alarm registerAlarm(@NotNull Context context, @NotNull ItemInfo alarmInfo) {
         Intent intent = new Intent(context, RingingService.class);
-        if (alarmInfo.item != null) {
-            intent.putExtra(RingingService.EXTRA_ITEM, alarmInfo.item.toEditString());
-            intent.putExtra(RingingService.EXTRA_ITEM_PATH, alarmInfo.path);
-        }
+        if (alarmInfo.item != null) intent.putExtra(EXTRA_ITEM_INFO, alarmInfo);
 
         AlarmManager manager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         PendingIntent pendingIntent;
@@ -144,7 +169,7 @@ public class RootFolder extends AlarmGroup {
      * active alarm within the data given
      */
     @NotNull
-    private static ItemInfo getNextRingingAlarm(@NotNull List<Item> data) {
+    private synchronized static ItemInfo findNextRingingAlarm(@NotNull List<Item> data) {
         Alarm next = null;
 
         for (Item curr : data) {
@@ -159,7 +184,7 @@ public class RootFolder extends AlarmGroup {
                 }
             }
             else {
-                ItemInfo poss = getNextRingingAlarm(((AlarmGroup) curr).getItems());
+                ItemInfo poss = findNextRingingAlarm(((AlarmGroup) curr).getItems());
                 // there is no candidate in this folder
                 if (poss.item == null) continue;
 
@@ -179,7 +204,7 @@ public class RootFolder extends AlarmGroup {
      * @return A populated ArrayList of Listables or an empty one in the case of an error
      */
     @NotNull
-    public static List<Item> getAlarmsFromDisk(@NotNull Context context) {
+    public synchronized static List<Item> getAlarmsFromDisk(@NotNull Context context) {
         ArrayList<Item> data = new ArrayList<>();
 
         try {
@@ -243,7 +268,7 @@ public class RootFolder extends AlarmGroup {
      * @param data The data to write, doesn't include the AlarmGroup itself (uses getListables() to
      *             retrieve Listables to write). This value may not be null.
      */
-    private static void writeAlarmsToDisk(@NotNull Context context, @NotNull AlarmGroup data) {
+    private synchronized static void writeAlarmsToDisk(@NotNull Context context, @NotNull AlarmGroup data) {
         try {
             File alarmFile = new File(context.getFilesDir(), ALARM_STORE_FILE_NAME);
             //noinspection ResultOfMethodCallIgnored

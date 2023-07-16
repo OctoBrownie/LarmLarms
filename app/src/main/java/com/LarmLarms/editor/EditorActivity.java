@@ -1,19 +1,12 @@
 package com.larmlarms.editor;
 
 import android.annotation.SuppressLint;
-import android.content.ComponentName;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.ServiceConnection;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.IBinder;
-import android.os.Looper;
 import android.os.Message;
-import android.os.Messenger;
-import android.os.RemoteException;
 import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.View;
@@ -39,6 +32,8 @@ import com.larmlarms.data.AlarmDataService;
 import com.larmlarms.data.AlarmGroup;
 import com.larmlarms.data.Item;
 import com.larmlarms.data.ItemInfo;
+import com.larmlarms.data.RootFolder;
+import com.larmlarms.main.MainApplication;
 import com.larmlarms.main.PrefsActivity;
 
 import org.jetbrains.annotations.NotNull;
@@ -52,6 +47,8 @@ import java.util.Calendar;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+// TODO: set up folder structure, probably via executor service
+
 /**
  * Activity used for creating new items or editing existing ones.
  *
@@ -59,7 +56,7 @@ import androidx.appcompat.app.AppCompatActivity;
  * Must have an action defined in this class
  * For specific actions, see the action documentation for extra requirements
  */
-public class ListableEditorActivity extends AppCompatActivity
+public class EditorActivity extends AppCompatActivity
 		implements AdapterView.OnItemSelectedListener, EditorDialogFrag.DialogCloseListener,
 		SeekBar.OnSeekBarChangeListener {
 
@@ -68,12 +65,12 @@ public class ListableEditorActivity extends AppCompatActivity
 	/**
 	 * Tag of the class for logging purposes.
 	 */
-	private final static String TAG = "ListableEditor";
+	private final static String TAG = "Editor";
 
 	/**
-	 * An extra used for carrying a ListableInfo.
+	 * An extra used for carrying a ItemInfo.
 	 */
-	public final static String EXTRA_LISTABLE_INFO = "com.apps.larmlarms.extra.INFO";
+	public final static String EXTRA_ITEM_INFO = "com.apps.larmlarms.extra.INFO";
 
 	// for inbound intents
 	/**
@@ -81,8 +78,8 @@ public class ListableEditorActivity extends AppCompatActivity
 	 */
 	public final static String ACTION_CREATE_ALARM = "com.apps.larmlarms.action.CREATE_ALARM";
 	/**
-	 * Intent action for editing an existing Alarm. Requires that EXTRA_LISTABLE_INFO contain a
-	 * ListableInfo with absIndex, listable, and path filled out.
+	 * Intent action for editing an existing Alarm. Requires that EXTRA_ITEM_INFO contain a
+	 * ItemInfo with absIndex, item, and path filled out.
 	 */
 	public final static String ACTION_EDIT_ALARM = "com.apps.larmlarms.action.EDIT_ALARM";
 	/**
@@ -90,8 +87,8 @@ public class ListableEditorActivity extends AppCompatActivity
 	 */
 	public final static String ACTION_CREATE_FOLDER = "com.apps.larmlarms.action.CREATE_FOLDER";
 	/**
-	 * Request code to edit an existing AlarmGroup. Requires that EXTRA_LISTABLE_INFO contain a
-	 * ListableInfo with absIndex, listable, and path filled out.
+	 * Request code to edit an existing AlarmGroup. Requires that EXTRA_ITEM_INFO contain a
+	 * ItemInfo with absIndex, item, and path filled out.
 	 */
 	public final static String ACTION_EDIT_FOLDER = "com.apps.larmlarms.action.EDIT_FOLDER";
 
@@ -103,28 +100,28 @@ public class ListableEditorActivity extends AppCompatActivity
 
 	/* ***********************************  Instance Fields  ************************************ */
 
-	// information about Listable being edited
+	// information about item being edited
 	/**
-	 * The current Listable being edited/created in this activity. Is not null (after the activity
+	 * The current item being edited/created in this activity. Is not null (after the activity
 	 * is created).
 	 */
 	@NotNull
 	private Item workingItem;
 	/**
-	 * The currently selected path of the current working Listable. Will be null unless the path was
+	 * The currently selected path of the current working item. Will be null unless the path was
 	 * actually changed.
 	 */
 	@Nullable
 	private String itemPath;
 
-	// information about the original received Listable
+	// information about the original received item
 	/**
-	 * The original listable received from the caller. Can be null if a new listable is being made.
+	 * The original item received from the caller. Can be null if a new item is being made.
 	 */
 	@Nullable
 	private Item originalItem;
 	/**
-	 * The original path of the current Listable.
+	 * The original path of the current item.
 	 */
 	@Nullable
 	private String originalPath;
@@ -141,7 +138,7 @@ public class ListableEditorActivity extends AppCompatActivity
 	 */
 	private boolean isAlarm;
 	/**
-	 * Shows whether the current activity is editing a Listable (true) or creating a new one (false).
+	 * Shows whether the current activity is editing a item (true) or creating a new one (false).
 	 */
 	private boolean isEditing;
 
@@ -186,15 +183,15 @@ public class ListableEditorActivity extends AppCompatActivity
 	/* *********************************  Lifecycle Methods  ******************************* */
 
 	/**
-	 * Creates a new ListableEditor and initializes some fields.
+	 * Creates a new editor and initializes some not null fields.
 	 */
-	public ListableEditorActivity() {
+	public EditorActivity() {
 		workingItem = new AlarmGroup();		// used in REQ_NEW_FOLDER, dummy data for all others
 	}
 
 	/**
 	 * Called when the activity is first being created. Initializes fields and UI based on the type
-	 * of Listable being edited.
+	 * of item being edited.
 	 * @param savedInstanceState the previously saved instance state from previous activity creation
 	 */
 	@Override
@@ -204,7 +201,7 @@ public class ListableEditorActivity extends AppCompatActivity
 		Intent intent = getIntent();
 		String action = intent.getAction();
 		if (action == null) {
-			if (BuildConfig.DEBUG) Log.e(TAG, "Action passed to ListableEditor is null.");
+			if (BuildConfig.DEBUG) Log.e(TAG, "Action passed to Editor is null.");
 			finish();
 			return;
 		}
@@ -239,15 +236,15 @@ public class ListableEditorActivity extends AppCompatActivity
 		if (isEditing) {
 			Bundle extras = intent.getExtras();
 			if (extras == null) {
-				if (BuildConfig.DEBUG) Log.e(TAG, "Extras passed to ListableEditor are null.");
+				if (BuildConfig.DEBUG) Log.e(TAG, "Extras passed to Editor are null.");
 				finish();
 				return;
 			}
 
-			ItemInfo info = extras.getParcelable(EXTRA_LISTABLE_INFO);
+			ItemInfo info = extras.getParcelable(EXTRA_ITEM_INFO);
 
 			if (info == null || info.item == null || info.path == null) {
-				if (BuildConfig.DEBUG) Log.e(TAG, "Listable info is invalid.");
+				if (BuildConfig.DEBUG) Log.e(TAG, "item info is invalid.");
 				finish();
 				return;
 			}
@@ -255,7 +252,8 @@ public class ListableEditorActivity extends AppCompatActivity
 			if (isAlarm) ((Alarm) workingItem).setContext(this);
 
 			originalPath = info.path;
-			originalItem = workingItem;
+			originalItem = workingItem instanceof Alarm ?
+					new Alarm((Alarm)workingItem) : new AlarmGroup((AlarmGroup)workingItem);
 		}
 
 		PrefsActivity.applyPrefsStyle(this);
@@ -291,7 +289,7 @@ public class ListableEditorActivity extends AppCompatActivity
 	/* **********************************  Button Callbacks  ********************************** */
 
 	/**
-	 * An onclick callback for the back button. Closes the ListableEditor.
+	 * An onclick callback for the back button. Closes the Editor.
 	 * @param view the back button (view that triggered the callback)
 	 */
 	public void backButtonClicked(@NotNull View view) {
@@ -300,58 +298,43 @@ public class ListableEditorActivity extends AppCompatActivity
 	}
 
 	/**
-	 * An onclick callback for the save button. Turns workingListable on and sends it back to the
-	 * DataService to be saved. Exits the activity if the listable was saved correctly or if some
+	 * An onclick callback for the save button. Turns currItem on and sends it back to the
+	 * DataService to be saved. Exits the activity if the item was saved correctly or if some
 	 * fatal error has been encountered.
 	 * @param view the save button (view that triggered the callback)
 	 */
 	public void saveButtonClicked(@NotNull View view) {
-		if (!saveToListable()) return;
+		if (!saveItem()) return;
 
-		Message msg = null;
 		ItemInfo data = new ItemInfo();
+		RootFolder rootFolder = ((MainApplication) getApplication()).rootFolder;
 
 		if (isEditing) {
-			// check if the path was changed (make it a MSG_MOVE_LISTABLE)
-			// would be a MSG_MOVE_LISTABLE whether or not the listable itself changes
+			workingItem.turnOn();		// in case it was snoozed or something weird
+
+			// check if the path was changed (makes it a move operation, regardless of if the
+			// item itself changed)
 			if (itemPath != null && !itemPath.equals(originalPath)) {
-				msg = Message.obtain(null, AlarmDataService.MSG_MOVE_LISTABLE);
-				msg.arg1 = listableIndex;
-				data.path = itemPath;
+				data.item = workingItem;
+				data.path = originalPath;
+				rootFolder.moveItem(data, itemPath);
+				return;
 			}
 
-			// check if the listable itself was changed
+			// check if the item itself was changed
 			if (!workingItem.equals(originalItem)) {
-				if (msg == null) {
-					// path didn't change but Listable did, so use MSG_SET_LISTABLE
-					msg = Message.obtain(null, AlarmDataService.MSG_SET_LISTABLE);
-					data.absIndex = listableIndex;
-				}
-
-				// listable changed, so add to the bundle
-				workingItem.turnOn();
-				data.item = workingItem;
+				// path didn't change but item did, so use MSG_SET_LISTABLE
+				data.item = originalItem;
+				data.path = originalPath;
+				rootFolder.setItemById(data, workingItem);
 			}
 		}
 		else {
-			// create MSG_ADD_LISTABLE
-			msg = Message.obtain(null, AlarmDataService.MSG_ADD_LISTABLE);
+			// add the item
 			data.item = workingItem;
 			data.path = itemPath;
+			rootFolder.addItem(data);
 		}
-
-		// if there is no message to send, then just exit the activity
-		if (msg == null) {
-			if (BuildConfig.DEBUG) Log.i(TAG, "Nothing changed, so just exiting...");
-			finish();
-			return;
-		}
-
-		Bundle b = new Bundle();
-		b.putParcelable(AlarmDataService.BUNDLE_INFO_KEY, data);
-		msg.setData(b);
-
-		if (!sendMessage(msg)) return;
 		finish();
 	}
 
@@ -392,7 +375,7 @@ public class ListableEditorActivity extends AppCompatActivity
 
 	/**
 	 * Based on which repeat type was selected (using the position), will show/hide certain UI
-	 * elements and change the repeatType of workingListable.
+	 * elements and change the repeatType of currItem.
 	 *
 	 * @param parent Spinner (AdapterView) that just closed
 	 * @param view view within the AdapterView that was clicked
@@ -733,7 +716,7 @@ public class ListableEditorActivity extends AppCompatActivity
 
 		if (isEditing && !isAlarm) {
 			if (originalItem == null) {
-				if (BuildConfig.DEBUG) Log.e(TAG, "Can't setup folder structure without the original listable being valid.");
+				if (BuildConfig.DEBUG) Log.e(TAG, "Can't setup folder structure without the original item being valid.");
 				return;
 			}
 			String folderPath = originalPath + originalItem.getName() + '/';
@@ -947,12 +930,12 @@ public class ListableEditorActivity extends AppCompatActivity
 	}
 
 	/**
-	 * Saves information from activity fields to workingListable. Does NOT turn workingListable on
+	 * Saves information from activity fields to currItem. Does NOT turn currItem on
 	 * if it was originally off. If an error is encountered, will ither create a Toast to tell the
 	 * user how to fix it or close the activity using exitActivity(), based on error severity.
-	 * @return whether the listable was saved without error
+	 * @return whether the item was saved without error
 	 */
-	public boolean saveToListable() {
+	public boolean saveItem() {
 		// common fields
 		String newName = ((EditText) findViewById(R.id.nameInput)).getText().toString();
 		int errorCode = workingItem.setName(newName);
@@ -974,7 +957,7 @@ public class ListableEditorActivity extends AppCompatActivity
 					break;
 				default:
 					// error: unknown request code!
-					if (BuildConfig.DEBUG) Log.e(TAG, "Unknown setListableName() error code! Exiting activity...");
+					if (BuildConfig.DEBUG) Log.e(TAG, "Unknown setName() error code! Exiting activity...");
 					finish();
 					return false;
 			}
@@ -1147,109 +1130,5 @@ public class ListableEditorActivity extends AppCompatActivity
 		c.set(Calendar.SECOND, 0);
 		c.set(Calendar.MILLISECOND, 0);
 		return true;
-	}
-
-	/**
-	 * Sends a message to the data service.
-	 * @param msg the message to send
-	 * @return whether the message was successfully sent or not
-	 */
-	private boolean sendMessage(@Nullable Message msg) {
-		if (dataService == null) {
-			if (BuildConfig.DEBUG) Log.e(TAG, "Data service is unavailable. Caching the message.");
-			unsentMessage = msg;
-			return false;
-		}
-
-		try {
-			dataService.send(msg);
-			return true;
-		}
-		catch (RemoteException e) {
-			if (BuildConfig.DEBUG) Log.e(TAG, "Data service is unavailable. Caching the message.");
-			unsentMessage = msg;
-			return false;
-		}
-	}
-
-	/* ***********************************  Inner Classes  ************************************* */
-
-	/**
-	 * The service connection used for connecting to the data service. Used for passing the messenger
-	 * on to the recycler adapter.
-	 */
-	private class DataServiceConnection implements ServiceConnection {
-		/**
-		 * Called when the service is connected. Sends the messenger to the adapter. If there is an
-		 * unsent message (the result of the activity), will send it instead and finish.
-		 * @param className the name of the class that was bound to (unused)
-		 * @param service the binder that the service returned
-		 */
-		@Override
-		public void onServiceConnected(@NotNull ComponentName className, @NotNull IBinder service) {
-			boundToDataService = true;
-			dataService = new Messenger(service);
-
-			try {
-				if (unsentMessage != null) {
-					dataService.send(unsentMessage);
-					finish();
-				}
-				else {
-					Message msg = Message.obtain(null, AlarmDataService.MSG_GET_FOLDERS);
-					msg.replyTo = new Messenger(new MsgHandler(ListableEditorActivity.this));
-					dataService.send(msg);
-				}
-			}
-			catch (RemoteException e) {
-				e.printStackTrace();
-			}
-		}
-
-		/**
-		 * Called when the data service crashes.
-		 * @param className the name of the class that was bound to (unused)
-		 */
-		@Override
-		public void onServiceDisconnected(@NotNull ComponentName className) {
-			if (BuildConfig.DEBUG) Log.e(TAG, "The data service crashed.");
-			boundToDataService = false;
-		}
-	}
-
-	/**
-	 * Inner Handler class for handling messages from the data service. Only really handles
-	 * MSG_GET_FOLDERS messages.
-	 */
-	private static class MsgHandler extends Handler {
-		/**
-		 * The activity that owns this handler.
-		 */
-		@NotNull
-		private final ListableEditorActivity activity;
-
-		/**
-		 * Creates a new handler on the main thread.
-		 */
-		private MsgHandler(@NotNull ListableEditorActivity currActivity) {
-			super(Looper.getMainLooper());
-
-			activity = currActivity;
-		}
-
-		/**
-		 * Handles messages from the data service. If it's not a MSG_GET_FOLDERS message, doesn't
-		 * do anything. Otherwise, sends it to the activity.
-		 * @param msg the incoming Message to handle
-		 */
-		@Override
-		public void handleMessage(@Nullable Message msg) {
-			if (msg == null || msg.what != AlarmDataService.MSG_GET_FOLDERS) {
-				if (BuildConfig.DEBUG) Log.e(TAG, "Message to handle is invalid. Ignoring...");
-				return;
-			}
-
-			activity.setupFolderStructure(msg);
-		}
 	}
 }

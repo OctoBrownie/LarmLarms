@@ -30,7 +30,7 @@
 			</intent-filter>
 		</activity>
 		<!-- TODO: add intent filter for ACTION_SET_ALARM? -->
-		<activity android:name=".editor.ListableEditorActivity"
+		<activity android:name=".editor.EditorActivity"
 			android:exported="false" />
 		<activity android:name=".main.PrefsActivity"
 			android:exported="false" />

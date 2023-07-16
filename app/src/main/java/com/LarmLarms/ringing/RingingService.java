@@ -1,15 +1,15 @@
 package com.larmlarms.ringing;
 
+import static com.larmlarms.editor.EditorActivity.EXTRA_ITEM_INFO;
+
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
-import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.media.AudioAttributes;
 import android.media.AudioFocusRequest;
@@ -17,13 +17,8 @@ import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Build;
-import android.os.Handler;
 import android.os.IBinder;
-import android.os.Looper;
-import android.os.Message;
-import android.os.Messenger;
 import android.os.PowerManager;
-import android.os.RemoteException;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.util.Log;
@@ -32,7 +27,7 @@ import android.widget.RemoteViews;
 import com.larmlarms.BuildConfig;
 import com.larmlarms.R;
 import com.larmlarms.data.Alarm;
-import com.larmlarms.data.AlarmDataService;
+import com.larmlarms.data.ItemInfo;
 import com.larmlarms.main.PrefsActivity;
 
 import org.jetbrains.annotations.NotNull;
@@ -41,8 +36,9 @@ import org.jetbrains.annotations.Nullable;
 import androidx.core.app.NotificationCompat;
 
 /**
- * A very short-term service that runs in the background of a currently ringing alarm. Manages the
- * notification for the alarm and playing the alarm sounds.
+ * A short-term service that runs in the background of a currently ringing alarm. Manages the
+ * notification for the alarm and playing the alarm sounds. Requires the alarm as an extra in the
+ * intent as an extra using EditorActivity.EXTRA_ITEM_INFO as the key.
  */
 public class RingingService extends Service implements MediaPlayer.OnPreparedListener,
 		MediaPlayer.OnErrorListener, AudioManager.OnAudioFocusChangeListener {
@@ -51,22 +47,12 @@ public class RingingService extends Service implements MediaPlayer.OnPreparedLis
 	 */
 	private static final String TAG = "RingingService";
 
-	/* ***********************************  Intent extras *************************************** */
-	/**
-	 * An extra used for carrying an itme in edit string form.
-	 */
-	public final static String EXTRA_ITEM = "com.apps.larmlarms.extra.ITEM";
-	/**
-	 * An extra used for carrying an item's path within the data.
-	 */
-	public final static String EXTRA_ITEM_PATH = "com.apps.larmlarms.extra.PATH";
-
 	/* *********************************  Other static fields  ********************************** */
 
 	/**
 	 * String ID for the notification channel the foreground notifications are posted in.
 	 */
-	public static final String CHANNEL_ID = "RingingAlarms";
+	public static final String NOTIFICATION_CHANNEL_ID = "RingingAlarms";
 	/**
 	 * The int ID for the foreground notification itself. There should only be one at any given time,
 	 * so using the same ID should be fine.
@@ -76,13 +62,9 @@ public class RingingService extends Service implements MediaPlayer.OnPreparedLis
 	/* ***********************************  Non-static fields ********************************* */
 
 	/**
-	 * The current alarm being presented.
+	 * The current alarm that's ringing.
 	 */
-	private Alarm alarm;
-	/**
-	 * The path of the alarm that's currently ringing.
-	 */
-	private String alarmPath;
+	private ItemInfo alarmInfo;
 
 	/**
 	 * Plays the ringtone of the alarm. Can be null if the alarm is silent.
@@ -138,14 +120,12 @@ public class RingingService extends Service implements MediaPlayer.OnPreparedLis
 	public int onStartCommand(@NotNull Intent inIntent, int flags, int startId) {
 		createNotificationChannel(this);
 
-		alarm = Alarm.fromEditString(this, inIntent.getStringExtra(EXTRA_ITEM));
-		if (alarm == null) {
+		alarmInfo = inIntent.getParcelableExtra(EXTRA_ITEM_INFO);
+		if (alarmInfo == null || alarmInfo.item == null) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "Alarm was invalid.");
 			stopSelf();
 			return Service.START_NOT_STICKY;
 		}
-
-		alarmPath = inIntent.getStringExtra(EXTRA_ITEM_PATH);
 
 		// flags for the pending intents
 		int PIFlags = PendingIntent.FLAG_UPDATE_CURRENT;
@@ -154,19 +134,18 @@ public class RingingService extends Service implements MediaPlayer.OnPreparedLis
 
 		// setting up custom foreground notification
 		Intent fullScreenIntent = new Intent(this, RingingActivity.class);
-		fullScreenIntent.putExtra(EXTRA_ITEM_PATH, alarmPath);
+		fullScreenIntent.putExtra(EXTRA_ITEM_INFO, alarmInfo);
 		fullScreenIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-		fullScreenIntent.putExtra(EXTRA_ITEM, alarm.toEditString());
 		PendingIntent fullscreenPI = PendingIntent.getActivity(this, 0, fullScreenIntent, PIFlags);
 
 		Intent dismissIntent = new Intent(this, AfterRingingService.class);
-		dismissIntent.putExtra(EXTRA_ITEM_PATH, alarmPath);
+		dismissIntent.putExtra(EXTRA_ITEM_INFO, alarmInfo);
 		dismissIntent.setAction(AfterRingingService.ACTION_DISMISS);
 		PendingIntent dismissPI = PendingIntent.getService(this, 0, dismissIntent, PIFlags);
 
 		Intent snoozeIntent = new Intent(dismissIntent);
 		snoozeIntent.setAction(AfterRingingService.ACTION_SNOOZE);
-		PendingIntent snoozePendingIntent = PendingIntent.getService(this, 0, snoozeIntent, PIFlags);
+		PendingIntent snoozePI = PendingIntent.getService(this, 0, snoozeIntent, PIFlags);
 
 		// this is so stupid but we can't change styles/themes of a remote view
 		int notifLayout;
@@ -192,15 +171,15 @@ public class RingingService extends Service implements MediaPlayer.OnPreparedLis
 		PrefsActivity.applyPrefsStyle(this);
 
 		RemoteViews notifView = new RemoteViews(getPackageName(), notifLayout);
-		notifView.setTextViewText(R.id.alarm_name_text, alarm.getName());
+		notifView.setTextViewText(R.id.alarm_name_text, alarmInfo.item.getName());
 
 		// we need this line to ensure actions pop up on the heads up notification
-		notifView.setOnClickPendingIntent(R.id.snoozeButton, snoozePendingIntent);
+		notifView.setOnClickPendingIntent(R.id.snoozeButton, snoozePI);
 		notifView.setOnClickPendingIntent(R.id.dismissButton, dismissPI);
 
-		NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
+		NotificationCompat.Builder builder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
 				.setSmallIcon(R.mipmap.ic_launcher)
-				.setContentTitle(alarm.getName())
+				.setContentTitle(alarmInfo.item.getName())
 				.setContentText(getResources().getString(R.string.notif_description))
 				.setTicker(getResources().getString(R.string.notif_ticker))
 				.setPriority(NotificationCompat.PRIORITY_MAX)
@@ -222,7 +201,7 @@ public class RingingService extends Service implements MediaPlayer.OnPreparedLis
 				.setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
 				.setUsage(AudioAttributes.USAGE_ALARM)
 				.build();
-		if (alarm.getRingtoneUri() != null && alarm.getVolume() != 0) {
+		if (((Alarm)alarmInfo.item).getRingtoneUri() != null && ((Alarm)alarmInfo.item).getVolume() != 0) {
 
 			// media player setup
 			mediaPlayer = new MediaPlayer();
@@ -231,7 +210,7 @@ public class RingingService extends Service implements MediaPlayer.OnPreparedLis
 			mediaPlayer.setWakeMode(this, PowerManager.PARTIAL_WAKE_LOCK);
 
 			try {
-				mediaPlayer.setDataSource(this, alarm.getRingtoneUri());
+				mediaPlayer.setDataSource(this, ((Alarm)alarmInfo.item).getRingtoneUri());
 				mediaPlayer.setOnPreparedListener(this);
 				mediaPlayer.prepareAsync();
 			}
@@ -276,7 +255,7 @@ public class RingingService extends Service implements MediaPlayer.OnPreparedLis
 			}
 		}
 
-		if (alarm.isVibrateOn()) {
+		if (((Alarm)alarmInfo.item).isVibrateOn()) {
 			// vibrator setup
 			vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
 			if (vibrator == null) {
@@ -301,20 +280,17 @@ public class RingingService extends Service implements MediaPlayer.OnPreparedLis
 	}
 
 	/**
-	 * Called the first time a component wants to bind to this service. Creates a new messenger to
-	 * communicate with clients.
+	 * Binding is not supported for this class. Will throw an UnsupportedOperationException.
 	 * @param intent the intent used to bind to the service, unused in this implementation
-	 * @return a messenger to AlarmRingingService
 	 */
 	@Override
-	public IBinder onBind(@NotNull Intent intent) {
-		Messenger messenger = new Messenger(new ActivityHandler(this));
-		return messenger.getBinder();
+	public IBinder onBind(@NotNull Intent intent) throws UnsupportedOperationException {
+		throw new UnsupportedOperationException();
 	}
 
 	/**
-	 * Called when the service is being destroyed. Unbinds from the data service if it is bound,
-	 * releases the media player if it's not null, and releases audio focus if necessary.
+	 * Called when the service is being destroyed. Releases the media player if it's not null, and
+	 * releases audio focus if necessary.
 	 */
 	@Override
 	public void onDestroy() {
@@ -322,8 +298,8 @@ public class RingingService extends Service implements MediaPlayer.OnPreparedLis
 	}
 
 	/**
-	 * Closes everything. Takes care of the data connection, media player, audio focus, and vibrator.
-	 * Doesn't stop the service, though.
+	 * Closes everything. Takes care of the media player, audio focus, and vibrator. Doesn't stop
+	 * the service itself, though.
 	 */
 	private void exitService() {
 		if (mediaPlayer != null) {
@@ -349,7 +325,12 @@ public class RingingService extends Service implements MediaPlayer.OnPreparedLis
 	 */
 	@Override
 	public void onPrepared(@NotNull MediaPlayer mp) {
-		float vol = alarm.getVolume() / 100f;
+		if (alarmInfo.item == null) {
+			if (BuildConfig.DEBUG) Log.e(TAG, "The ringing alarm was null somehow.");
+			return;
+		}
+
+		float vol = ((Alarm)alarmInfo.item).getVolume() / 100f;
 		mp.setVolume(vol, vol);
 		playerPrepared = true;
 		if (audioFocused) mp.start();
@@ -394,29 +375,6 @@ public class RingingService extends Service implements MediaPlayer.OnPreparedLis
 	/* *************************************  Other Methods  ************************************ */
 
 	/**
-	 * Sends a message to the data service using the service's messenger.
-	 * @param msg the message to send, can be null
-	 * @return whether the message was sent successfully or not
-	 */
-	private boolean sendMessage(@Nullable Message msg) {
-		if (dataService == null) {
-			if (BuildConfig.DEBUG) Log.e(TAG, "Data service is null. Caching message.");
-			unsentMessage = msg;
-			return false;
-		}
-
-		try {
-			dataService.send(msg);
-		}
-		catch (RemoteException e) {
-			if (BuildConfig.DEBUG) Log.e(TAG, "Data service is unavailable. Caching message.");
-			unsentMessage = msg;
-			return false;
-		}
-		return true;
-	}
-
-	/**
 	 * Creates a notification channel if the API level requires it. Otherwise, does nothing.
 	 * @param context the current context
 	 */
@@ -426,7 +384,7 @@ public class RingingService extends Service implements MediaPlayer.OnPreparedLis
 			String description = context.getString(R.string.notif_channel_description);
 			int importance = NotificationManager.IMPORTANCE_HIGH;
 
-			NotificationChannel channel = new NotificationChannel(RingingService.CHANNEL_ID, name, importance);
+			NotificationChannel channel = new NotificationChannel(RingingService.NOTIFICATION_CHANNEL_ID, name, importance);
 			channel.setDescription(description);
 			channel.setShowBadge(false);
 			channel.setBypassDnd(true);
@@ -445,102 +403,6 @@ public class RingingService extends Service implements MediaPlayer.OnPreparedLis
 				return;
 			}
 			notificationManager.createNotificationChannel(channel);
-		}
-	}
-
-	/* *************************************  Inner Classes  *********************************** */
-
-	/**
-	 * Inner Handler class for handling messages from AlarmRingingActivity. Handles
-	 * AlarmDataService.MSG_SNOOZE_ALARM and AlarmDataService.MSG_DISMISS_ALARM messages, but doesn't
-	 * check any of the fields.
-	 */
-	private static class ActivityHandler extends Handler {
-		/**
-		 * The service that owns this handler.
-		 */
-		@NotNull
-		RingingService service;
-
-		/**
-		 * Creates a new handler and stores the service that called it.
-		 * @param service the service that created the handler
-		 */
-		private ActivityHandler(@NotNull RingingService service) {
-			super(Looper.getMainLooper());
-			this.service = service;
-		}
-
-		/**
-		 * Handles messages from AlarmRingingActivity. Handles either AlarmDataService.MSG_SNOOZE_ALARM
-		 * or AlarmDataService.MSG_DISMISS_ALARM.
-		 * @param msg the incoming message from the activity
-		 */
-		@Override
-		public void handleMessage(@Nullable Message msg) {
-			if (msg == null) {
-				if (BuildConfig.DEBUG) Log.e(TAG, "Message sent to the ringing service was null. Ignoring...");
-				return;
-			}
-
-			Message outMsg;
-			switch(msg.what) {
-				case AlarmDataService.MSG_SNOOZE_ALARM:
-					outMsg = Message.obtain(null, AlarmDataService.MSG_SNOOZE_ALARM, service.alarmPath, 0);
-					break;
-				case AlarmDataService.MSG_DISMISS_ALARM:
-					outMsg = Message.obtain(null, AlarmDataService.MSG_DISMISS_ALARM, service.alarmPath, 0);
-					break;
-				default:
-					if (BuildConfig.DEBUG) Log.e(TAG, "Unknown message type. Sending to Handler's handleMessage().");
-					super.handleMessage(msg);
-					return;
-			}
-
-			if (!service.sendMessage(outMsg)) {
-				if (BuildConfig.DEBUG) Log.e(TAG, "Message couldn't be sent. Waiting for reconnection.");
-				return;
-			}
-			service.stopForeground(true);
-			service.exitService();
-			service.stopSelf();
-		}
-	}
-
-	/**
-	 * Service connection to the data service.
-	 */
-	private class DataServiceConnection implements ServiceConnection {
-		/**
-		 * Called when the data service connects to this service. Sets some fields in the service
-		 * and sends any unsent messages. If an unsent message is sent, then the service is killed.
-		 * @param className the name of the class that was bound to (unused)
-		 * @param service the binder that the service returned
-		 */
-		@Override
-		public void onServiceConnected(@NotNull ComponentName className, @NotNull IBinder service) {
-			boundToDataService = true;
-			dataService = new Messenger(service);
-
-			if (unsentMessage != null) {
-				sendMessage(unsentMessage);
-
-				exitService();
-				stopSelf();
-			}
-		}
-
-		/**
-		 * Called when the data service crashes. Unsets some fields in the outer service and stops
-		 * the entire service.
-		 * @param className the name of the class that was bound to (unused)
-		 */
-		@Override
-		public void onServiceDisconnected(@NotNull ComponentName className) {
-			if (BuildConfig.DEBUG) Log.e(TAG, "The data service crashed.");
-
-			exitService();
-			stopSelf();
 		}
 	}
 }

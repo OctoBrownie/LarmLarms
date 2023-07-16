@@ -17,7 +17,7 @@ import com.larmlarms.R;
 import com.larmlarms.data.Alarm;
 import com.larmlarms.data.AlarmGroup;
 import com.larmlarms.data.Item;
-import com.larmlarms.editor.ListableEditorActivity;
+import com.larmlarms.editor.EditorActivity;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -78,15 +78,15 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.Recyc
 	}
 
 	/**
-	 * Binds a specific piece of data (a Listable) to a ViewHolder. Called by the RecyclerView.
+	 * Binds a specific piece of data (a item) to a ViewHolder. Called by the RecyclerView.
 	 * @param holder the ViewHolder to bind data to
-	 * @param position the absolute position of the Listable to bind to the ViewHolder
+	 * @param position the absolute position of the item to bind to the ViewHolder
 	 */
 	@Override
 	public void onBindViewHolder (@NotNull RecyclerViewHolder holder, final int position) {
 		Item item = data.getItem(position);
 		if (item == null) {
-			if (BuildConfig.DEBUG) Log.e(TAG, "The listable to display doesn't exist as far as the adapter knows.");
+			if (BuildConfig.DEBUG) Log.e(TAG, "The item to display doesn't exist as far as the adapter knows.");
 			return;
 		}
 
@@ -102,7 +102,7 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.Recyc
 
 	/**
 	 * Gets the id for the item at the given position.
-	 * @return returns the id of the given Listable, or -1 if it couldn't be found
+	 * @return returns the id of the given item, or -1 if it couldn't be found
 	 */
 	@Override
 	public long getItemId(int position) {
@@ -115,26 +115,26 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.Recyc
 	/* **********************************  Other Methods  ********************************* */
 
 	/**
-	 * Sends an explicit intent off to ListableEditor for editing. Sends a ListableInfo describing
-	 * the Listable to edit with the key ListableEditorActivity.EXTRA_LISTABLE_INFO, and the request
-	 * ID with the key ListableEditorActivity.EXTRA_REQ_ID. If the listable is null, doesn't do
+	 * Sends an explicit intent off to editor for editing. Sends an ItemInfo describing
+	 * the item to edit with the key EditorActivity.EXTRA_ITEM_INFO, and the request
+	 * ID with the key EditorActivity.EXTRA_REQ_ID. If the item is null, doesn't do
 	 * anything.
-	 * @param index the absolute index of the listable, assumes within range
+	 * @param index the absolute index of the item, assumes within range
 	 */
-	void editExistingListable(final int index) {
-		// start ListableEditor
-		Intent intent = new Intent(context, ListableEditorActivity.class);
+	void editItem(final int index) {
+		// start editor
+		Intent intent = new Intent(context, EditorActivity.class);
 		Item item = data.getItem(index);
 		if (item == null) {
-			if (BuildConfig.DEBUG) Log.e(TAG, "The listable is null so it cannot be edited.");
+			if (BuildConfig.DEBUG) Log.e(TAG, "The item is null so it cannot be edited.");
 			return;
 		}
 
-		intent.putExtra(ListableEditorActivity.EXTRA_LISTABLE_INFO, item.getInfo());
+		intent.putExtra(EditorActivity.EXTRA_ITEM_INFO, item.getInfo());
 
 		String action;
-		if (item instanceof Alarm) { action = ListableEditorActivity.ACTION_EDIT_ALARM; }
-		else { action = ListableEditorActivity.ACTION_EDIT_FOLDER; }
+		if (item instanceof Alarm) { action = EditorActivity.ACTION_EDIT_ALARM; }
+		else { action = EditorActivity.ACTION_EDIT_FOLDER; }
 
 		intent.setAction(action);
 
@@ -172,11 +172,11 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.Recyc
 
 		// handles to views
 		/**
-		 * The title view. Shows the name of the listable.
+		 * The title view. Shows the name of the item.
 		 */
 		private final TextView titleView;
 		/**
-		 * The view that shows the repeat text of the Listable.
+		 * The view that shows the repeat text of the item.
 		 */
 		private final TextView repeatView;
 		/**
@@ -185,7 +185,7 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.Recyc
 		 */
 		private final TextView timeView;
 		/**
-		 * The active state switch. Turns the Listable on/off.
+		 * The active state switch. Turns the item on/off.
 		 */
 		private final SwitchMaterial switchView;
 		/**
@@ -247,7 +247,7 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.Recyc
 
 		/**
 		 * The onclick listener for views within the view holder. If the card itself is clicked,
-		 * will edit the listable. If the switch is clicked, toggles the switch. If the folder icon
+		 * will edit the item. If the switch is clicked, toggles the switch. If the folder icon
 		 * is clicked (meaning it's a folder), it will toggle the open/closed state.
 		 * @param v the view that was clicked
 		 */
@@ -255,7 +255,7 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.Recyc
 		public void onClick(@NotNull View v) {
 			int id = v.getId();
 			if (id == R.id.card_view) {
-				adapter.editExistingListable(getLayoutPosition());
+				adapter.editItem(getLayoutPosition());
 			}
 			else if (id == R.id.on_switch) {
 				if (item != null) item.toggleActive();
@@ -267,33 +267,34 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.Recyc
 		}
 
 		/**
-		 * The onclick listener for a dialog (accessible by long clicking the listable).
+		 * The onclick listener for a dialog (accessible by long clicking the item).
 		 * @param dialog dialog that was clicked
 		 * @param which the item within the dialog that was clicked
 		 */
 		@Override
 		public void onClick(@NotNull DialogInterface dialog, int which) {
 			if (which == 0) {
-				// delete the current listable
-				adapter.data.deleteListable(getLayoutPosition());
+				// delete the current item
+				adapter.data.deleteItem(getLayoutPosition());
+				adapter.notifyItemRemoved(getLayoutPosition());
 			}
 			else {
 				if (BuildConfig.DEBUG)
-					Log.e(TAG, "There was an invalid choice in the Listable dialog.");
+					Log.e(TAG, "There was an invalid choice in the item dialog.");
 			}
 		}
 
 		/**
 		 * Long click for the entire card view (doesn't care where the user clicks, as long as it's
-		 * on the card). Creates a recycler view dialog for the currently bound listable and returns
-		 * true. If there is no listable bound, will not do anything and returns false.
+		 * on the card). Creates a recycler view dialog for the currently bound item and returns
+		 * true. If there is no item bound, will not do anything and returns false.
 		 * @param v the view that was clicked
 		 * @return whether the long click was handled or not
 		 */
 		@Override
 		public boolean onLongClick(@NotNull View v) {
 			if (item == null) {
-				if (BuildConfig.DEBUG) Log.v(TAG, "Long clicked Listable is null.");
+				if (BuildConfig.DEBUG) Log.v(TAG, "Long clicked item is null.");
 				return false;
 			}
 
@@ -305,13 +306,13 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.Recyc
 		/* **********************************  Other Methods  ********************************** */
 
 		/**
-		 * Binds a new Listable to the current ViewHolder. If the new listable is null, will not
+		 * Binds a new item to the current ViewHolder. If the new item is null, will not
 		 * change anything.
-		 * @param l the new Listable to bind, can be null
+		 * @param l the new item to bind, can be null
 		 */
 		private void changeItem(@Nullable Item l) {
 			if (l == null) {
-				if (BuildConfig.DEBUG) Log.e(TAG, "The new listable to swap into the view holder was null.");
+				if (BuildConfig.DEBUG) Log.e(TAG, "The new item to swap into the view holder was null.");
 				return;
 			}
 			getTitleText().setText(l.getName());

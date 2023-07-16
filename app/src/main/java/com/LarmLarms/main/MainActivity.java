@@ -1,26 +1,16 @@
 package com.larmlarms.main;
 
-import android.content.ComponentName;
-import android.content.Context;
 import android.content.Intent;
-import android.content.ServiceConnection;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.IBinder;
-import android.os.Looper;
-import android.os.Message;
-import android.os.Messenger;
-import android.os.RemoteException;
 import android.text.format.DateFormat;
-import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.larmlarms.BuildConfig;
 import com.larmlarms.R;
+import com.larmlarms.data.Alarm;
 import com.larmlarms.data.AlarmDataService;
-import com.larmlarms.editor.ListableEditorActivity;
+import com.larmlarms.editor.EditorActivity;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -35,11 +25,6 @@ import androidx.fragment.app.FragmentTransaction;
  * The main page of the app, showing a list of alarms/folders that the user can scroll through.
  */
 public class MainActivity extends AppCompatActivity implements View.OnLongClickListener {
-	/**
-	 * Tag of the class for logging purposes.
-	 */
-	private final static String TAG = "MainActivity";
-
 	/**
 	 * The TextView that is shown when the list is empty.
 	 */
@@ -96,6 +81,8 @@ public class MainActivity extends AppCompatActivity implements View.OnLongClickL
 
 		if (app.rootFolder.size() != 1) showFrag();
 		else hideFrag();
+
+		changeNextAlarm();
 	}
 
 	/* ************************************  Callbacks  ************************************** */
@@ -123,9 +110,9 @@ public class MainActivity extends AppCompatActivity implements View.OnLongClickL
 	 * @param view the view that was clicked (the add alarm button)
 	 */
 	public void addNewAlarm(@NotNull View view) {
-		// start AlarmCreator activity
-		Intent intent = new Intent(this, ListableEditorActivity.class);
-		intent.setAction(ListableEditorActivity.ACTION_CREATE_ALARM);
+		// start editor
+		Intent intent = new Intent(this, EditorActivity.class);
+		intent.setAction(EditorActivity.ACTION_CREATE_ALARM);
 
 		startActivity(intent);
 	}
@@ -135,9 +122,9 @@ public class MainActivity extends AppCompatActivity implements View.OnLongClickL
 	 * @param view the view that was clicked (the folder button)
 	 */
 	public void addNewFolder(@NotNull View view) {
-		// start the listable editor
-		Intent intent = new Intent(this, ListableEditorActivity.class);
-		intent.setAction(ListableEditorActivity.ACTION_CREATE_FOLDER);
+		// start editor
+		Intent intent = new Intent(this, EditorActivity.class);
+		intent.setAction(EditorActivity.ACTION_CREATE_FOLDER);
 
 		startActivity(intent);
 	}
@@ -171,36 +158,36 @@ public class MainActivity extends AppCompatActivity implements View.OnLongClickL
 	}
 
 	/**
-	 * Changes the next alarm to ring text based on what was returned from the data service.
-	 * @param b the data bundle returned from the data service
+	 * Builds and displays the next alarm to ring text, regardless of whether it changed or not.
 	 */
-	private void changeNextAlarm(@NotNull Bundle b) {
+	private void changeNextAlarm() {
+		Alarm nextAlarm = ((MainApplication)getApplication()).rootFolder.getCurrNextAlarm();
+
 		String text;
 
-		if (b.getString(AlarmDataService.BUNDLE_NAME_KEY) == null)
+		if (nextAlarm == null)
 			text = getResources().getString(R.string.main_no_next_alarm);
 		else {
-			GregorianCalendar time = new GregorianCalendar(), rightNow = new GregorianCalendar();
-			time.setTimeInMillis(b.getLong(AlarmDataService.BUNDLE_TIME_KEY));
+			Calendar rightNow = new GregorianCalendar();
 
 			String dateString = null;
-			if (time.get(Calendar.DAY_OF_MONTH) == rightNow.get(Calendar.DAY_OF_MONTH)) {
+			if (nextAlarm.getAlarmTimeCalendar().get(Calendar.DAY_OF_MONTH) == rightNow.get(Calendar.DAY_OF_MONTH)) {
 				dateString = getResources().getString(R.string.main_date_string_today);
 			}
 
 			rightNow.add(Calendar.DAY_OF_MONTH, 1);
-			if (time.get(Calendar.DAY_OF_MONTH) == rightNow.get(Calendar.DAY_OF_MONTH)) {
+			if (nextAlarm.getAlarmTimeCalendar().get(Calendar.DAY_OF_MONTH) == rightNow.get(Calendar.DAY_OF_MONTH)) {
 				dateString = getResources().getString(R.string.main_date_string_tomorrow);
 			}
 
 			if (dateString == null) {
 				dateString = String.format(getResources().getString(R.string.main_date_string),
-						DateFormat.getMediumDateFormat(this).format(time.getTimeInMillis()));
+						DateFormat.getMediumDateFormat(this).format(nextAlarm.getAlarmTimeMillis()));
 			}
-			String timeString = DateFormat.getTimeFormat(this).format(time.getTimeInMillis());
+			String timeString = DateFormat.getTimeFormat(this).format(nextAlarm.getAlarmTimeMillis());
 
 			text = String.format(getResources().getString(R.string.main_next_alarm),
-					b.getString(AlarmDataService.BUNDLE_NAME_KEY), dateString, timeString);
+					nextAlarm.getName(), dateString, timeString);
 		}
 		nextAlarmText.setText(text);
 	}

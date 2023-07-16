@@ -42,9 +42,20 @@ public abstract class Item implements Comparable<Item> {
 	 * The parent of this item.
 	 */
 	@Nullable
-	protected Item parent;
+	protected AlarmGroup parent;
 
 	/* *************************************  Constructors  ************************************* */
+
+	/**
+	 * Creates a new item that's a copy of the given item.
+	 * @param item the item to copy
+	 */
+	protected Item(@NotNull Item item) {
+		this.id = item.id;
+		this.name = item.name;
+		this.isActive = item.isActive;
+		this.parent = item.parent;
+	}
 
 	/**
 	 * Creates a new item with the given name and id.
@@ -127,13 +138,13 @@ public abstract class Item implements Comparable<Item> {
 	 * Get the parent of the current item.
 	 */
 	@Nullable
-	public synchronized Item getParent() { return parent; }
+	public synchronized AlarmGroup getParent() { return parent; }
 
 	/**
 	 * Sets the parent of the item.
 	 * @param parent the new parent
 	 */
-	public synchronized void setParent(@Nullable Item parent) { this.parent = parent; }
+	public synchronized void setParent(@Nullable AlarmGroup parent) { this.parent = parent; }
 
 	/**
 	 * Gets the path of the current item.

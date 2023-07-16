@@ -30,6 +30,6 @@ public class MainApplication extends Application {
 	 * Constructor for the main application. Main job is to initialize the root folder.
 	 */
 	MainApplication() {
-		rootFolder = new RootFolder(getResources().getString(R.string.root_folder), RootFolder.getAlarmsFromDisk(this));
+		rootFolder = new RootFolder(getResources().getString(R.string.root_folder), RootFolder.getAlarmsFromDisk(this), this);
 	}
 }

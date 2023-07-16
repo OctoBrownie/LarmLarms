@@ -1,5 +1,7 @@
 package com.larmlarms.ringing;
 
+import static com.larmlarms.editor.EditorActivity.EXTRA_ITEM_INFO;
+
 import android.app.KeyguardManager;
 import android.content.Context;
 import android.content.Intent;
@@ -12,7 +14,7 @@ import android.widget.TextView;
 
 import com.larmlarms.BuildConfig;
 import com.larmlarms.R;
-import com.larmlarms.data.Alarm;
+import com.larmlarms.data.ItemInfo;
 import com.larmlarms.main.PrefsActivity;
 
 import org.jetbrains.annotations.NotNull;
@@ -27,9 +29,9 @@ public class RingingActivity extends AppCompatActivity {
 	private static final String TAG = "AlarmRingingActivity";
 
 	/**
-	 * Absolute index of the alarm that's ringing.
+	 * The alarm that's ringing right now.
 	 */
-	private int alarmAbsIndex;
+	private ItemInfo currAlarmInfo;
 
 	/* ***********************************  Lifecycle Methods  ********************************* */
 
@@ -48,17 +50,9 @@ public class RingingActivity extends AppCompatActivity {
 		PrefsActivity.applyPrefsUI(this);
 
 		// setting fields
-		Alarm currAlarm = Alarm.fromEditString(this,
-				getIntent().getStringExtra(RingingService.EXTRA_ITEM));
-		if (currAlarm == null) {
+		currAlarmInfo = getIntent().getParcelableExtra(EXTRA_ITEM_INFO);
+		if (currAlarmInfo == null || currAlarmInfo.item == null) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "The alarm given was invalid.");
-			finish();
-			return;
-		}
-		
-		alarmAbsIndex = getIntent().getIntExtra(RingingService.EXTRA_ITEM_PATH, -1);
-		if (alarmAbsIndex == -1) {
-			if (BuildConfig.DEBUG) Log.e(TAG, "The alarm's index was invalid.");
 			finish();
 			return;
 		}
@@ -92,7 +86,7 @@ public class RingingActivity extends AppCompatActivity {
 
 		// setting UI things
 		TextView name = findViewById(R.id.alarmName);
-		name.setText(currAlarm.getName());
+		name.setText(currAlarmInfo.item.getName());
 	}
 
 	/* **************************************  Callbacks  ************************************** */
@@ -104,7 +98,7 @@ public class RingingActivity extends AppCompatActivity {
 	 */
 	public void snooze(@NotNull View v) {
 		startService(new Intent(this, AfterRingingService.class)
-				.putExtra(RingingService.EXTRA_ITEM_PATH, alarmAbsIndex)
+				.putExtra(EXTRA_ITEM_INFO, currAlarmInfo)
 				.setAction(AfterRingingService.ACTION_SNOOZE));
 		finish();
 	}
@@ -116,7 +110,7 @@ public class RingingActivity extends AppCompatActivity {
 	 */
 	public void dismiss(@NotNull View v) {
 		startService(new Intent(this, AfterRingingService.class)
-				.putExtra(RingingService.EXTRA_ITEM_PATH, alarmAbsIndex)
+				.putExtra(EXTRA_ITEM_INFO, currAlarmInfo)
 				.setAction(AfterRingingService.ACTION_DISMISS));
 		finish();
 	}
