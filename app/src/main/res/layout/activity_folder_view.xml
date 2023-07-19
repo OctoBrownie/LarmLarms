@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:tools="http://schemas.android.com/tools"
+
+	android:layout_width="match_parent"
+	android:layout_height="match_parent"
+	android:orientation="vertical"
+	android:background="?android:attr/colorBackground"
+
+	tools:context="com.larmlarms.main.MainActivity">
+
+	<LinearLayout
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:orientation="horizontal">
+		<ImageButton
+			style="@style/ButtonStyle.ImageView.Borderless"
+
+			android:id="@+id/backButton"
+			android:layout_width="wrap_content"
+			android:layout_height="match_parent"
+			android:src="@drawable/back_arrow"
+			android:contentDescription="@string/back_button" />
+		<TextView
+			style="@style/TitleStyle"
+
+			android:id="@+id/titleText"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_marginTop="@dimen/marginSizeDefault"
+			android:layout_marginBottom="@dimen/marginSizeDefault"
+			android:layout_marginLeft="@dimen/marginSizeSmall"
+			android:layout_marginRight="@dimen/marginSizeSmall"
+			android:gravity="start"
+			android:text="@null"
+			tools:text="Folder Name" />
+		<ImageButton
+			style="@style/ButtonStyle.ImageView.Borderless"
+
+			android:id="@+id/editButton"
+			android:layout_width="wrap_content"
+			android:layout_height="match_parent"
+			android:src="@drawable/edit_button"
+			android:contentDescription="@string/main_edit_folder_description" />
+	</LinearLayout>
+
+	<!-- top toolbar -->
+	<include layout="@layout/folder_view_toolbar" />
+
+	<include layout="@layout/folder_view" />
+</LinearLayout>
+

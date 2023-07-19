@@ -31,66 +31,8 @@
 		tools:text="Next alarm: &quot;name&quot; on 03/14/1592 at 11:00" />
 
 	<!-- top toolbar -->
-	<LinearLayout
-	android:layout_width="match_parent"
-	android:layout_height="wrap_content"
-	android:orientation="horizontal">
-		<ImageButton
-			style="@style/ButtonStyle.ImageView"
+	<include layout="@layout/folder_view_toolbar" />
 
-			android:id="@+id/addAlarmButton"
-			android:layout_width="wrap_content"
-			android:layout_height="wrap_content"
-			android:layout_gravity="center_vertical"
-			android:src="@android:drawable/ic_menu_add"
-			android:contentDescription="@string/main_alarm_description"
-			android:onClick="addNewAlarm" />
-
-		<ImageButton
-			style="@style/ButtonStyle.ImageView.Borderless"
-
-			android:id="@+id/addFolderButton"
-			android:layout_width="wrap_content"
-			android:layout_height="wrap_content"
-			android:layout_gravity="center_vertical"
-			android:src="@drawable/folder_icon_closed"
-			android:contentDescription="@string/main_folder_description"
-			android:onClick="addNewFolder" />
-
-		<Space
-			android:layout_height="match_parent"
-			android:layout_width="0dp"
-			android:layout_weight="1" />
-
-		<ImageButton
-			style="@style/ButtonStyle.ImageView.Borderless"
-
-			android:id="@+id/settingsButton"
-			android:layout_width="wrap_content"
-			android:layout_height="wrap_content"
-			android:layout_gravity="center_vertical"
-			android:src="@android:drawable/ic_menu_preferences"
-			android:contentDescription="@string/main_settings_description"
-			android:onClick="openSettings" />
-	</LinearLayout>
-
-	<!-- In the case that there are no alarms yet -->
-	<TextView
-		style="@style/TextStyle"
-
-		android:id="@+id/no_alarms_text"
-		android:layout_width="match_parent"
-		android:layout_height="match_parent"
-		android:layout_margin="@dimen/marginSizeDefault"
-		android:gravity="center_vertical|center"
-		android:text="@string/main_no_alarms_text"
-		android:visibility="gone" />
-
-	<androidx.fragment.app.FragmentContainerView
-		android:layout_width="match_parent"
-		android:layout_height="match_parent"
-		android:id="@+id/frag_frame"
-		android:name="com.larmlarms.main.RecyclerViewFrag"
-		android:tag="recycler_frag" />
+	<include layout="@layout/folder_view" />
 </LinearLayout>
 

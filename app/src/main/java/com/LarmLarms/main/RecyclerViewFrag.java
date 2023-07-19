@@ -66,7 +66,7 @@ public class RecyclerViewFrag extends Fragment {
 
 		// doing things for recycler view
 		// rootView is the LinearLayout in recycler_view_frag.xml
-		View rootView = inflater.inflate(R.layout.fragment_recycler_view, container, false);
+		View rootView = inflater.inflate(R.layout.recycler_view_frag, container, false);
 
 		recyclerView = rootView.findViewById(R.id.recycler_view);
 

@@ -73,7 +73,7 @@
 			<TextView
 				style="@style/TextStyle"
 
-				android:id="@+id/title_text"
+				android:id="@+id/titleText"
 				android:layout_width="wrap_content"
 				android:layout_height="wrap_content"
 				android:layout_gravity="start"

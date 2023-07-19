@@ -209,7 +209,7 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.Recyc
 			context = currContext;
 
 			// caching views
-			titleView = cardView.findViewById(R.id.title_text);
+			titleView = cardView.findViewById(R.id.titleText);
 			repeatView = cardView.findViewById(R.id.repeat_text);
 			timeView = cardView.findViewById(R.id.time_text);
 			switchView = cardView.findViewById(R.id.on_switch);

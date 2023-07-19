@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:tools="http://schemas.android.com/tools"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- In the case that there are no alarms yet -->
+    <TextView
+        style="@style/TextStyle"
+
+        android:id="@+id/noAlarmsText"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_margin="@dimen/marginSizeDefault"
+        android:gravity="center_vertical|center"
+        android:text="@string/main_no_alarms_text"
+        android:visibility="gone" />
+
+    <androidx.fragment.app.FragmentContainerView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/fragFrame"
+        android:name="com.larmlarms.main.RecyclerViewFrag"
+        android:tag="recycler_frag"
+        tools:layout="@layout/recycler_view_frag" />
+</merge>

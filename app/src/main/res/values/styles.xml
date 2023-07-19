@@ -2,7 +2,7 @@
 	<!-- For component styles shared across light/dark modes -->
 
 	<style name="ClockStyle" parent="Widget.MaterialComponents.TimePicker.Clock">
-		<item name="android:textSize">24sp</item>
+		<item name="android:textSize">@dimen/fontSizeBig</item>
 		<item name="android:textAlignment">center</item>
 	</style>
 
@@ -65,25 +65,39 @@
 	<style name="ButtonStyle.Borderless">
 		<item name="android:background">@drawable/borderless_ripple</item>
 		<item name="android:textColor">?attr/colorOnBackground</item>
+		<item name="android:scaleType">fitCenter</item>
+		<item name="android:adjustViewBounds">true</item>
+		<item name="android:minWidth">@dimen/minImageSize</item>
+		<item name="android:minHeight">@dimen/minImageSize</item>
 	</style>
 
 	<style name="ButtonStyle.ImageView">
 		<item name="android:background">@drawable/bordered_ripple</item>
 		<item name="android:scaleType">fitCenter</item>
 		<item name="android:adjustViewBounds">true</item>
+		<item name="android:minWidth">@dimen/minImageSize</item>
+		<item name="android:minHeight">@dimen/minImageSize</item>
 	</style>
 
 	<style name="ButtonStyle.ImageView.Borderless">
 		<item name="android:background">@drawable/borderless_ripple</item>
 		<item name="android:textColor">?attr/colorOnBackground</item>
+		<item name="android:scaleType">fitCenter</item>
+		<item name="android:adjustViewBounds">true</item>
+		<item name="android:minWidth">@dimen/minImageSize</item>
+		<item name="android:minHeight">@dimen/minImageSize</item>
 	</style>
 
 	<!-- - - - - - - - - - - - - - - -  styles for TextViews  - - - - - - - - - - - - - - - -->
 
 	<style name="TextStyle" parent="Widget.MaterialComponents.TextView">
-		<item name="android:layout_margin">@dimen/marginSizeDefault</item>
 		<item name="android:textSize">@dimen/fontSizeBody</item>
 		<item name="android:textColor">?attr/colorOnBackground</item>
+	</style>
+
+	<style name="TitleStyle" parent="TextStyle">
+		<item name="android:textSize">@dimen/fontSizeBig</item>
+		<item name="android:textAlignment">center</item>
 	</style>
 
 	<style name="EditorDaysStyle" parent="TextStyle">

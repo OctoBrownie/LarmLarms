@@ -1,16 +1,21 @@
 package com.larmlarms.main;
 
+import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.format.DateFormat;
 import android.view.View;
 import android.widget.ImageButton;
-import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.FragmentTransaction;
 
 import com.larmlarms.Constants;
 import com.larmlarms.R;
 import com.larmlarms.data.Alarm;
+import com.larmlarms.data.AlarmGroup;
 import com.larmlarms.editor.EditorActivity;
 
 import org.jetbrains.annotations.NotNull;
@@ -19,13 +24,11 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.FragmentTransaction;
-
 /**
- * The main page of the app, showing a list of alarms/folders that the user can scroll through.
+ * Shows just a single folder that the user can scroll through. Must be called with an intent that
+ * gives the path of the current folder to use in the form of an ItemInfo in EXTRA_PATH.
  */
-public class MainActivity extends AppCompatActivity implements View.OnClickListener, View.OnLongClickListener {
+public class FolderViewActivity extends AppCompatActivity implements View.OnClickListener, View.OnLongClickListener {
 	/**
 	 * The TextView that is shown when the list is empty.
 	 */
@@ -35,9 +38,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 	 */
 	private View fragContainer;
 	/**
-	 * The TextView showing the next alarm that will ring.
+	 * Handle to the current folder.
 	 */
-	private TextView nextAlarmText;
+	private AlarmGroup currFolder;
 
 	/* ********************************* Lifecycle Methods ********************************* */
 
@@ -56,8 +59,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 		noAlarmsText = findViewById(R.id.noAlarmsText);
 		fragContainer = findViewById(R.id.fragFrame);
 		nextAlarmText = findViewById(R.id.next_alarm_text);
+		((MainApplication) getApplication()).rootFolder.getFolder()
 
-		int[] buttons = {R.id.addAlarmButton, R.id.addFolderButton, R.id.settingsButton};
+		int[] buttons = {R.id.backButton, R.id.editButton,
+				R.id.addAlarmButton, R.id.addFolderButton, R.id.settingsButton};
 		for (int i : buttons) {
 			ImageButton b = findViewById(i);
 			b.setOnClickListener(this);
@@ -98,9 +103,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 	@Override
 	public void onClick(@NotNull View view) {
 		int id = view.getId();
-		if (id == R.id.addAlarmButton) FolderViewActivity.addNewAlarm(this);
-		else if (id == R.id.addFolderButton) FolderViewActivity.addNewFolder(this);
-		else if (id == R.id.settingsButton) FolderViewActivity.openSettings(this);
+		if (id == R.id.backButton) finish();
+		else if (id == R.id.editButton);
+		else if (id == R.id.addAlarmButton) addNewAlarm(this);
+		else if (id == R.id.addFolderButton) addNewFolder(this);
+		else if (id == R.id.settingsButton) openSettings(this);
 	}
 
 	/**
@@ -119,6 +126,40 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 			Toast.makeText(this, R.string.main_settings_description, Toast.LENGTH_SHORT).show();
 
 		return true;
+	}
+
+	/**
+	 * Starts an activity to a new alarm (usually bound to the + button).
+	 * @param context the current context (usually an activity)
+	 */
+	static void addNewAlarm(Context context) {
+		// start editor
+		Intent intent = new Intent(context, EditorActivity.class);
+		intent.setAction(Constants.ACTION_CREATE_ALARM);
+
+		context.startActivity(intent);
+	}
+
+	/**
+	 * Starts an activity to add a new folder (usually bound to the folder button).
+	 * @param context the current context (usually an activity)
+	 */
+	static void addNewFolder(Context context) {
+		// start editor
+		Intent intent = new Intent(context, EditorActivity.class);
+		intent.setAction(Constants.ACTION_CREATE_FOLDER);
+
+		context.startActivity(intent);
+	}
+
+	/**
+	 * Starts an activity to change current settings (usually bound to the settings button).
+	 * @param context the current context (usually an activity)
+	 */
+	static void openSettings(Context context) {
+		// start the preferences
+		Intent intent = new Intent(context, PrefsActivity.class);
+		context.startActivity(intent);
 	}
 
 	/* ************************************  Other Methods  ************************************* */

@@ -6,6 +6,8 @@
 	<string name="final_separator">" and "</string>
 	<string name="root_folder">""</string>
 
+	<string name="back_button">Back</string>
+
 	<!-- notification display strings, prefixed by "notif" -->
 	<string name="notif_channel_name">Alarms</string>
 	<string name="notif_channel_description">Where all of the alarms are sent.</string>
@@ -39,10 +41,12 @@
 	<string name="main_date_string_today">today</string>
 	<string name="main_date_string_tomorrow">tomorrow</string>
 
-	<!-- MainActivity description strings, prefixed by "main," suffixed by "descrip" -->
+	<!-- folder view toolbar description strings, prefixed by "main," suffixed by "description" -->
 	<string name="main_alarm_description">Add alarm</string>
 	<string name="main_folder_description">Add folder</string>
 	<string name="main_settings_description">Settings</string>
+
+	<string name="main_edit_folder_description">Edit folder</string>
 
 	<!-- PrefsActivity strings, prefixed by "prefs" -->
 	<string name="prefs_title">Settings</string>

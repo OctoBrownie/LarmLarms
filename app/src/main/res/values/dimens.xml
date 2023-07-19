@@ -7,7 +7,7 @@
 	<dimen name="marginSizeLarge">24dp</dimen>
 
 	<dimen name="cornerRadius">8dp</dimen>
-	<dimen name="minImageSize">24dp</dimen>
+	<dimen name="minImageSize">48dp</dimen>
 
 	<!-- size of spaces -->
 	<dimen name="spaceSize">8dp</dimen>

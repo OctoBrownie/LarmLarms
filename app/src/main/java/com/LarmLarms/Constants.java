@@ -9,7 +9,12 @@ public final class Constants {
      */
     public final static String EXTRA_ITEM_INFO = "com.apps.larmlarms.extra.INFO";
 
-    /* *********************************  Editing Intent Actions  ******************************* */
+    /**
+     * An extra used for carrying a string path.
+     */
+    public final static String EXTRA_PATH = "com.apps.larmlarms.extra.PATH";
+
+    // *********************************  Editing Intent Actions  *******************************
     /**
      * Intent action for creating a new alarm. Requires nothing else. Used with the editors.
      */
@@ -29,7 +34,7 @@ public final class Constants {
      */
     public final static String ACTION_EDIT_FOLDER = "com.apps.larmlarms.action.EDIT_FOLDER";
 
-    /* *****************************  Alarm Ringing Intent Actions  ***************************** */
+    // *****************************  Alarm Ringing Intent Actions  *****************************
 
     /**
      * Action used in intents, used for snoozing alarms. Does not assume anything about the contents

@@ -36,7 +36,7 @@ public class AlarmGroup extends Item {
 	@NotNull
 	protected List<Item> items;
 
-	/* ***********************************  Constructors  *********************************** */
+	// ***********************************  Constructors  ***********************************
 
 	/**
 	 * Initializes a new AlarmGroup with all dummy data.
@@ -91,7 +91,7 @@ public class AlarmGroup extends Item {
 		}
 	}
 
-	/* *******************************  Methods from item  ****************************** */
+	// *******************************  Methods from item  ******************************
 
 	/**
 	 * Gets the repeat string of the folder.
@@ -178,7 +178,7 @@ public class AlarmGroup extends Item {
 		return res.toString();
 	}
 
-	/* ***************************  Getter and Setter Methods  ****************************** */
+	// ***************************  Getter and Setter Methods  ******************************
 
 	/**
 	 * Gets the items within the folder.
@@ -209,7 +209,7 @@ public class AlarmGroup extends Item {
 		this.items = items;
 	}
 
-	/* ************************************  Static Methods  ********************************** */
+	// ************************************  Static Methods  **********************************
 
 	/**
 	 * Takes edit strings to rebuild into a new AlarmGroup
@@ -330,7 +330,7 @@ public class AlarmGroup extends Item {
 		return dest;
 	}
 
-	/* ********************************  Manipulating Contents  ********************************* */
+	// ********************************  Manipulating Contents  *********************************
 
 	/**
 	 * Gets the item at the given relative index.
@@ -389,7 +389,7 @@ public class AlarmGroup extends Item {
 	 * @return the folder with the given name, or null if not found
 	 */
 	@Nullable @Contract(pure = true)
-	private synchronized AlarmGroup getFolder(@NotNull final String path) {
+	public synchronized AlarmGroup getFolder(@NotNull final String path) {
 		String[] folders = path.split("/");
 		AlarmGroup currFolder = this, dummy = new AlarmGroup();
 		for (int i = 1; i < folders.length - 1; i++) {
@@ -546,7 +546,7 @@ public class AlarmGroup extends Item {
 		addItem(itemInfo);
 	}
 
-	/* ***********************************  Other Methods  ************************************** */
+	// ***********************************  Other Methods  **************************************
 
 	/**
 	 * Makes a new string that describes this folder. Use edit or store strings if a full
