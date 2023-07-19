@@ -64,8 +64,6 @@ public class RootFolder extends AlarmGroup {
         currNextAlarm = registerAlarm(context, info);
     }
 
-    // shouldn't need a copy constructor...
-
     // *************************************  Folder Overrides  *********************************
 
     /**
@@ -202,7 +200,7 @@ public class RootFolder extends AlarmGroup {
 
         try {
             FileInputStream is = context.openFileInput(ALARM_STORE_FILE_NAME);
-            FileLock fileLock = is.getChannel().lock(0, Long.MAX_VALUE, true);
+            // FileLock fileLock = is.getChannel().lock(0, Long.MAX_VALUE, true);
             InputStreamReader isr = new InputStreamReader(is, StandardCharsets.UTF_8);
             BufferedReader bReader = new BufferedReader(isr);
 
@@ -243,8 +241,8 @@ public class RootFolder extends AlarmGroup {
                 if (currItem != null) { data.add(currItem); }
             }
 
-            is.close();
-            fileLock.release();
+            bReader.close();
+            // fileLock.release();
         }
         catch (IOException e) {
             if (BuildConfig.DEBUG) Log.e(TAG, e.getMessage());
@@ -258,8 +256,8 @@ public class RootFolder extends AlarmGroup {
     /**
      * Writes all alarms in myAdapter to app-specific file storage, with file name ALARM_STORE_FILE_NAME
      * @param context The context to get file streams from. This value may not be null.
-     * @param data The data to write, doesn't include the AlarmGroup itself (uses getListables() to
-     *             retrieve Listables to write). This value may not be null.
+     * @param data The data to write, doesn't include the AlarmGroup itself (uses getItems() to
+     *             retrieve items to write). This value may not be null.
      */
     private synchronized static void writeAlarmsToDisk(@NotNull Context context, @NotNull AlarmGroup data) {
         try {
@@ -268,7 +266,7 @@ public class RootFolder extends AlarmGroup {
             alarmFile.createNewFile();
 
             FileOutputStream os = context.openFileOutput(ALARM_STORE_FILE_NAME, Context.MODE_PRIVATE);
-            FileLock fileLock = os.getChannel().lock();
+            // FileLock fileLock = os.getChannel().lock();
 
             StringBuilder builder = new StringBuilder();
             for (Item l : data.getItems()) {
@@ -279,7 +277,7 @@ public class RootFolder extends AlarmGroup {
 
             os.write(builder.toString().getBytes());
             os.close();
-            fileLock.release();
+            // fileLock.release();
         }
         catch (Exception e) {
             if (BuildConfig.DEBUG) Log.e(TAG, e.getMessage());

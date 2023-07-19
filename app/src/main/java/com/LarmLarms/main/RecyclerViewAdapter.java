@@ -53,12 +53,12 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.Recyc
 
 	/**
 	 * Creates a new RecyclerViewAdapter with a specific context. Data starts out empty.
-	 * @param app handle to the application, cannot be null
+	 * @param context handle to the application, cannot be null
+	 * @param folder the folder to display with this adapter, cannot be null
 	 */
-	RecyclerViewAdapter (@NotNull Application app, @Nullable AlarmGroup folder) {
-		context = app;
-
-		data = folder != null ? folder : ((MainApplication) app).rootFolder;
+	RecyclerViewAdapter (@NotNull Context context, @NotNull AlarmGroup folder) {
+		this.context = context;
+		data = folder;
 
 		setHasStableIds(true);
 	}
@@ -117,28 +117,36 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.Recyc
 
 	/**
 	 * Sends an explicit intent off to editor for editing. Sends an ItemInfo describing
-	 * the item to edit with the key EditorActivity.EXTRA_ITEM_INFO, and the request
-	 * ID with the key EditorActivity.EXTRA_REQ_ID. If the item is null, doesn't do
+	 * the alarm to edit with the key EditorActivity.EXTRA_ITEM_INFO, and the request
+	 * ID with the key EditorActivity.EXTRA_REQ_ID. If the alarm is null, doesn't do
 	 * anything.
-	 * @param index the absolute index of the item, assumes within range
+	 * @param alarm the alarm to edit, can be null
 	 */
-	void editItem(final int index) {
-		// start editor
-		Intent intent = new Intent(context, EditorActivity.class);
-		Item item = data.getItem(index);
-		if (item == null) {
-			if (BuildConfig.DEBUG) Log.e(TAG, "The item is null so it cannot be edited.");
+	private void editItem(@Nullable final Alarm alarm) {
+		if (alarm == null) {
+			if (BuildConfig.DEBUG) Log.e(TAG, "The alarm is null so it cannot be edited.");
 			return;
 		}
 
-		intent.putExtra(Constants.EXTRA_ITEM_INFO, item.getInfo());
+		Intent intent = new Intent(context, EditorActivity.class);
+		intent.putExtra(Constants.EXTRA_ITEM_INFO, alarm.getInfo());
+		intent.setAction(Constants.ACTION_EDIT_ALARM);
+		context.startActivity(intent);
+	}
 
-		String action;
-		if (item instanceof Alarm) { action = Constants.ACTION_EDIT_ALARM; }
-		else { action = Constants.ACTION_EDIT_FOLDER; }
+	/**
+	 * Open the folder that just got clicked. Sends the path without a trailing slash.
+	 * @param folder the folder to open
+	 */
+	private void openFolder(AlarmGroup folder) {
+		if (folder == null) {
+			if (BuildConfig.DEBUG) Log.e(TAG, "The folder is null so it can't be shown.");
+			return;
+		}
 
-		intent.setAction(action);
-
+		Intent intent = new Intent(context, FolderViewActivity.class);
+		intent.putExtra(Constants.EXTRA_PATH, folder.getPath() + folder.getName());
+		intent.setAction(Intent.ACTION_VIEW);
 		context.startActivity(intent);
 	}
 
@@ -256,7 +264,8 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.Recyc
 		public void onClick(@NotNull View v) {
 			int id = v.getId();
 			if (id == R.id.card_view) {
-				adapter.editItem(getLayoutPosition());
+				if (item instanceof Alarm) adapter.editItem((Alarm)item);
+				else adapter.openFolder((AlarmGroup)item);
 			}
 			else if (id == R.id.on_switch) {
 				if (item != null) item.toggleActive();

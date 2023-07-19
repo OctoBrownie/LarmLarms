@@ -39,7 +39,7 @@ public class ItemInfo implements Parcelable {
 	 * @param in the parcel to initialize from, cannot be null
 	 */
 	private ItemInfo(@NotNull Parcel in) {
-		String l = in.readString();	// listable
+		String l = in.readString();	// item
 		String isAlarm = in.readString();
 		if (l == null) item = null;
 		else {

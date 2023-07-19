@@ -9,7 +9,9 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.larmlarms.BuildConfig;
+import com.larmlarms.Constants;
 import com.larmlarms.R;
+import com.larmlarms.data.AlarmGroup;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -62,7 +64,17 @@ public class RecyclerViewFrag extends Fragment {
 			if (BuildConfig.DEBUG) Log.e(TAG, "This fragment wasn't associated with a context!");
 			return null;
 		}
-		myAdapter = new RecyclerViewAdapter(getActivity().getApplication(), null);
+
+		AlarmGroup f = ((MainApplication) getActivity().getApplication()).rootFolder;
+		Bundle b = getArguments();
+		if (b != null && b.getString(Constants.EXTRA_PATH) != null)
+			f = f.getFolder(b.getString(Constants.EXTRA_PATH));
+
+		if (f == null) {
+			if (BuildConfig.DEBUG) Log.e(TAG, "Couldn't find the right folder...");
+			return null;
+		}
+		myAdapter = new RecyclerViewAdapter(context, f);
 
 		// doing things for recycler view
 		// rootView is the LinearLayout in recycler_view_frag.xml

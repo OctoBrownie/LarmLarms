@@ -29,6 +29,8 @@
 				<category android:name="android.intent.category.LAUNCHER" />
 			</intent-filter>
 		</activity>
+		<activity android:name=".main.FolderViewActivity"
+			android:exported="false" />
 		<!-- TODO: add intent filter for ACTION_SET_ALARM? -->
 		<activity android:name=".editor.EditorActivity"
 			android:exported="false" />
@@ -43,9 +45,6 @@
 
 		<service android:name=".ringing.RingingService"
 			android:description="@string/notif_service_description"
-			android:enabled="true"
-			android:exported="false" />
-		<service android:name=".data.AlarmDataService"
 			android:enabled="true"
 			android:exported="false" />
 		<service android:name=".ringing.AfterRingingService"

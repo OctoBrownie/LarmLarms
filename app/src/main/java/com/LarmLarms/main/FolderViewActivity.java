@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -22,7 +23,7 @@ import org.jetbrains.annotations.Nullable;
 
 /**
  * Shows just a single folder that the user can scroll through. Must be called with an intent that
- * gives the path of the current folder to use in the form of an ItemInfo in EXTRA_PATH.
+ * gives the path of the current folder to use in the form of a string in EXTRA_PATH.
  */
 public class FolderViewActivity extends AppCompatActivity implements View.OnClickListener, View.OnLongClickListener {
 	/**
@@ -59,7 +60,7 @@ public class FolderViewActivity extends AppCompatActivity implements View.OnClic
 		super.onCreate(savedInstanceState);
 
 		PrefsActivity.applyPrefsStyle(this);
-		setContentView(R.layout.activity_main);
+		setContentView(R.layout.activity_folder_view);
 		PrefsActivity.applyPrefsUI(this);
 
 		noAlarmsText = findViewById(R.id.noAlarmsText);
@@ -75,9 +76,14 @@ public class FolderViewActivity extends AppCompatActivity implements View.OnClic
 			b.setOnLongClickListener(this);
 		}
 
+		((TextView) findViewById(R.id.titleText)).setText(currPath);
+
+		Bundle b = new Bundle();
+		b.putString(Constants.EXTRA_PATH, currPath);
+
 		// always need to reinflate the frag
 		FragmentTransaction trans = getSupportFragmentManager().beginTransaction();
-		trans.replace(R.id.fragFrame, RecyclerViewFrag.class, null, "recycler_frag");
+		trans.replace(R.id.fragFrame, RecyclerViewFrag.class, b, "recycler_frag");
 		trans.commitNow();
 	}
 

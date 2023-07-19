@@ -27,7 +27,7 @@ public class AlarmGroup extends Item {
 	 * Number of fields in a single edit string (don't have one for store strings because they can
 	 * span multiple lines and can have a different number of fields dependent on type)
 	 */
-	private static final int NUM_EDIT_FIELDS = 4;
+	private static final int NUM_EDIT_FIELDS = 3;
 
 	/**
 	 * Contains the child Alarms and AlarmGroups stored within this folder. Should always be nonnull
@@ -385,15 +385,20 @@ public class AlarmGroup extends Item {
 	/**
 	 * Gets the AlarmGroup with the given relative path (should be the only one) in the current
 	 * folder. Assumes the path includes the current folder.
-	 * @param path the path to search for (includes the name of the folder), shouldn't be null
+	 * @param path the path to search for (includes the name of the folder), shouldn't be null and
+	 *             can have a trailing slash or not
 	 * @return the folder with the given name, or null if not found
 	 */
 	@Nullable @Contract(pure = true)
 	public synchronized AlarmGroup getFolder(@NotNull final String path) {
 		String[] folders = path.split("/");
 		AlarmGroup currFolder = this, dummy = new AlarmGroup();
-		for (int i = 1; i < folders.length - 1; i++) {
+		for (int i = 1; i < folders.length; i++) {
 			dummy.name = folders[i];
+
+			// trailing slash check
+			if (i == folders.length - 1 && dummy.name.length() == 0) return currFolder;
+
 			int index = Collections.binarySearch(currFolder.items, dummy, (Item i1, Item i2) -> {
 				// ignore everything but type and name
 				if (i1 instanceof Alarm && i2 instanceof AlarmGroup) return 1;
