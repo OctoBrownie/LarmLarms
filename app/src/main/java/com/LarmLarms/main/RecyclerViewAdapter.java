@@ -63,7 +63,7 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.Recyc
 		setHasStableIds(true);
 	}
 
-	/* ***************************  RecyclerView.Adapter Methods  ***************************** */
+	// ***************************  RecyclerView.Adapter Methods  *****************************
 
 	/**
 	 * Called when the recycler view wants to create a view holder
@@ -113,7 +113,7 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.Recyc
 		return l.getId();
 	}
 
-	/* **********************************  Other Methods  ********************************* */
+	// **********************************  Other Methods  *********************************
 
 	/**
 	 * Sends an explicit intent off to editor for editing. Sends an ItemInfo describing
@@ -142,7 +142,7 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.Recyc
 		context.startActivity(intent);
 	}
 
-	/* ***********************************  Inner Classes  ************************************* */
+	// ***********************************  Inner Classes  *************************************
 
 	/**
 	 * A required view holder class for the RecyclerView. Caches its child views so findViewById()
@@ -221,7 +221,7 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.Recyc
 			switchView.setOnClickListener(this);
 		}
 
-		/* **************************  Getter and Setter Methods  ***************************** */
+		// **************************  Getter and Setter Methods  *****************************
 
 		/**
 		 * Gets the title text view of the holder.
@@ -244,7 +244,7 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.Recyc
 		 */
 		ImageView getImageView() { return imageView; }
 
-		/* ***********************************  Callbacks  ********************************* */
+		// ***********************************  Callbacks  *********************************
 
 		/**
 		 * The onclick listener for views within the view holder. If the card itself is clicked,
@@ -304,7 +304,7 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.Recyc
 			return true;
 		}
 
-		/* **********************************  Other Methods  ********************************** */
+		// **********************************  Other Methods  **********************************
 
 		/**
 		 * Binds a new item to the current ViewHolder. If the new item is null, will not

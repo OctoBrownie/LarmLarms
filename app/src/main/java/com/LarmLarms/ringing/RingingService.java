@@ -46,7 +46,7 @@ public class RingingService extends Service implements MediaPlayer.OnPreparedLis
 	 */
 	private static final String TAG = "RingingService";
 
-	/* *********************************  Other static fields  ********************************** */
+	// *********************************  Other static fields  **********************************
 
 	/**
 	 * String ID for the notification channel the foreground notifications are posted in.
@@ -58,7 +58,7 @@ public class RingingService extends Service implements MediaPlayer.OnPreparedLis
 	 */
 	private static final int NOTIFICATION_ID = 42;
 
-	/* ***********************************  Non-static fields ********************************* */
+	// ***********************************  Non-static fields *********************************
 
 	/**
 	 * The current alarm that's ringing.
@@ -316,7 +316,7 @@ public class RingingService extends Service implements MediaPlayer.OnPreparedLis
 		}
 	}
 
-	/* ********************************  MediaPlayer Callbacks  ******************************** */
+	// ********************************  MediaPlayer Callbacks  ********************************
 
 	/**
 	 * Callback for MediaPlayer.OnPreparedListener.
@@ -371,7 +371,7 @@ public class RingingService extends Service implements MediaPlayer.OnPreparedLis
 		}
 	}
 
-	/* *************************************  Other Methods  ************************************ */
+	// *************************************  Other Methods  ************************************
 
 	/**
 	 * Creates a notification channel if the API level requires it. Otherwise, does nothing.

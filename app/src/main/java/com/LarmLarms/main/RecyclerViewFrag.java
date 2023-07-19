@@ -44,7 +44,7 @@ public class RecyclerViewFrag extends Fragment {
 	 */
 	private RecyclerView recyclerView;
 
-	/* **********************************  Lifecycle Methods  ******************************** */
+	// **********************************  Lifecycle Methods  ********************************
 
 	/**
 	 * Called when the fragment is being created. Creates a new adapter and sets up the recycler view.

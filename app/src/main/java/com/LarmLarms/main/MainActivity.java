@@ -39,7 +39,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 	 */
 	private TextView nextAlarmText;
 
-	/* ********************************* Lifecycle Methods ********************************* */
+	// ********************************* Lifecycle Methods *********************************
 
 	/**
 	 * Called when the activity is being created. Caches views to class fields.
@@ -89,7 +89,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 		changeNextAlarm();
 	}
 
-	/* ************************************  Callbacks  ************************************** */
+	// ************************************  Callbacks  **************************************
 
 	/**
 	 * Callback for clicks. Starts a new activity for all current buttons.
@@ -121,7 +121,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 		return true;
 	}
 
-	/* ************************************  Other Methods  ************************************* */
+	// ************************************  Other Methods  *************************************
 
 	/**
 	 * Shows the recycler view fragment and hides the noAlarmsText.

@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Message;
 import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.View;
@@ -29,7 +28,6 @@ import com.larmlarms.BuildConfig;
 import com.larmlarms.Constants;
 import com.larmlarms.R;
 import com.larmlarms.data.Alarm;
-import com.larmlarms.data.AlarmDataService;
 import com.larmlarms.data.AlarmGroup;
 import com.larmlarms.data.Item;
 import com.larmlarms.data.ItemInfo;
@@ -43,12 +41,12 @@ import org.jetbrains.annotations.Nullable;
 import java.text.DateFormatSymbols;
 import java.text.NumberFormat;
 import java.text.ParseException;
-import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-// TODO: set up folder structure, probably via executor service
+// TODO: set up folder structure via executor service?
 
 /**
  * Activity used for creating new items or editing existing ones.
@@ -61,7 +59,7 @@ public class EditorActivity extends AppCompatActivity
 		implements AdapterView.OnItemSelectedListener, EditorDialogFrag.DialogCloseListener,
 		SeekBar.OnSeekBarChangeListener {
 
-	/* **************************************  Constants  *************************************** */
+	// **************************************  Constants  ***************************************
 	
 	/**
 	 * Tag of the class for logging purposes.
@@ -73,7 +71,7 @@ public class EditorActivity extends AppCompatActivity
 	 */
 	private final static int REQ_GET_RINGTONE = 4;
 
-	/* ***********************************  Instance Fields  ************************************ */
+	// ***********************************  Instance Fields  ************************************
 
 	// information about item being edited
 	/**
@@ -105,7 +103,7 @@ public class EditorActivity extends AppCompatActivity
 	 * List of all possible paths.
 	 */
 	@Nullable
-	private ArrayList<String> paths;
+	private List<String> paths;
 
 	// current editor mode
 	/**
@@ -155,7 +153,7 @@ public class EditorActivity extends AppCompatActivity
 	@Nullable
 	private ViewGroup alarmDateOfMonthLayout;
 
-	/* *********************************  Lifecycle Methods  ******************************* */
+	// *********************************  Lifecycle Methods  *******************************
 
 	/**
 	 * Creates a new editor and initializes some not null fields.
@@ -245,6 +243,8 @@ public class EditorActivity extends AppCompatActivity
 				((EditText) findViewById(R.id.nameInput)).setText(workingItem.getName());
 				break;
 		}
+
+		setupFolderStructure();
 	}
 
 	/**
@@ -261,7 +261,7 @@ public class EditorActivity extends AppCompatActivity
 		}
 	}
 
-	/* **********************************  Button Callbacks  ********************************** */
+	// **********************************  Button Callbacks  **********************************
 
 	/**
 	 * An onclick callback for the back button. Closes the Editor.
@@ -346,7 +346,7 @@ public class EditorActivity extends AppCompatActivity
 		startActivityForResult(getSound, REQ_GET_RINGTONE);
 	}
 
-	/* *********************************  Spinner Callbacks  *********************************** */
+	// *********************************  Spinner Callbacks  ***********************************
 
 	/**
 	 * Based on which repeat type was selected (using the position), will show/hide certain UI
@@ -399,7 +399,7 @@ public class EditorActivity extends AppCompatActivity
 	@Override
 	public void onNothingSelected(@NotNull AdapterView<?> parent) {}
 
-	/* ***********************************  SeekBar Callbacks  ********************************** */
+	// ***********************************  SeekBar Callbacks  **********************************
 
 	/**
 	 * Callback for SeekBar, called whenever the volume has changed. Unused.
@@ -423,7 +423,7 @@ public class EditorActivity extends AppCompatActivity
 		((Alarm) workingItem).setVolume(seekBar.getProgress());
 	}
 
-	/* ***********************************  Other Callbacks  *********************************** */
+	// ***********************************  Other Callbacks  ***********************************
 
 	/**
 	 * Callback for EditorDialogFrag dialogs for when they close
@@ -504,7 +504,7 @@ public class EditorActivity extends AppCompatActivity
 		}
 	}
 
-	/* ***************************************  UI Setup  ************************************** */
+	// ***************************************  UI Setup  **************************************
 
 	/**
 	 * Sets up the UI for editing (or creating) an alarm.
@@ -672,22 +672,10 @@ public class EditorActivity extends AppCompatActivity
 	}
 
 	/**
-	 * Handles setup of folder spinner. Sets it up after the data service returns with the actual
-	 * data structure.
-	 * @param msg the inbound MSG_GET_FOLDERS message
+	 * Handles setup of the folder spinner. Currently does this synchronously.
 	 */
 	private void setupFolderStructure() {
-		Bundle data = msg.getData();
-		if (data == null) {
-			if (BuildConfig.DEBUG) Log.e(TAG, "Message from alarm service had a null bundle.");
-			return;
-		}
-
-		paths = data.getStringArrayList(AlarmDataService.BUNDLE_LIST_KEY);
-		if (paths == null) {
-			if (BuildConfig.DEBUG) Log.e(TAG, "Message from alarm service had a null folder structure.");
-			return;
-		}
+		paths = ((MainApplication)getApplication()).rootFolder.toPathList();
 
 		if (isEditing && !isAlarm) {
 			if (originalItem == null) {
@@ -715,7 +703,7 @@ public class EditorActivity extends AppCompatActivity
 		spinner.setOnItemSelectedListener(this);
 	}
 
-	/* ************************************  Other Methods  ********************************* */
+	// ************************************  Other Methods  *********************************
 
 	/**
 	 * Changes repeat type to the new specified type. Changes both the working alarm type and the UI

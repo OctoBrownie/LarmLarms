@@ -50,7 +50,7 @@ public class ItemInfo implements Parcelable {
 		path = in.readString();
 	}
 
-	/* *******************************  Parcelable Things  ********************************** */
+	// *******************************  Parcelable Things  **********************************
 
 	/**
 	 * Creator that creates parcels of ListableInfo objects.

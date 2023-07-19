@@ -24,8 +24,6 @@ import java.nio.channels.FileLock;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 /**
  * Manages everything about the root folder, including registering alarms to ring with the system
@@ -41,12 +39,6 @@ public class RootFolder extends AlarmGroup {
      * The name of the file that stores the alarms. Found within private storage for the app.
      */
     private static final String ALARM_STORE_FILE_NAME = "alarms.txt";
-
-    /**
-     * Executor service for saving data asynchronously. Only really needs one thread since it's
-     * writing to file.
-     */
-    private final ExecutorService execService;
 
     /**
      * The current alarm to ring next.
@@ -66,7 +58,6 @@ public class RootFolder extends AlarmGroup {
      */
     public RootFolder(@Nullable String name, @NotNull Context c) {
         super(name, RootFolder.getAlarmsFromDisk(c));
-        execService = Executors.newSingleThreadExecutor();
         context = c;
 
         ItemInfo info = findNextRingingAlarm();
@@ -75,7 +66,7 @@ public class RootFolder extends AlarmGroup {
 
     // shouldn't need a copy constructor...
 
-    /* *************************************  Folder Overrides  ********************************* */
+    // *************************************  Folder Overrides  *********************************
 
     /**
      * Sets the items within the folder. If the new list is invalid (the list or any items
@@ -88,7 +79,7 @@ public class RootFolder extends AlarmGroup {
         save();
     }
 
-    /* *********************************  Root-Specific Methods  ******************************** */
+    // *********************************  Root-Specific Methods  ********************************
 
     @Nullable @Contract(pure = true)
     public final Alarm getCurrNextAlarm() {
@@ -100,11 +91,11 @@ public class RootFolder extends AlarmGroup {
      * Saves everything to disk and sets the alarms to ring.
      */
     private void save() {
-        execService.execute(() -> {
+        new Thread(() -> {
             writeAlarmsToDisk(context, this);
             ItemInfo info = findNextRingingAlarm();
             if (info.item != currNextAlarm) currNextAlarm = registerAlarm(context, info);
-        });
+        }).start();
     }
 
     /**
@@ -203,7 +194,7 @@ public class RootFolder extends AlarmGroup {
     /**
      * Initializes alarm data from file.
      * @param context The context to get file streams from. This value may not be null.
-     * @return A populated ArrayList of Listables or an empty one in the case of an error
+     * @return A populated list of items or an empty one in the case of an error
      */
     @NotNull
     public synchronized static List<Item> getAlarmsFromDisk(@NotNull Context context) {

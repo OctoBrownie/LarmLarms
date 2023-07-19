@@ -574,7 +574,7 @@ public class AlarmGroup extends Item {
 	 * slash.
 	 */
 	@NotNull @Contract(pure = true)
-	synchronized List<String> toPathList() { return toPathList("", this); }
+	public synchronized List<String> toPathList() { return toPathList("", this); }
 
 	/**
 	 * Helper function for toPathList().

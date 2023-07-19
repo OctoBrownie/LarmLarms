@@ -28,7 +28,7 @@ import java.util.List;
  */
 public final class Alarm extends Item {
 
-	/* ************************************  Constants  *********************************** */
+	// ************************************  Constants  ***********************************
 
 	/**
 	 * Tag of the class for logging purposes.
@@ -87,7 +87,7 @@ public final class Alarm extends Item {
 	 */
 	public static final long[] VIBRATION_PATTERN = {0, 1000, 1000};
 
-	/* ***********************************  Instance Fields  ******************************** */
+	// ***********************************  Instance Fields  ********************************
 
 	/**
 	 * Used for getting string resources (for display strings). Can be null.
@@ -179,7 +179,7 @@ public final class Alarm extends Item {
 	@Nullable
 	private Uri ringtoneUri;
 
-	/* **********************************  Constructors  ********************************* */
+	// **********************************  Constructors  *********************************
 	
 	/**
 	 * Creates a new alarm with the current context. Created Alarms should always have valid data,
@@ -260,7 +260,7 @@ public final class Alarm extends Item {
 		this.ringtoneUri = alarm.ringtoneUri;
 	}
 
-	/* ********************************  Methods from Item  ********************************** */
+	// ********************************  Methods from Item  **********************************
 
 	/**
 	 * Gets a repeat string that describes the alarm. Uses the current context to get localized 
@@ -686,7 +686,7 @@ public final class Alarm extends Item {
 	@NotNull @Override @Contract(pure = true)
 	public synchronized String toStoreString() { return "a\t" + toEditString(); }
 
-	/* ******************************  Getter and Setter Methods  ******************************* */
+	// ******************************  Getter and Setter Methods  *******************************
 
 	/**
 	 * Sets the context.
@@ -917,7 +917,7 @@ public final class Alarm extends Item {
 		return r.getTitle(context);
 	}
 
-	/* ************************************  Static Methods  ********************************** */
+	// ************************************  Static Methods  **********************************
 
 	/**
 	 * Returns a new Alarm based on the given string. For edit string creation and format, see
@@ -1078,7 +1078,7 @@ public final class Alarm extends Item {
 		return fromEditString(currContext, src.substring(2));		// removes the "a\t"
 	}
 
-	/* *********************************  Other Methods  ********************************** */
+	// *********************************  Other Methods  **********************************
 
 	/**
 	 * Makes a new string that describes this alarm. Use edit or store strings if a full

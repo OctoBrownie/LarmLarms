@@ -132,7 +132,7 @@ public class PrefsActivity extends AppCompatActivity implements AdapterView.OnIt
 		s.setChecked(menuPosTop);
 	}
 
-	/* ***************************************  Callbacks  ************************************ */
+	// ***************************************  Callbacks  ************************************
 
 	/**
 	 * Called when the back button of the menu is clicked
@@ -184,7 +184,7 @@ public class PrefsActivity extends AppCompatActivity implements AdapterView.OnIt
 			if (BuildConfig.DEBUG) Log.e(TAG, "Unknown switch flipped!");
 	}
 
-	/* ************************************  Spinner Callbacks  ********************************** */
+	// ************************************  Spinner Callbacks  **********************************
 
 	/**
 	 * Spinner callback for when an item is selected
@@ -210,7 +210,7 @@ public class PrefsActivity extends AppCompatActivity implements AdapterView.OnIt
 	@Override
 	public void onNothingSelected(AdapterView<?> parent) {}
 
-	/* **********************************  Other Methods  *************************************** */
+	// **********************************  Other Methods  ***************************************
 
 	/**
 	 * Helper method that applies all of the style-related preferences to components for them.

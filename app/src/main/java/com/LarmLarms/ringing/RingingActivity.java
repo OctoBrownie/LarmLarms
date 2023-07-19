@@ -32,7 +32,7 @@ public class RingingActivity extends AppCompatActivity {
 	 */
 	private ItemInfo currAlarmInfo;
 
-	/* ***********************************  Lifecycle Methods  ********************************* */
+	// ***********************************  Lifecycle Methods  *********************************
 
 	/**
 	 * Called when the Activity is being created. Checks the calling intent for snooze/dismiss
@@ -88,7 +88,7 @@ public class RingingActivity extends AppCompatActivity {
 		name.setText(currAlarmInfo.item.getName());
 	}
 
-	/* **************************************  Callbacks  ************************************** */
+	// **************************************  Callbacks  **************************************
 
 	/**
 	 * Snoozes the current alarm and exits the activity. Also serves as the onclick for the snooze

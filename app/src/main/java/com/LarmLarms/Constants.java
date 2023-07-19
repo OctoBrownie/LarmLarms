@@ -30,7 +30,7 @@ public final class Constants {
     public final static String ACTION_CREATE_FOLDER = "com.apps.larmlarms.action.CREATE_FOLDER";
     /**
      * Request code to edit an existing AlarmGroup. Requires that EXTRA_ITEM_INFO contain a
-     * ItemInfo with absIndex, item, and path filled out. Used with the editors.
+     * ItemInfo with item and path filled out. Used with the editors.
      */
     public final static String ACTION_EDIT_FOLDER = "com.apps.larmlarms.action.EDIT_FOLDER";
 

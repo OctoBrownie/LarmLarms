@@ -19,7 +19,7 @@ public abstract class Item implements Comparable<Item> {
 	 */
 	private static final String TAG = "Item";
 
-	/* ************************************  Instance Fields  *********************************** */
+	// ************************************  Instance Fields  ***********************************
 	/**
 	 * The ID of the folder, filled by its created time.
 	 */
@@ -44,7 +44,7 @@ public abstract class Item implements Comparable<Item> {
 	@Nullable
 	protected AlarmGroup parent;
 
-	/* *************************************  Constructors  ************************************* */
+	// *************************************  Constructors  *************************************
 
 	/**
 	 * Creates a new item that's a copy of the given item.
@@ -71,7 +71,7 @@ public abstract class Item implements Comparable<Item> {
 		setName(name);
 	}
 
-	/* *************************************  Concrete Methods  ********************************* */
+	// *************************************  Concrete Methods  *********************************
 
 	/**
 	 * Returns the ID of the item.
@@ -173,7 +173,7 @@ public abstract class Item implements Comparable<Item> {
 		return i;
 	}
 
-	/* *************************************  Abstract Methods  ********************************* */
+	// *************************************  Abstract Methods  *********************************
 
 	/**
 	 * Returns a string that shows how the item (Alarm) repeats (or blank).
