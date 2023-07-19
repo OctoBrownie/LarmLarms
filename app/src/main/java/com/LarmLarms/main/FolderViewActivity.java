@@ -134,12 +134,18 @@ public class FolderViewActivity extends AppCompatActivity implements View.OnClic
 	@Override
 	public boolean onLongClick(@NotNull View view) {
 		int id = view.getId();
-		if (id == R.id.addAlarmButton)
-			Toast.makeText(this, R.string.main_alarm_description, Toast.LENGTH_SHORT).show();
-		else if (id == R.id.addFolderButton)
-			Toast.makeText(this, R.string.main_folder_description, Toast.LENGTH_SHORT).show();
-		else if (id == R.id.settingsButton)
-			Toast.makeText(this, R.string.main_settings_description, Toast.LENGTH_SHORT).show();
+		int displayString;
+		if (id == R.id.backButton) displayString = R.string.back_button;
+		else if (id == R.id.editButton) displayString = R.string.main_edit_folder_description;
+		else if (id == R.id.addAlarmButton) displayString = R.string.main_alarm_description;
+		else if (id == R.id.addFolderButton) displayString = R.string.main_folder_description;
+		else if (id == R.id.settingsButton) displayString = R.string.main_settings_description;
+		else {
+			if (BuildConfig.DEBUG) Log.e(TAG, "Unidentified long click registered to the activity!");
+			return true;
+		}
+
+		Toast.makeText(this, displayString, Toast.LENGTH_SHORT).show();
 
 		return true;
 	}
