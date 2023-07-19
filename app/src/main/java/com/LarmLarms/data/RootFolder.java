@@ -77,6 +77,55 @@ public class RootFolder extends AlarmGroup {
         save();
     }
 
+    /**
+     * Sets item as the new item in the dataset.
+     * @param oldInfo the info of the old item (item should at least have the right id, path isn't
+     *                necessary, but helps search)
+     * @param item the new item to set it to
+     */
+    public synchronized void setItemById(@Nullable final ItemInfo oldInfo, final Item item) {
+        super.setItemById(oldInfo, item);
+        save();
+    }
+
+    /**
+     * Adds a item to this folder at the given path.
+     * @param info the info given about the item to add (should be completely filled)
+     */
+    public synchronized void addItem(@Nullable ItemInfo info) {
+        super.addItem(info);
+        save();
+    }
+
+    /**
+     * Adds a item to the current folder.
+     * @param item the item to add to the folder
+     */
+    synchronized void addItem(@Nullable final Item item) {
+        super.addItem(item);
+        save();
+    }
+
+    /**
+     * Deletes a item at the specified index.
+     * @param index the index of the item to delete
+     */
+    public synchronized void deleteItem(final int index) {
+        super.deleteItem(index);
+        save();
+    }
+
+    /**
+     * Moves the item specified by index to the new path. The item itself can change, but the id
+     * must remain the same.
+     * @param itemInfo info about the new item to replace with (must always be completely filled)
+     * @param newPath the path to move the item to
+     */
+    public synchronized void moveItem(@Nullable ItemInfo itemInfo, @Nullable String newPath) {
+        super.moveItem(itemInfo, newPath);
+        save();
+    }
+
     // *********************************  Root-Specific Methods  ********************************
 
     @Nullable @Contract(pure = true)
