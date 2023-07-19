@@ -18,12 +18,11 @@ public class MainApplication extends Application {
 	/**
 	 * Root folder to for all activities and services in the process to access.
 	 */
-	public final RootFolder rootFolder;
+	public RootFolder rootFolder;
 
-	/**
-	 * Constructor for the main application. Main job is to initialize the root folder.
-	 */
-	MainApplication() {
+	@Override
+	public void onCreate() {
+		super.onCreate();
 		rootFolder = new RootFolder(getResources().getString(R.string.root_folder), this);
 	}
 }
