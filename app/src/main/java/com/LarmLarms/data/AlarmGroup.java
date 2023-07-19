@@ -415,26 +415,6 @@ public class AlarmGroup extends Item {
 	}
 
 	/**
-	 * Sets a item in the dataset using its relative index. The item may move within the list
-	 * to maintain sorted order.
-	 * @param relIndex the old relative index to set with
-	 * @param item the new item to set relIndex to
-	 */
-	private synchronized void setItem(final int relIndex, @Nullable final Item item) {
-		if (relIndex < 0 || relIndex >= items.size()) {
-			if (BuildConfig.DEBUG) Log.e(TAG, "Couldn't set item. Index is out of bounds.");
-			return;
-		} else if (item == null) {
-			if (BuildConfig.DEBUG) Log.e(TAG, "Couldn't set item. Item is null.");
-			return;
-		}
-
-		item.setParent(this);
-		items.remove(relIndex);
-		items.add(AlarmGroup.insertIndex(items, item), item);
-	}
-
-	/**
 	 * Sets item as the new item in the dataset.
 	 * @param oldInfo the info of the old item (item should at least have the right id, path isn't
 	 *                necessary, but helps search)
