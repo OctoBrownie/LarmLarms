@@ -1,17 +1,17 @@
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
 	<!-- general display strings, no prefixes -->
-	<string name="app_name">Larm Larms</string>
+	<string name="app_name" translatable="false">LarmLarms</string>
 	<string name="space">" "</string>
 	<string name="separator">", "</string>
 	<string name="final_separator">" and "</string>
-	<string name="root_folder">""</string>
+	<string name="root_folder" translatable="false">""</string>
 
 	<string name="back_button">Back</string>
 
 	<!-- notification display strings, prefixed by "notif" -->
 	<string name="notif_channel_name">Alarms</string>
 	<string name="notif_channel_description">Where all of the alarms are sent.</string>
-	<string name="notif_ticker">Ringing alarm</string>
+	<string name="notif_ticker">You hear that right?</string>
 	<string name="notif_description">Click here to snooze or dismiss the alarm.</string>
 	<string name="notif_dismiss">dismiss</string>
 	<string name="notif_snooze">snooze</string>
@@ -31,7 +31,6 @@
 
 	<!-- MainActivity display strings, prefixed by "main" -->
 	<string name="main_no_alarms_text">There\'s nothing here!</string>
-	<string name="main_add_alarm_button">+</string>
 	<string name="main_next_alarm">Next alarm:
 		"\""<xliff:g id="name" example="Alarm name">%1$s</xliff:g>"\""
 		<xliff:g id="main_date_string" example="on 3/14/22">%2$s</xliff:g>

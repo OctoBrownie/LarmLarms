@@ -22,10 +22,10 @@
 		<xliff:g id="day of week" example="Monday">%2$s</xliff:g> of the
 		month<xliff:g id="alarm_monthly_exception" example=", except Jan">%3$s</xliff:g></string>
 
-	<string name="alarm_monthly">Every <xliff:g id="months" example="Jan and Feb">%s</xliff:g></string>
+	<string name="alarm_monthly">毎年　<xliff:g id="months" example="Jan and Feb">%s</xliff:g></string>
 	<string name="alarm_monthly_exception">, except <xliff:g id="months" example="Jan, Feb and Mar">%s</xliff:g></string>
 	<string name="alarm_no_months">No months</string>
-	<string name="alarm_all_months">Every month</string>
+	<string name="alarm_all_months">毎月</string>
 	<string name="alarm_even_months">Every even month</string>
 	<string name="alarm_odd_months">Every odd month</string>
 
