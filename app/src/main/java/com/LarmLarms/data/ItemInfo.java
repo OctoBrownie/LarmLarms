@@ -2,6 +2,7 @@ package com.larmlarms.data;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.util.Log;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -39,12 +40,13 @@ public class ItemInfo implements Parcelable {
 	 * @param in the parcel to initialize from, cannot be null
 	 */
 	private ItemInfo(@NotNull Parcel in) {
-		String l = in.readString();	// item
+		String item = in.readString();	// item
 		String isAlarm = in.readString();
-		if (l == null) item = null;
+
+		if (item == null) this.item = null;
 		else {
-			if (Boolean.parseBoolean(isAlarm)) item = Alarm.fromEditString(null, l);
-			else item = AlarmGroup.fromEditString(l);
+			if (Boolean.parseBoolean(isAlarm)) this.item = Alarm.fromEditString(null, item);
+			else this.item = AlarmGroup.fromEditString(item);
 		}
 
 		path = in.readString();
@@ -53,7 +55,7 @@ public class ItemInfo implements Parcelable {
 	// *******************************  Parcelable Things  **********************************
 
 	/**
-	 * Creator that creates parcels of ListableInfo objects.
+	 * Creator that creates parcels of ItemInfo objects.
 	 */
 	@SuppressWarnings("WeakerAccess")
 	public static final Parcelable.Creator<ItemInfo> CREATOR =

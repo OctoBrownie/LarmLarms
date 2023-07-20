@@ -1,6 +1,5 @@
 package com.larmlarms.main;
 
-import android.app.Application;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -129,8 +128,10 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.Recyc
 		}
 
 		Intent intent = new Intent(context, EditorActivity.class);
-		intent.putExtra(Constants.EXTRA_ITEM_INFO, alarm.getInfo());
+		intent.putExtra(Constants.EXTRA_ITEM, alarm.toEditString());
+		intent.putExtra(Constants.EXTRA_PATH, alarm.getPath());
 		intent.setAction(Constants.ACTION_EDIT_ALARM);
+
 		context.startActivity(intent);
 	}
 

@@ -13,6 +13,7 @@ import android.widget.TextView;
 import com.larmlarms.BuildConfig;
 import com.larmlarms.Constants;
 import com.larmlarms.R;
+import com.larmlarms.data.Alarm;
 import com.larmlarms.data.ItemInfo;
 import com.larmlarms.main.PrefsActivity;
 
@@ -30,7 +31,12 @@ public class RingingActivity extends AppCompatActivity {
 	/**
 	 * The alarm that's ringing right now.
 	 */
-	private ItemInfo currAlarmInfo;
+	private Alarm alarm;
+
+	/**
+	 * Path of the current alarm.
+	 */
+	private String path;
 
 	// ***********************************  Lifecycle Methods  *********************************
 
@@ -49,12 +55,13 @@ public class RingingActivity extends AppCompatActivity {
 		PrefsActivity.applyPrefsUI(this);
 
 		// setting fields
-		currAlarmInfo = getIntent().getParcelableExtra(Constants.EXTRA_ITEM_INFO);
-		if (currAlarmInfo == null || currAlarmInfo.item == null) {
+		alarm = Alarm.fromEditString(this, getIntent().getStringExtra(Constants.EXTRA_ITEM));
+		if (alarm == null) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "The alarm given was invalid.");
 			finish();
 			return;
 		}
+		path = getIntent().getStringExtra(Constants.EXTRA_PATH);
 
 		// show on lock screen
 		if (Build.VERSION.SDK_INT > Build.VERSION_CODES.O) {
@@ -85,7 +92,7 @@ public class RingingActivity extends AppCompatActivity {
 
 		// setting UI things
 		TextView name = findViewById(R.id.alarmName);
-		name.setText(currAlarmInfo.item.getName());
+		name.setText(alarm.getName());
 	}
 
 	// **************************************  Callbacks  **************************************
@@ -97,7 +104,8 @@ public class RingingActivity extends AppCompatActivity {
 	 */
 	public void snooze(@NotNull View v) {
 		startService(new Intent(this, AfterRingingService.class)
-				.putExtra(Constants.EXTRA_ITEM_INFO, currAlarmInfo)
+				.putExtra(Constants.EXTRA_ITEM, alarm.toEditString())
+				.putExtra(Constants.EXTRA_PATH, path)
 				.setAction(Constants.ACTION_SNOOZE));
 		finish();
 	}
@@ -109,7 +117,8 @@ public class RingingActivity extends AppCompatActivity {
 	 */
 	public void dismiss(@NotNull View v) {
 		startService(new Intent(this, AfterRingingService.class)
-				.putExtra(Constants.EXTRA_ITEM_INFO, currAlarmInfo)
+				.putExtra(Constants.EXTRA_ITEM, alarm.toEditString())
+				.putExtra(Constants.EXTRA_PATH, path)
 				.setAction(Constants.ACTION_DISMISS));
 		finish();
 	}

@@ -8,7 +8,7 @@ import android.util.Log;
 import com.larmlarms.BuildConfig;
 import com.larmlarms.Constants;
 import com.larmlarms.data.Alarm;
-import com.larmlarms.data.ItemInfo;
+import com.larmlarms.data.RootFolder;
 import com.larmlarms.main.MainApplication;
 
 import org.jetbrains.annotations.NotNull;
@@ -36,21 +36,23 @@ public class AfterRingingService extends Service {
 	public int onStartCommand(@NotNull Intent inIntent, int flags, int startId) {
 		stopService(new Intent(this, RingingService.class));
 
-		ItemInfo info = inIntent.getParcelableExtra(Constants.EXTRA_ITEM_INFO);
-		if (info == null || info.item == null) {
+		Alarm alarm = Alarm.fromEditString(this, inIntent.getStringExtra(Constants.EXTRA_ITEM));
+		String path = inIntent.getStringExtra(Constants.EXTRA_PATH);
+		if (alarm == null) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "The info struct was null.");
 			stopSelf();
 			return Service.START_NOT_STICKY;
 		}
 
-		Alarm a = (Alarm) ((MainApplication) getApplication()).rootFolder
-				.getItemById(info.path, info.item.getId());
-		if (a == null) {
+		RootFolder rf = ((MainApplication)getApplication()).rootFolder;
+		alarm = (Alarm) rf.getItemById(path, alarm.getId());
+		if (alarm == null) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "The alarm was null.");
 			return Service.START_NOT_STICKY;
 		}
-		if (Constants.ACTION_DISMISS.equals(inIntent.getAction())) a.dismiss();
-		else a.snooze();
+		if (Constants.ACTION_DISMISS.equals(inIntent.getAction())) alarm.dismiss();
+		else alarm.snooze();
+		rf.save();
 
 		return Service.START_NOT_STICKY;
 	}

@@ -216,7 +216,7 @@ public class AlarmGroup extends Item {
 	 * @param src the edit string to create from
 	 */
 	@Nullable @Contract(pure = true)
-	static AlarmGroup fromEditString(@Nullable String src) {
+	public static AlarmGroup fromEditString(@Nullable String src) {
 		if (src == null) {
 			if (BuildConfig.DEBUG) Log.v(TAG, "Edit string is null.");
 			return null;
@@ -250,7 +250,7 @@ public class AlarmGroup extends Item {
 	 * @param src the store string to create from
 	 */
 	@Nullable @Contract(pure = true)
-	static AlarmGroup fromStoreString(@Nullable Context currContext, @Nullable String src) {
+	public static AlarmGroup fromStoreString(@Nullable Context currContext, @Nullable String src) {
 		if (src == null) {
 			if (BuildConfig.DEBUG) Log.v(TAG, "Store string is null.");
 			return null;

@@ -214,17 +214,18 @@ public class EditorActivity extends AppCompatActivity
 				return;
 			}
 
-			ItemInfo info = extras.getParcelable(Constants.EXTRA_ITEM_INFO);
+			Item i;
+			if (isAlarm) i = Alarm.fromEditString(this, extras.getString(Constants.EXTRA_ITEM));
+			else i = AlarmGroup.fromEditString(extras.getString(Constants.EXTRA_ITEM));
 
-			if (info == null || info.item == null || info.path == null) {
+			originalPath = extras.getString(Constants.EXTRA_PATH);
+
+			if (i == null) {
 				if (BuildConfig.DEBUG) Log.e(TAG, "item info is invalid.");
 				finish();
 				return;
 			}
-			workingItem = info.item;
-			if (isAlarm) ((Alarm) workingItem).setContext(this);
-
-			originalPath = info.path;
+			workingItem = i;
 			originalItem = workingItem instanceof Alarm ?
 					new Alarm((Alarm)workingItem) : new AlarmGroup((AlarmGroup)workingItem);
 		}

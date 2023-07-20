@@ -190,7 +190,8 @@ public class FolderViewActivity extends AppCompatActivity implements View.OnClic
 	private void editFolder() {
 		Intent intent = new Intent(this, EditorActivity.class);
 		intent.setAction(Constants.ACTION_EDIT_FOLDER);
-		intent.putExtra(Constants.EXTRA_ITEM_INFO, currFolder.getInfo());
+		intent.putExtra(Constants.EXTRA_ITEM, currFolder.toEditString());
+		intent.putExtra(Constants.EXTRA_PATH, currFolder.getPath());
 
 		startActivity(intent);
 	}

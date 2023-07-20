@@ -5,14 +5,14 @@ package com.larmlarms;
  */
 public final class Constants {
     /**
-     * An extra used for carrying a ItemInfo.
-     */
-    public final static String EXTRA_ITEM_INFO = "com.apps.larmlarms.extra.INFO";
-
-    /**
      * An extra used for carrying a string path.
      */
     public final static String EXTRA_PATH = "com.apps.larmlarms.extra.PATH";
+
+    /**
+     * An extra used for carrying an item (of any type) as an edit string.
+     */
+    public final static String EXTRA_ITEM = "com.apps.larmlarms.extra.ITEM";
 
     // *********************************  Editing Intent Actions  *******************************
     /**
@@ -20,12 +20,12 @@ public final class Constants {
      */
     public final static String ACTION_CREATE_ALARM = "com.apps.larmlarms.action.CREATE_ALARM";
     /**
-     * Intent action for editing an existing Alarm. Requires that EXTRA_ITEM_INFO contain a
-     * ItemInfo with absIndex, item, and path filled out. Used with the editors.
+     * Intent action for editing an existing Alarm. Requires that EXTRA_ITEM contain an alarm and
+     * EXTRA_PATH contains the path. Used with the editors.
      */
     public final static String ACTION_EDIT_ALARM = "com.apps.larmlarms.action.EDIT_ALARM";
     /**
-     * Request code to create a new folder. Requires nothing else. Used with the editors.
+     * Intent action to create a new folder. Requires nothing else. Used with the editors.
      */
     public final static String ACTION_CREATE_FOLDER = "com.apps.larmlarms.action.CREATE_FOLDER";
     /**

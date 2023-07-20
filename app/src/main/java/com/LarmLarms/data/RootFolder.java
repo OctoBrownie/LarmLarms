@@ -137,7 +137,7 @@ public class RootFolder extends AlarmGroup {
     /**
      * Saves everything to disk and sets the alarms to ring.
      */
-    private void save() {
+    public void save() {
         new Thread(() -> {
             writeAlarmsToDisk(context, this);
             ItemInfo info = findNextRingingAlarm();
@@ -164,7 +164,9 @@ public class RootFolder extends AlarmGroup {
      */
     private synchronized static Alarm registerAlarm(@NotNull Context context, @NotNull ItemInfo alarmInfo) {
         Intent intent = new Intent(context, RingingService.class);
-        if (alarmInfo.item != null) intent.putExtra(Constants.EXTRA_ITEM_INFO, alarmInfo);
+        // if (alarmInfo.item != null) intent.putExtra(Constants.EXTRA_ITEM_INFO, alarmInfo);
+        if (alarmInfo.item != null) intent.putExtra(Constants.EXTRA_ITEM, alarmInfo.item.toEditString());
+        intent.putExtra(Constants.EXTRA_PATH, alarmInfo.path);
 
         AlarmManager manager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         PendingIntent pendingIntent;

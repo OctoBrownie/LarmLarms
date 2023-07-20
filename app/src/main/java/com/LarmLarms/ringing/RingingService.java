@@ -26,7 +26,6 @@ import com.larmlarms.BuildConfig;
 import com.larmlarms.Constants;
 import com.larmlarms.R;
 import com.larmlarms.data.Alarm;
-import com.larmlarms.data.ItemInfo;
 import com.larmlarms.main.PrefsActivity;
 
 import org.jetbrains.annotations.NotNull;
@@ -63,7 +62,7 @@ public class RingingService extends Service implements MediaPlayer.OnPreparedLis
 	/**
 	 * The current alarm that's ringing.
 	 */
-	private ItemInfo alarmInfo;
+	private Alarm alarm;
 
 	/**
 	 * Plays the ringtone of the alarm. Can be null if the alarm is silent.
@@ -119,8 +118,11 @@ public class RingingService extends Service implements MediaPlayer.OnPreparedLis
 	public int onStartCommand(@NotNull Intent inIntent, int flags, int startId) {
 		createNotificationChannel(this);
 
-		alarmInfo = inIntent.getParcelableExtra(Constants.EXTRA_ITEM_INFO);
-		if (alarmInfo == null || alarmInfo.item == null) {
+		// alarmInfo = inIntent.getParcelableExtra(Constants.EXTRA_ITEM_INFO);
+		alarm = Alarm.fromEditString(null, inIntent.getStringExtra(Constants.EXTRA_ITEM));
+		String path = inIntent.getStringExtra(Constants.EXTRA_PATH);
+
+		if (alarm == null) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "Alarm was invalid.");
 			stopSelf();
 			return Service.START_NOT_STICKY;
@@ -133,12 +135,14 @@ public class RingingService extends Service implements MediaPlayer.OnPreparedLis
 
 		// setting up custom foreground notification
 		Intent fullScreenIntent = new Intent(this, RingingActivity.class);
-		fullScreenIntent.putExtra(Constants.EXTRA_ITEM_INFO, alarmInfo);
+		fullScreenIntent.putExtra(Constants.EXTRA_ITEM, alarm.toEditString());
+		fullScreenIntent.putExtra(Constants.EXTRA_PATH, path);
 		fullScreenIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
 		PendingIntent fullscreenPI = PendingIntent.getActivity(this, 0, fullScreenIntent, PIFlags);
 
 		Intent dismissIntent = new Intent(this, AfterRingingService.class);
-		dismissIntent.putExtra(Constants.EXTRA_ITEM_INFO, alarmInfo);
+		dismissIntent.putExtra(Constants.EXTRA_ITEM, alarm.toEditString());
+		dismissIntent.putExtra(Constants.EXTRA_PATH, path);
 		dismissIntent.setAction(Constants.ACTION_DISMISS);
 		PendingIntent dismissPI = PendingIntent.getService(this, 0, dismissIntent, PIFlags);
 
@@ -170,7 +174,7 @@ public class RingingService extends Service implements MediaPlayer.OnPreparedLis
 		PrefsActivity.applyPrefsStyle(this);
 
 		RemoteViews notifView = new RemoteViews(getPackageName(), notifLayout);
-		notifView.setTextViewText(R.id.alarm_name_text, alarmInfo.item.getName());
+		notifView.setTextViewText(R.id.alarm_name_text, alarm.getName());
 
 		// we need this line to ensure actions pop up on the heads up notification
 		notifView.setOnClickPendingIntent(R.id.snoozeButton, snoozePI);
@@ -178,7 +182,7 @@ public class RingingService extends Service implements MediaPlayer.OnPreparedLis
 
 		NotificationCompat.Builder builder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
 				.setSmallIcon(R.mipmap.ic_launcher)
-				.setContentTitle(alarmInfo.item.getName())
+				.setContentTitle(alarm.getName())
 				.setContentText(getResources().getString(R.string.notif_description))
 				.setTicker(getResources().getString(R.string.notif_ticker))
 				.setPriority(NotificationCompat.PRIORITY_MAX)
@@ -200,7 +204,7 @@ public class RingingService extends Service implements MediaPlayer.OnPreparedLis
 				.setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
 				.setUsage(AudioAttributes.USAGE_ALARM)
 				.build();
-		if (((Alarm)alarmInfo.item).getRingtoneUri() != null && ((Alarm)alarmInfo.item).getVolume() != 0) {
+		if (alarm.getRingtoneUri() != null && alarm.getVolume() != 0) {
 
 			// media player setup
 			mediaPlayer = new MediaPlayer();
@@ -209,7 +213,7 @@ public class RingingService extends Service implements MediaPlayer.OnPreparedLis
 			mediaPlayer.setWakeMode(this, PowerManager.PARTIAL_WAKE_LOCK);
 
 			try {
-				mediaPlayer.setDataSource(this, ((Alarm)alarmInfo.item).getRingtoneUri());
+				mediaPlayer.setDataSource(this, alarm.getRingtoneUri());
 				mediaPlayer.setOnPreparedListener(this);
 				mediaPlayer.prepareAsync();
 			}
@@ -254,7 +258,7 @@ public class RingingService extends Service implements MediaPlayer.OnPreparedLis
 			}
 		}
 
-		if (((Alarm)alarmInfo.item).isVibrateOn()) {
+		if (alarm.isVibrateOn()) {
 			// vibrator setup
 			vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
 			if (vibrator == null) {
@@ -324,12 +328,12 @@ public class RingingService extends Service implements MediaPlayer.OnPreparedLis
 	 */
 	@Override
 	public void onPrepared(@NotNull MediaPlayer mp) {
-		if (alarmInfo.item == null) {
+		if (alarm == null) {
 			if (BuildConfig.DEBUG) Log.e(TAG, "The ringing alarm was null somehow.");
 			return;
 		}
 
-		float vol = ((Alarm)alarmInfo.item).getVolume() / 100f;
+		float vol = alarm.getVolume() / 100f;
 		mp.setVolume(vol, vol);
 		playerPrepared = true;
 		if (audioFocused) mp.start();
