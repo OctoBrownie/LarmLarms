@@ -53,8 +53,8 @@
 	<string name="prefs_theme_description">Theme is separate from light/dark mode. Both light and
 		dark mode have versions of these color palettes.</string>
 	<string name="prefs_system_dark">Use system dark mode</string>
-	<string name="prefs_dark_override">Use dark mode (if not following system settings)</string>
-	<string name="prefs_menu_placement">Put back/save buttons above content (otherwise below)</string>
+	<string name="prefs_dark_override">Use dark mode (overriding system settings)</string>
+	<string name="prefs_menu_placement">Put back/save buttons above editor contents</string>
 
 	<!-- themes, prefixed by "theme" -->
 	<string name="theme_beach">Sandy beach</string>

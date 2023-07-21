@@ -3,79 +3,49 @@
 	<!-- ListableEditor display strings, prefixed by "editor"
 		 if for Alarms specifically, prefixed by "alarm_editor"
 		 if for AlarmGroups specifically, prefixed by "folder_editor" -->
-	<string name="editor_back_button">back</string>
-	<string name="editor_save_button">save</string>
-	<string name="editor_name_text">"Title: "</string>
-	<string name="editor_parent_folder_text">"Parent folder: "</string>
+	<string name="editor_save_button">保存</string>
+	<string name="editor_name_text">名：</string>
+	<string name="editor_parent_folder_text">ディレクトリー：</string>
 
 	<!-- toasts for alarm creation errors -->
-	<string name="alarm_editor_toast_empty">Please create a name for the alarm.</string>
-	<string name="alarm_editor_toast_restricted">Alarm names cannot contain tabs or forward slashes (/).</string>
-	<string name="alarm_editor_toast_offset">Please make a nonzero offset.</string>
+	<string name="alarm_editor_toast_empty">名前が必要ので…</string>
+	<string name="alarm_editor_toast_restricted">アラーム名はタブと斜線（/）を入れてやめろ</string>
+	<string name="alarm_editor_toast_offset">オフセットは…？</string>
 
 	<!-- toasts for folder creation errors -->
-	<string name="folder_editor_toast_empty">Please create a name for the folder.</string>
-	<string name="folder_editor_toast_restricted">Folder names cannot contain tabs or forward slashes (/).</string>
-	<string name="folder_editor_toast_duplicate">There cannot be two folders with the same name in the same folder.</string>
+	<string name="folder_editor_toast_empty">名前が必要ので…</string>
+	<string name="folder_editor_toast_restricted">ディレクトリー名はタブと斜線（/）を入れてやめろ</string>
+	<string name="folder_editor_toast_duplicate">同じパスと名前ディレクトリーがだめ。</string>
 
-	<string name="alarm_editor_repeat_type_text">"Type of alarm: "</string>
-	<string name="alarm_editor_name_hint">Alarm name</string>
-	<string name="folder_editor_name_hint">Folder name</string>
+	<string name="alarm_editor_repeat_type_text">アラーム・タイプ：</string>
+	<string name="alarm_editor_name_hint">アラーム名</string>
+	<string name="folder_editor_name_hint">ディレクトリー名</string>
 
-	<string name="alarm_editor_sound_button">Set Ringtone</string>
-	<string name="alarm_editor_silent">Silent</string>
-	<string name="alarm_editor_volume_text">Volume</string>
-	<string name="alarm_editor_vibrate">Vibrate?</string>
+	<string name="alarm_editor_sound_button">通知音選択</string>
+	<string name="alarm_editor_silent">サイレント</string>
+	<string name="alarm_editor_volume_text">ボリューム</string>
+	<string name="alarm_editor_vibrate">バイブ？</string>
 
 	<!-- For specific repeat types -->
-	<string name="alarm_editor_offset_days_text">"Days: "</string>
-	<string name="alarm_editor_offset_hours_text">"Hours: "</string>
-	<string name="alarm_editor_offset_mins_text">"Minutes: "</string>
-	<string name="alarm_editor_offset_from_now">Offset from current time?</string>
+	<string name="alarm_editor_offset_days_text">日にち：</string>
+	<string name="alarm_editor_offset_hours_text">時間：</string>
+	<string name="alarm_editor_offset_mins_text">分間：</string>
+	<string name="alarm_editor_offset_from_now">今からオフセット？</string>
 
-	<string name="alarm_editor_date_monthly_text_1">"On the "</string>
-	<string name="alarm_editor_date_monthly_text_2">" day of the month"</string>
+	<string name="alarm_editor_date_monthly_text_1">月の</string>
+	<string name="alarm_editor_date_monthly_text_2">日</string>
 
-	<string name="alarm_editor_day_monthly_text_1">"Every "</string>
+	<string name="alarm_editor_day_monthly_text_1">月の</string>
 
-	<string name="alarm_editor_weeks_text">"Ring week: "</string>
-
-	<string name="alarm_editor_days_button">Change days</string>
-	<string name="alarm_editor_months_button">Change months</string>
+	<string name="alarm_editor_days_button">日選択</string>
+	<string name="alarm_editor_months_button">月選択</string>
 
 	<!-- repeat strings, prefixed by "repeat" -->
-	<string name="repeat_once_abs">ring once (pick a date/time)</string>
-	<string name="repeat_once_rel">ring once (offset of current date/time)</string>
-	<string name="repeat_day_weekly">ring every week on certain days</string>
-	<string name="repeat_date_monthly">ring monthly on a specific date</string>
-	<string name="repeat_day_monthly">ring monthly on a specific day</string>
-	<string name="repeat_date_yearly">ring yearly on a specific date</string>
-	<string name="repeat_offset">ring every _____ minutes/hours/days</string>
-
-	<!-- these have to match the indices in the array alarm_editor_repeat_strings -->
-	<integer name="repeat_once_abs">0</integer>
-	<integer name="repeat_once_rel">1</integer>
-	<integer name="repeat_day_weekly">2</integer>
-	<integer name="repeat_date_monthly">3</integer>
-	<integer name="repeat_day_monthly">4</integer>
-	<integer name="repeat_date_yearly">5</integer>
-	<integer name="repeat_offset">6</integer>
-
-	<string-array name="alarm_editor_repeat_strings">
-		<item>@string/repeat_once_abs</item>
-		<item>@string/repeat_once_rel</item>
-		<item>@string/repeat_day_weekly</item>
-		<item>@string/repeat_date_monthly</item>
-		<item>@string/repeat_day_monthly</item>
-		<item>@string/repeat_date_yearly</item>
-		<item>@string/repeat_offset</item>
-	</string-array>
-
-	<string-array name="alarm_week_strings">
-		<item>first</item>
-		<item>second</item>
-		<item>third</item>
-		<item>fourth</item>
-		<item>last</item>
-	</string-array>
+	<string name="repeat_once_abs">一度だけ鳴る（日時を選ぶ）</string>
+	<string name="repeat_once_rel">一度だけ鳴る（今からオフセットを選ぶ）</string>
+	<string name="repeat_day_weekly">毎週　選んだ曜日に鳴る</string>
+	<string name="repeat_date_monthly">毎月　選んだ日付に鳴る</string>
+	<string name="repeat_day_monthly">毎月　選んだ曜日に鳴る</string>
+	<string name="repeat_date_yearly">毎年　選んだ日に鳴る</string>
+	<string name="repeat_offset">オフセット（日にち、時間、分間）ごとに鳴る</string>
 </resources>

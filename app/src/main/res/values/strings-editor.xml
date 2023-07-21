@@ -3,7 +3,6 @@
 	<!-- ListableEditor display strings, prefixed by "editor"
 		 if for Alarms specifically, prefixed by "alarm_editor"
 		 if for AlarmGroups specifically, prefixed by "folder_editor" -->
-	<string name="editor_back_button">back</string>
 	<string name="editor_save_button">save</string>
 	<string name="editor_name_text">"Title: "</string>
 	<string name="editor_parent_folder_text">"Parent folder: "</string>
@@ -38,8 +37,6 @@
 
 	<string name="alarm_editor_day_monthly_text_1">"Every "</string>
 
-	<string name="alarm_editor_weeks_text">"Ring week: "</string>
-
 	<string name="alarm_editor_days_button">Change days</string>
 	<string name="alarm_editor_months_button">Change months</string>
 
@@ -69,13 +66,5 @@
 		<item>@string/repeat_day_monthly</item>
 		<item>@string/repeat_date_yearly</item>
 		<item>@string/repeat_offset</item>
-	</string-array>
-
-	<string-array name="alarm_week_strings">
-		<item>first</item>
-		<item>second</item>
-		<item>third</item>
-		<item>fourth</item>
-		<item>last</item>
 	</string-array>
 </resources>

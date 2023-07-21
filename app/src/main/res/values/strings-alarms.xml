@@ -12,13 +12,13 @@
 	<string name="alarm_weekly_weekends">Weekends</string>
 
 	<string name="alarm_date_monthly"><xliff:g id="alarm_monthly" example="Every Jan and Feb">%1$s</xliff:g>
-		on the <xliff:g id="ordinal" example="1st">%2$s</xliff:g></string>
-	<string name="alarm_date_monthly_except">Every <xliff:g id="ordinal" example="1st">%1$s</xliff:g>
+		on the <xliff:g id="date ordinal" example="1st">%2$s</xliff:g></string>
+	<string name="alarm_date_monthly_except">Every <xliff:g id="date ordinal" example="1st">%1$s</xliff:g>
 		of the month<xliff:g id="alarm_monthly_exception" example=", except Jan">%2$s</xliff:g></string>
-	<string name="alarm_day_monthly">Every <xliff:g id="ordinal" example="1st">%1$s</xliff:g>
+	<string name="alarm_day_monthly">Every <xliff:g id="day ordinal" example="1st">%1$s</xliff:g>
 		<xliff:g id="day of week" example="Monday">%2$s</xliff:g> of
 		<xliff:g id="alarm_monthly" example="Jan and Feb">%3$s</xliff:g></string>
-	<string name="alarm_day_monthly_except">Every <xliff:g id="ordinal" example="1st">%1$s</xliff:g>
+	<string name="alarm_day_monthly_except">Every <xliff:g id="day ordinal" example="1st">%1$s</xliff:g>
 		<xliff:g id="day of week" example="Monday">%2$s</xliff:g> of the
 		month<xliff:g id="alarm_monthly_exception" example=", except Jan">%3$s</xliff:g></string>
 
@@ -47,5 +47,14 @@
 		<item>21st</item> <item>22nd</item> <item>23rd</item> <item>24th</item> <item>25th</item>
 		<item>26th</item> <item>27th</item> <item>28th</item> <item>29th</item> <item>30th</item>
 		<item>31st</item>
+	</string-array>
+
+	<!-- Ordinals used in REPEAT_DAY_MONTHLY -->
+	<string-array name="alarm_week_ordinals">
+		<item>first</item>
+		<item>second</item>
+		<item>third</item>
+		<item>fourth</item>
+		<item>last</item>
 	</string-array>
 </resources>

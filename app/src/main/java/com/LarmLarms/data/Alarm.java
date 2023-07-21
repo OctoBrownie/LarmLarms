@@ -279,7 +279,6 @@ public final class Alarm extends Item {
 
 		StringBuilder repeatString = new StringBuilder();
 		String dateStr = DateFormat.getDateFormat(context).format(ringTime.getTime());
-		String[] ordinals = res.getStringArray(R.array.alarm_ordinals);
 
 		// snoozed or not
 		if (alarmSnoozed) {
@@ -299,6 +298,7 @@ public final class Alarm extends Item {
 				break;
 			case REPEAT_DATE_MONTHLY:
 				int dateOfMonth = ringTime.get(Calendar.DATE);
+				String[] ordinals = res.getStringArray(R.array.alarm_ordinals);
 				months = getMonthsString();
 				exceptMonths = getExceptionMonthsString();
 				if (months.length() <= exceptMonths.length()) {
@@ -314,20 +314,21 @@ public final class Alarm extends Item {
 				break;
 			case REPEAT_DAY_MONTHLY:
 				String[] weekdays = (new DateFormatSymbols()).getWeekdays();
+				String[] weekOrdinals = res.getStringArray(R.array.alarm_week_ordinals);
 
 				months = getMonthsString();
 				exceptMonths = getExceptionMonthsString();
 				if (months.length() <= exceptMonths.length()) {
 					// use months
 					repeatString.append(String.format(res.getString(R.string.alarm_day_monthly),
-							res.getStringArray(R.array.alarm_week_strings)[repeatWeek],
-							weekdays[ringTime.get(Calendar.DAY_OF_WEEK)], months));
+							weekOrdinals[repeatWeek], weekdays[ringTime.get(Calendar.DAY_OF_WEEK)],
+							months));
 				}
 				else {
 					// use exception months
 					repeatString.append(String.format(res.getString(R.string.alarm_day_monthly_except),
-							res.getStringArray(R.array.alarm_week_strings)[repeatWeek],
-							weekdays[ringTime.get(Calendar.DAY_OF_WEEK)], exceptMonths));
+							weekOrdinals[repeatWeek], weekdays[ringTime.get(Calendar.DAY_OF_WEEK)],
+							exceptMonths));
 				}
 				break;
 			case REPEAT_DATE_YEARLY:

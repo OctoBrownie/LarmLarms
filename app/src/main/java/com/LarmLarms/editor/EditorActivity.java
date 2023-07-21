@@ -656,7 +656,7 @@ public class EditorActivity extends AppCompatActivity
 		// week of month spinner
 		spinner = alarmDayMonthlyLayout.findViewById(R.id.alarmWeekOfMonthInput);
 		adapter = ArrayAdapter.createFromResource(this,
-				R.array.alarm_week_strings, android.R.layout.simple_spinner_dropdown_item);
+				R.array.alarm_week_ordinals, android.R.layout.simple_spinner_dropdown_item);
 		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		spinner.setAdapter(adapter);
 		spinner.setSelection(((Alarm) workingItem).getRepeatWeek());

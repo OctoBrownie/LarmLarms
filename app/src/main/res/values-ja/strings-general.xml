@@ -48,29 +48,14 @@
 	<!-- PrefsActivity strings, prefixed by "prefs" -->
 	<string name="prefs_title">設定</string>
 	<string name="prefs_theme">テーマ: </string>
-	<string name="prefs_theme_description">Theme is separate from light/dark mode. Both light and
-		dark mode have versions of these color palettes.</string>
-	<string name="prefs_system_dark">Use system dark mode</string>
-	<string name="prefs_dark_override">Use dark mode (if not following system settings)</string>
-	<string name="prefs_menu_placement">Put back/save buttons above content (otherwise below)</string>
+	<string name="prefs_theme_description">テーマとライトモード・ダークモードは違う。ライトモードもダークモードもこのカラー・パレットが全部ある。</string>
+	<string name="prefs_system_dark">システム・ダークモード通り</string>
+	<string name="prefs_dark_override">ダークモード使用（システム設定を無効する場合）</string>
+	<string name="prefs_menu_placement">帰る/保存ボタンをエディター・コンテンツの上に置く</string>
 
 	<!-- themes, prefixed by "theme" -->
-	<string name="theme_beach">Sandy beach</string>
-	<string name="theme_candy">Candy</string>
-	<string name="theme_mint">Mint</string>
-	<!-- TODO: use grey instead of gray in *not* EN-US -->
-	<string name="theme_grey">Grayscale</string>
-
-	<!-- these have to match the indices in the array themes_list -->
-	<integer name="theme_beach">0</integer>
-	<integer name="theme_candy">1</integer>
-	<integer name="theme_mint">2</integer>
-	<integer name="theme_grey">3</integer>
-
-	<string-array name="themes_list">
-		<item>@string/theme_beach</item>
-		<item>@string/theme_candy</item>
-		<item>@string/theme_mint</item>
-		<item>@string/theme_grey</item>
-	</string-array>
+	<string name="theme_beach">ハマ</string>
+	<string name="theme_candy">アメ</string>
+	<string name="theme_mint">ミント</string>
+	<string name="theme_grey">グレースケール</string>
 </resources>
